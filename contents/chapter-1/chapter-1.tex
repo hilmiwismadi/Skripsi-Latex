@@ -1,0 +1,84 @@
+%%\documentclass[../../main.tex]{subfiles} %% Uncomment for standalone compile
+
+%%\begin{document} %% Uncomment for standalone compile
+
+\chapter{Pendahuluan}
+
+\section{Latar Belakang}
+Perkembangan transformasi digital yang pesat telah meningkatkan ketergantungan organisasi terhadap sistem informasi dan infrastruktur teknologi. Konsekuensinya, permukaan serangan (\textit{attack surface}) juga semakin luas, sehingga risiko keamanan siber menjadi semakin kompleks dan sulit dikendalikan. Laporan Check Point Global Cyber Attack Report 2026 menunjukkan bahwa sektor pendidikan merupakan salah satu sektor dengan tingkat serangan siber tertinggi, dengan rata-rata 4.749 serangan per organisasi per minggu, meningkat sebesar 7\% dibandingkan tahun sebelumnya. Di kawasan Asia-Pasifik, rata-rata serangan mencapai 3.040 per organisasi per minggu dengan peningkatan 3\% secara tahunan \cite{checkpoint2026}. Data ini menunjukkan bahwa institusi pendidikan menghadapi eksposur risiko yang signifikan dan membutuhkan pendekatan pengelolaan keamanan informasi yang sistematis.
+
+Sebagai respons terhadap tantangan tersebut, organisasi mengadopsi standar manajemen keamanan informasi seperti ISO/IEC 27001 yang menyediakan kerangka kerja \textit{Information Security Management System} (ISMS) berbasis risiko \cite{calder2023iso27001}. Standar ini mengatur proses penetapan, implementasi, pemeliharaan, dan peningkatan berkelanjutan sistem keamanan informasi \cite{isoiec20227001}. Pembaruan ISO/IEC 27001:2022 mengkonsolidasikan kontrol Annex A dari 114 menjadi 93 kontrol yang diklasifikasikan ke dalam empat kategori utama: organisasional, manusia, fisik, dan teknologi \cite{calder2023iso27001}. Selain itu, peningkatan jumlah sertifikasi secara global menunjukkan adopsi yang semakin luas, mengindikasikan relevansi standar ini dalam praktik tata kelola keamanan informasi modern \cite{marques2024automating}.
+
+Namun demikian, implementasi dan audit kepatuhan terhadap ISO 27001 bukan hanya permasalahan adopsi standar, tetapi juga menyangkut kompleksitas operasional dalam proses evaluasi kontrol. Studi empiris menunjukkan bahwa proses sertifikasi dapat berlangsung selama 6 hingga 12 bulan dengan biaya signifikan \cite{marques2024automating}. Durasi tersebut mencerminkan tahapan yang panjang, mulai dari perencanaan ruang lingkup audit, implementasi kontrol, hingga proses audit eksternal. Dalam konteks ini, beban utama tidak hanya terletak pada durasi, tetapi pada aktivitas analitis seperti pemetaan kontrol terhadap dokumen organisasi, evaluasi bukti implementasi, serta penyusunan \textit{Statement of Applicability} (SoA) yang memerlukan justifikasi eksplisit untuk setiap kontrol yang diterapkan atau dikecualikan.
+
+Secara khusus, proses analisis SoA menjadi salah satu komponen yang paling kritis dalam audit ISO 27001 karena berfungsi sebagai penghubung antara hasil \textit{risk assessment} dan implementasi kontrol. Auditor harus memastikan bahwa setiap kontrol dalam Annex A telah dievaluasi secara konsisten dan didukung oleh bukti yang relevan. Aktivitas ini umumnya dilakukan secara manual melalui analisis dokumen kebijakan, prosedur, dan artefak pendukung yang berpotensi menimbulkan inkonsistensi, redudansi, serta keterbatasan skalabilitas \cite{csam2024}. Kompleksitas ini semakin meningkat pada organisasi dengan ruang lingkup sistem informasi yang luas, sebagaimana ditunjukkan oleh studi pada institusi pendidikan tinggi yang melibatkan ratusan kontrol dan sub-kontrol dalam proses audit [5].
+
+Perkembangan teknologi \textit{Large Language Model} (LLM) dan arsitektur \textit{Retrieval-Augmented Generation} (RAG) menawarkan pendekatan baru untuk mendukung aktivitas analisis berbasis dokumen. Pendekatan ini menggabungkan kemampuan pemahaman bahasa alami dengan mekanisme \textit{retrieval} terhadap basis pengetahuan eksternal, sehingga memungkinkan sistem untuk mengakses informasi yang relevan. Sejumlah penelitian menunjukkan bahwa performa sistem RAG sangat dipengaruhi oleh kualitas proses \textit{retrieval}, termasuk bagaimana \textit{query} direpresentasikan, bagaimana dokumen dicari, serta bagaimana hasil pencarian diurutkan berdasarkan relevansi sebelum digunakan dalam proses analisis \cite{gupta2025compliance,lajbr2025,auditgpt2025,reguquery2025}. Dalam konteks ini, strategi \textit{retrieval} menjadi komponen krusial yang menentukan relevansi informasi yang diperoleh.
+
+Dalam domain audit dan \textit{compliance checking}, beberapa studi telah memanfaatkan pendekatan RAG untuk membantu pencarian informasi regulasi dan pemetaan dokumen terhadap standar yang berlaku. Sebagai contoh, (Gupta et al., 2025) menunjukkan bahwa pendekatan yang mengombinasikan aspek semantik dan leksikal dapat meningkatkan presisi dalam pencarian dokumen regulasi \cite{gupta2025compliance}. Sementara itu, (Moghe et al., 2025) memanfaatkan \textit{pipeline} RAG untuk mendukung analisis dokumen audit secara sistematis \cite{auditgpt2025}. Penelitian lain juga menunjukkan kemampuan sistem dalam membantu pemetaan temuan terhadap dasar regulasi yang relevan \cite{lajbr2025,reguquery2025}. Namun demikian, sebagian besar penelitian tersebut berfokus pada domain regulasi umum atau audit keuangan, serta belum secara eksplisit mengevaluasi variasi strategi \textit{retrieval} dalam satu kerangka eksperimen yang terkontrol.
+
+Pada konteks ISO/IEC 27001:2022, khususnya dalam analisis \textit{Statement of Applicability} (SoA), tantangan utama terletak pada proses pemetaan antara kondisi organisasi dengan kontrol keamanan yang relevan. Proses ini membutuhkan kemampuan untuk mengidentifikasi kontrol yang paling sesuai berdasarkan konteks tertentu, yang melibatkan baik kesamaan semantik maupun kecocokan kata kunci secara eksplisit. Oleh karena itu, kualitas \textit{retrieval} menjadi faktor yang sangat menentukan dalam mendukung proses analisis SoA. Meskipun demikian, masih terdapat kesenjangan penelitian dalam hal pemahaman mengenai strategi \textit{retrieval} yang paling efektif untuk konteks ini, khususnya dalam membandingkan pendekatan seperti \textit{hybrid retrieval} serta mekanisme \textit{reranking} secara sistematis.
+
+Berdasarkan permasalahan tersebut, penelitian ini berfokus pada pengembangan dan evaluasi beberapa variasi strategi \textit{retrieval} dalam sistem RAG untuk mendukung proses pemetaan kontrol pada SoA ISO/IEC 27001:2022. Variasi yang diusulkan meliputi pendekatan \textit{hybrid retrieval} yang menggabungkan aspek semantik dan leksikal serta integrasi metode \textit{reranking} untuk meningkatkan kualitas pengurutan hasil pencarian berdasarkan tingkat relevansi terhadap \textit{query}. Sistem yang dikembangkan berperan untuk membantu mengidentifikasi kontrol yang relevan berdasarkan input audit dengan memanfaatkan basis pengetahuan yang terstruktur. Evaluasi difokuskan pada kualitas \textit{retrieval}, seperti ketepatan pemilihan kontrol yang relevan, serta efisiensi proses dalam hal waktu respons, sehingga diharapkan dapat memberikan kontribusi yang bersifat praktis dan terukur dalam penerapan RAG untuk audit keamanan informasi.
+
+\section{Rumusan Masalah}
+Berdasarkan latar belakang yang telah dijelaskan, diketahui bahwa pendekatan \textit{Retrieval-Augmented Generation} (RAG) telah digunakan untuk mendukung analisis berbasis dokumen, termasuk dalam konteks audit dan \textit{compliance checking}. Meskipun demikian, masih terdapat keterbatasan dalam evaluasi sistematis terhadap rancangan strategi \textit{retrieval} dalam satu kerangka eksperimen yang konsisten, khususnya pada konteks pemetaan kontrol \textit{Statement of Applicability} (SoA) ISO/IEC 27001:2022. Oleh karena itu, rumusan masalah dalam penelitian ini adalah sebagai berikut:
+
+\begin{enumerate}
+	\item Bagaimana merancang dan mengembangkan sistem \textit{information retrieval} berbasis mekanisme \textit{retrieval} dan \textit{reranking} untuk mendukung proses pemetaan kontrol pada \textit{Statement of Applicability} (SoA) ISO/IEC 27001:2022 Annex A.5--A.8?
+	\item Bagaimana perbandingan performa berbagai strategi mekanisme \textit{retrieval} yang diimplementasikan dalam variasi sistem terkontrol dengan menggunakan variasi jenis \textit{query}, ditinjau dari aspek akurasi \textit{retrieval} dan waktu respons?
+\end{enumerate}
+
+\section{Tujuan Penelitian}
+Tujuan yang ingin dicapai dalam penelitian ini adalah sebagai berikut:
+
+\begin{enumerate}
+	\item Mengembangkan arsitektur sistem \textit{information retrieval} yang mampu melakukan pemetaan kontrol pada \textit{Statement of Applicability} (SoA) ISO/IEC 27001:2022 Annex A.5--A.8 secara sistematis, dengan memanfaatkan basis pengetahuan terstruktur serta mendukung integrasi berbagai strategi \textit{retrieval} dalam satu \textit{pipeline} yang konsisten.
+	\item Mengevaluasi dan membandingkan performa berbagai strategi \textit{retrieval} dalam sistem yang dikembangkan (\textit{hybrid retrieval}, \textit{reranking} dan kombinasi keduanya) dalam kerangka eksperimen berdasarkan:
+	\begin{itemize}
+		\item Akurasi \textit{retrieval} terhadap \textit{ground truth}
+		\item Efisiensi sistem dari waktu respons latensi
+	\end{itemize}
+\end{enumerate}
+
+\section{Batasan Penelitian}
+\begin{enumerate}
+	\item Ruang lingkup analisis dibatasi pada Annex A.5 (Kontrol Organisasional), A.6\break (Kontrol Manusia), A.7 (Kontrol Fisik), dan A.8 (Kontrol Teknologi)\break dari ISO/IEC 27001:2022.
+	\item Sistem dirancang untuk menghasilkan rekomendasi kepatuhan dan justifikasi teknis, bukan keputusan audit final yang tetap memerlukan validasi oleh auditor bersertifikat.
+	\item Evaluasi sistem dilakukan menggunakan dua jenis \textit{query} pengujian, yaitu \textit{query} sintetis dan \textit{query} yang disusun berdasarkan dokumen audit asli secara terbatas. Penggunaan \textit{query} berbasis dokumen asli dilakukan secara terbatas karena adanya kendala akses dan sensitivitas dokumen audit organisasi.
+	\item Penelitian ini berfokus pada aspek teknis arsitektur RAG terkhususnya pada tahap \textit{Information retrieval} dan evaluasi akurasi sistem, tidak mencakup aspek regulasi, legal, atau implikasi kebijakan dari otomatisasi audit.
+	\item Pengukuran performa sistem, khususnya terkait waktu respons dan latensi komputasi dilakukan menggunakan perangkat komputasi milik peneliti. Oleh karena itu, hasil performa yang diperoleh dapat dipengaruhi oleh spesifikasi perangkat keras dan lingkungan komputasi yang digunakan selama proses pengujian.
+	\item Bahasa dokumen input yang didukung terbatas pada bahasa Indonesia untuk \textit{proof-of-concept}, meskipun arsitektur dirancang untuk dapat diperluas ke bahasa lain.
+	\item Penelitian ini dibatasi pada analisis dan evaluasi komponen \textit{retrieval} dalam \textit{pipeline Retrieval-Augmented Generation} (RAG), khususnya pada pendekatan \textit{hybrid retrieval} dan metode \textit{reranking}.
+	\item Penelitian tidak mencakup evaluasi pada tahap \textit{generation} oleh \textit{Large Language Model} (LLM), serta tidak membahas secara khusus pengaruh teknik \textit{document chunking} maupun strategi pemrosesan dokumen lainnya terhadap performa sistem.
+\end{enumerate}
+
+\section{Manfaat Penelitian}
+
+\noindent\textbf{Manfaat Akademis}
+\begin{enumerate}
+	\item Memberikan kontribusi literatur tentang penerapan arsitektur \textit{Retrieval-Augmented Generation} (RAG) terutama pada fokus metode \textit{Information Retrieval} dalam domain audit keamanan informasi, khususnya untuk standar ISO/IEC 27001:2022.
+	\item Menyediakan metodologi evaluasi komparatif terhadap variasi arsitektur RAG (\textit{Hybrid Retrieval}, \textit{Reranking}, dan kombinasi keduanya) menggunakan metrik akurasi dan latensi untuk menilai peningkatan kinerja sistem secara terukur.
+	\item Menjadi referensi bagi penelitian lanjutan terkait otomatisasi proses audit dan kepatuhan regulasi domain sistem manajemen keamanan informasi menggunakan arsitektur \textit{Retrieval-Augmented Generation} (RAG).
+\end{enumerate}
+
+\noindent\textbf{Manfaat Praktis}
+\begin{enumerate}
+	\item Menyediakan solusi praktis berupa sistem pendukung keputusan yang dapat digunakan oleh organisasi untuk mempercepat proses analisis \textit{Statement of Applicability} dan mengurangi beban kerja auditor.
+	\item Meningkatkan konsistensi evaluasi kepatuhan ISO 27001 melalui otomatisasi analisis kontrol dan penyediaan rekomendasi yang dapat ditelusuri.
+	\item Mengurangi waktu yang diperlukan dalam proses sertifikasi ISO 27001, khususnya pada tahap persiapan dokumentasi dan audit internal.
+\end{enumerate}
+
+\section{Sistematika Penulisan}
+Sistematika penulisan dalam penelitian ini disusun sebagai berikut:
+
+\noindent \textbf{Bab I Pendahuluan} memaparkan latar belakang masalah yang mengidentifikasi tantangan audit ISO 27001 dan peluang otomatisasi menggunakan RAG, rumusan masalah penelitian, tujuan yang ingin dicapai, batasan penelitian, manfaat akademis dan praktis, serta sistematika penulisan.
+
+\noindent \textbf{Bab II Tinjauan Pustaka dan Dasar Teori} menyajikan tinjauan literatur terhadap penelitian terdahulu tentang penerapan \textit{hybrid retrieval} dan \textit{reranking} dalam sistem RAG pada domain regulasi dan audit, diikuti dengan dasar teori yang mencakup ISO/IEC 27001, ISMS, SoA, PDCA, Annex A, audit keamanan informasi, NLP, Transformer, LLM, \textit{Information Retrieval}, RAG, dan metrik evaluasi.
+
+\noindent \textbf{Bab III Metodologi Penelitian} menjelaskan kerangka penelitian, tahapan pembangunan basis pengetahuan dan penyusunan \textit{dataset} variasi \textit{query}, perancangan arsitektur \textit{Information Retrieval} mencakup metode \textit{hybrid retrieval} dan integrasi \textit{cross-encoder reranking}, serta metodologi evaluasi menggunakan metrik performa \textit{retrieval} seperti Hit@K, Recall@K, ARR, dan NDCG untuk menganalisis kualitas hasil pencarian pada dokumen ISO/IEC 27001:2022.
+
+\noindent \textbf{Bab IV Hasil dan Pembahasan} menyajikan hasil implementasi sistem serta analisis performa komponen \textit{retrieval} dan \textit{reranking}. Pembahasan mencakup pencarian proporsi \textit{hybrid retrieval} yang optimal, pemilihan \textit{candidate pool} untuk proses \textit{reranking}, evaluasi performa pendekatan \textit{retrieval} dan \textit{reranking} secara independen, serta analisis pengaruh proporsi \textit{weighted score fusion} terhadap kualitas hasil \textit{retrieval} dan efisiensi sistem.
+
+\noindent \textbf{Bab V Kesimpulan dan Saran} merangkum temuan utama penelitian, menjawab rumusan masalah, menyajikan kesimpulan tentang efektivitas sistem, serta memberikan saran untuk penelitian lanjutan dan pengembangan sistem di masa depan.
+

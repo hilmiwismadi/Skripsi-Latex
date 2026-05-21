@@ -1,0 +1,23 @@
+\relax 
+\providecommand\hyper@newdestlabel[2]{}
+\citation{checkpoint2026}
+\citation{checkpoint2026}
+\citation{iso27001review2022}
+\citation{iso27001standard2022}
+\citation{iso27001review2022}
+\citation{iso27001review2022}
+\citation{automatingiso27001}
+\citation{csam2024}
+\@writefile{toc}{\contentsline {chapter}{\numberline {I}Pendahuluan}{2}{chapter.1}\protected@file@percent }
+\@writefile{lot}{\addvspace {10\p@ }}
+\@writefile{toc}{\contentsline {section}{\numberline {1.1}Latar Belakang}{2}{section.1.1}\protected@file@percent }
+\citation{gupta2025compliance,lajbr2025,auditgpt2025,reguquery2025}
+\citation{gupta2025compliance}
+\citation{auditgpt2025}
+\citation{lajbr2025,reguquery2025}
+\@writefile{toc}{\contentsline {section}{\numberline {1.2}Rumusan Masalah}{4}{section.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.3}Tujuan Penelitian}{4}{section.1.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.4}Batasan Penelitian}{5}{section.1.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.5}Manfaat Penelitian}{5}{section.1.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {1.6}Sistematika Penulisan}{6}{section.1.6}\protected@file@percent }
+\gdef \@abspage@last{18}

@@ -1,0 +1,634 @@
+% Catatan: Pastikan paket berikut tersedia di main.tex:
+%   \usepackage{longtable}   % untuk tabel panjang (Annex A.5, A.8)
+%   \usepackage{amsmath}     % untuk persamaan matematika
+%   \usepackage{booktabs}    % opsional untuk garis tabel
+%   \usepackage{array}       % untuk p{} column type
+
+%%\documentclass[../../main.tex]{subfiles} %% Uncomment for standalone compile
+
+%%\begin{document} %% Uncomment for standalone compile
+
+\chapter{Tinjauan Pustaka dan Dasar Teori}
+
+\section{Tinjauan Pustaka}
+
+Berbagai penelitian telah mengadopsi pendekatan \textit{Retrieval-Augmented Generation} (RAG) untuk meningkatkan kualitas keluaran pada tugas yang membutuhkan \textit{grounded reasoning}, khususnya pada domain yang bersifat regulatif seperti audit, hukum, dan \textit{compliance}. Pada domain ini, keluaran sistem tidak hanya dituntut relevan secara semantik, tetapi juga harus memiliki keterkaitan eksplisit dengan dokumen sumber seperti pasal, klausul, atau regulasi tertentu.
+
+Salah satu penelitian yang secara langsung mengangkat konteks audit adalah penelitian oleh (Liu et al., 2025) yang memodelkan proses pemetaan temuan audit terhadap dasar hukum yang relevan. Penelitian ini menggunakan pendekatan \textit{multi-path retrieval} yang menggabungkan metode \textit{sparse retrieval} (BM25) dan \textit{dense retrieval} berbasis \textit{embedding} BGE. Hasil dari beberapa jalur \textit{retrieval} kemudian digabungkan menggunakan \textit{weighted Reciprocal Rank Fusion} (RRF). Hasil evaluasi menunjukkan bahwa pendekatan ini mampu mengungguli \textit{baseline} \textit{single-path} dengan Recall@5 sebesar 0,5210 dan MRR@5 sebesar 0,3869. Hal ini menunjukkan bahwa kombinasi multi-representasi \textit{query} dan gabungan skor dapat meningkatkan kualitas pemetaan antara teks audit dan regulasi.
+
+Pada domain \textit{compliance} yang lebih terstruktur, (Gupta et al., 2025) mengembangkan sistem RAG untuk pengecekan kepatuhan terhadap regulasi \textit{General Data Protection Regulation} (GDPR) dan \textit{California Consumer Privacy Act} (CCPA). Berbeda dengan pendekatan sebelumnya, penelitian ini menggunakan \textit{retrieval} berbasis \textit{Dense Passage Retrieval} (DPR) yang diikuti dengan tahap \textit{reranking} menggunakan \textit{cross-encoder}. \textit{Output} sistem tidak hanya berupa referensi pasal, tetapi juga tingkat kepatuhan (\textit{compliant}, \textit{partially compliant}, \textit{non-compliant}). Hasil eksperimen menunjukkan performa yang sangat tinggi dengan Recall@10 dan Precision@10 mencapai 98,2\%, meskipun dengan konsekuensi peningkatan latensi sebesar 3,4 detik per \textit{query}. Penelitian ini menegaskan pentingnya \textit{reranking} dalam meningkatkan presisi hasil \textit{retrieval}, terutama dalam konteks pengambilan keputusan berbasis regulasi.
+
+Sementara itu, (Ravishankar-Varalakshmi, 2025) mengeksplorasi pendekatan serupa pada domain finansial dengan mengintegrasikan \textit{query expansion}, \textit{dense retrieval}, serta \textit{cross-encoder reranking} yang dikombinasikan melalui pembobotan \textit{score fusion}. Hasil evaluasi menunjukkan bahwa pendekatan \textit{hybrid} secara signifikan mengungguli \textit{baseline}, di mana kombinasi terbaik mencapai MAP 0,861 dan Recall@10 0,923 dibandingkan DPR-only dengan MAP 0,712 dan Recall@10 0,784. Studi \textit{ablation} juga memperlihatkan bahwa penambahan \textit{reranking} dan pengaturan parameter \textit{score fusion} memberikan peningkatan konsisten pada kualitas \textit{retrieval}. Secara umum, penelitian ini menegaskan bahwa integrasi \textit{reranking} dan \textit{score fusion} merupakan faktor kunci dalam meningkatkan presisi dan relevansi hasil \textit{retrieval}, meskipun diikuti dengan peningkatan kompleksitas sistem.
+
+Pada domain hukum, (Rustamov et al., 2025) melakukan studi kasus pada sistem tanya jawab berbasis hukum perpajakan dengan pendekatan \textit{hybrid retrieval} yang menggabungkan BM25/SPLADE dengan \textit{dense embedding}. Penelitian ini menunjukkan bahwa kombinasi \textit{retrieval sparse} dan \textit{dense} mampu meningkatkan Recall@100 dari 0,49 menjadi 0,60. Selain itu, penerapan \textit{cross-encoder reranking} terbukti meningkatkan kualitas \textit{ranking} dengan peningkatan nilai NDCG dari 0,39 menjadi 0,44. Hasil ini mengindikasikan bahwa pada domain regulasi, \textit{coverage} (\textit{recall}) dan kualitas \textit{ranking} (presisi) sama-sama krusial untuk memastikan relevansi dokumen yang diambil.
+
+Berbeda dengan penelitian yang berfokus pada domain tertentu, (Elkiran-Rasheed., 2026) melakukan evaluasi empiris secara komprehensif terhadap berbagai komponen dalam \textit{pipeline} RAG, termasuk \textit{retriever}, \textit{similarity function}, dan \textit{reranker}. Hasil penelitian menunjukkan bahwa pemilihan \textit{retriever} dan fungsi \textit{similarity} memiliki pengaruh paling signifikan terhadap performa sistem, dengan signifikansi statistik yang tinggi ($p < 10^{-9}$ pada beberapa metrik). Selain itu, \textit{reranking} terbukti mampu meningkatkan kualitas hasil pada metrik seperti MRR dan nDCG, meskipun dengan tambahan biaya komputasi. Penelitian ini memberikan justifikasi empiris bahwa optimasi pada tahap \textit{retrieval} dan \textit{reranking} merupakan faktor kunci dalam peningkatan performa RAG.
+
+\begin{table}[!htbp]
+\centering
+\caption{Perbandingan Penelitian Terkait}
+\label{tab:tinjauan_pustaka}
+\begin{tabular}{|p{2.3cm}|p{2.6cm}|p{3.0cm}|p{3.8cm}|}
+\hline
+\textbf{Paper} & \textbf{Domain} & \textbf{Jenis Retrieval} & \textbf{Reranking} \\
+\hline
+(Liu et al., 2025) &
+Audit dan pemetaan regulasi &
+\textit{Hybrid retrieval} (BM25 + \textit{dense}) &
+Digunakan (\textit{score fusion} / \textit{weighted} RRF) \\
+\hline
+(Gupta et al., 2025) &
+Kepatuhan regulasi (GDPR/CCPA) &
+\textit{Dense retrieval} (DPR, dua tahap) &
+Digunakan (\textit{cross-encoder}) \\
+\hline
+(Ravishankar-Varalakshmi, 2025) &
+Tanya jawab keuangan &
+\textit{Hybrid retrieval} bertahap &
+Digunakan (\textit{cross-encoder} + \textit{score fusion}) \\
+\hline
+(Rustamov et al., 2025) &
+Tanya jawab hukum pajak &
+\textit{Hybrid retrieval} (\textit{sparse} + \textit{dense}) &
+Digunakan (\textit{cross-encoder}) \\
+\hline
+(Elkiran-Rasheed, 2026) &
+Evaluasi sistem RAG umum &
+Perbandingan berbagai metode \textit{retrieval} &
+Digunakan (opsional, evaluatif) \\
+\hline
+\end{tabular}
+\end{table}
+
+Berdasarkan berbagai penelitian tersebut, dapat disintesis beberapa pola utama. Pertama, pendekatan \textit{hybrid retrieval} yang menggabungkan metode \textit{sparse} dan \textit{dense} mampu memberikan keseimbangan antara \textit{coverage} dan \textit{semantic matching}. Kedua, \textit{reranking} berbasis \textit{cross-encoder} secara konsisten meningkatkan presisi dan kualitas peringkat pada hasil \textit{top-k}. Ketiga, pendekatan dari \textit{score fusion} melalui penyesuaian bobot dan strategi penggabungan skor menunjukkan peran penting dalam mengoptimalkan performa sistem. Namun demikian, peningkatan kualitas tersebut umumnya diikuti oleh bertambahnya kompleksitas sistem serta latensi komputasi.
+
+Meskipun berbagai pendekatan tersebut telah banyak diusulkan, sebagian besar penelitian berfokus pada domain umum seperti hukum perpajakan, keuangan, atau regulasi privasi, serta cenderung mengembangkan arsitektur yang semakin kompleks tanpa mengevaluasi secara sistematis kontribusi masing-masing komponen. Oleh karena itu, penelitian ini mengusulkan analisis komparatif terhadap beberapa variasi \textit{pipeline} RAG, yaitu penggunaan \textit{hybrid retrieval} sebagai \textit{baseline}, penambahan \textit{reranking}, serta kombinasi keduanya. Evaluasi dilakukan untuk mengukur dampak setiap konfigurasi terhadap kualitas \textit{retrieval} (akurasi) dan efisiensi sistem (latensi), sehingga dapat diidentifikasi \textit{trade-off} antara peningkatan performa dan kompleksitas, serta ditentukan konfigurasi yang paling optimal untuk sistem RAG berbasis dokumen regulasi seperti ISO 27001.
+
+\section{Dasar Teori}
+
+\subsection{Information Security Management System}
+
+\textit{Information Security Management System} (ISMS) merupakan suatu pendekatan sistematis dalam pengelolaan keamanan informasi yang mencakup pemilihan, implementasi, konfigurasi, operasional, serta pemantauan kontrol keamanan untuk melindungi kerahasiaan, integritas, dan ketersediaan informasi serta sistem yang mendukungnya. Dalam konteks ini, istilah ``sistem'' tidak merujuk pada solusi teknologi semata, melainkan pada sekumpulan proses dan aktivitas yang terstandarisasi, eksplisit, dan dapat diulang dalam pengelolaan keamanan informasi. Oleh karena itu, ISMS tidak hanya berfokus pada aspek teknis, tetapi juga mencakup tata kelola organisasi, manajemen risiko, serta proses bisnis yang berkaitan dengan perlindungan aset informasi.
+
+Sebagai fondasi utama dalam ISMS, keamanan informasi didasarkan pada tiga prinsip dasar yang dikenal sebagai \textit{CIA triad}, yaitu \textit{confidentiality}, \textit{integrity}, dan \textit{availability}, yang merupakan tujuan fundamental dalam perlindungan data dan layanan informasi \cite{stallings2017security,otero2019itcontrol}:
+
+\begin{enumerate}
+	\item \textbf{\textit{Confidentiality}} (Kerahasiaan): memastikan bahwa informasi hanya dapat diakses oleh pihak yang memiliki otorisasi, sehingga mencegah kebocoran atau akses tidak sah.
+	\item \textbf{\textit{Integrity}} (Integritas): menjamin bahwa informasi tetap akurat, utuh, dan tidak mengalami perubahan yang tidak sah selama proses penyimpanan maupun transmisi.
+	\item \textbf{\textit{Availability}} (Ketersediaan): memastikan bahwa informasi dan sistem pendukungnya dapat diakses secara tepat waktu oleh pihak yang berwenang ketika dibutuhkan.
+\end{enumerate}
+
+Dalam implementasinya, ISMS dibangun melalui serangkaian proses yang terstruktur dan bersifat siklikal atau berulang, sebagaimana ditetapkan dalam standar internasional seperti ISO/IEC 27001 \cite{otero2019itcontrol}. Proses ini mencakup identifikasi dan evaluasi risiko keamanan informasi, penerapan kontrol keamanan yang sesuai, serta kegiatan pemantauan dan peningkatan berkelanjutan terhadap efektivitas sistem. Selain itu, ISO/IEC 27001 juga menekankan pentingnya audit internal secara formal untuk mengevaluasi tujuan kontrol keamanan, efektivitas kontrol yang diterapkan, serta proses operasional dalam menjaga dan meningkatkan ISMS \cite{gantz2014itaudit}.
+
+\subsection{ISO/IEC 27001:2022}
+
+ISO/IEC 27001 merupakan standar internasional yang menetapkan persyaratan untuk membangun, mengimplementasikan, memelihara, serta meningkatkan secara berkelanjutan suatu \textit{Information Security Management System} (ISMS). Standar ini menyediakan kerangka kerja formal bagi organisasi dalam mengelola keamanan informasi secara sistematis melalui pendekatan berbasis proses dan risiko. Dalam penerapannya, ISO/IEC 27001 berfokus pada pengelolaan kontrol keamanan serta proses yang mendukung operasional, pemeliharaan, dan peningkatan ISMS secara berkelanjutan.
+
+Pendekatan dalam ISO/IEC 27001 berbasis pada risiko, keputusan terkait keamanan informasi didasarkan pada keseimbangan antara tingkat risiko yang dihadapi organisasi dan biaya atau upaya dalam penerapan kontrol keamanan \cite{gantz2014itaudit}. Dengan demikian, standar ini memungkinkan organisasi untuk menyesuaikan kontrol keamanan sesuai dengan kebutuhan bisnis dan konteks operasionalnya. Selain itu, tujuan utama implementasi ISO/IEC 27001 adalah untuk melindungi aset informasi melalui penerapan prinsip dasar keamanan informasi, yaitu kerahasiaan (\textit{confidentiality}), integritas (\textit{integrity}), dan ketersediaan (\textit{availability}), yang menjadi fondasi dalam pengelolaan keamanan informasi \cite{gantz2014itaudit,otero2019itcontrol}.
+
+Secara struktural, ISO/IEC 27001:2022 terdiri dari klausul utama (Clause 4--10) yang merepresentasikan kerangka \textit{management system}. Klausul tersebut meliputi:
+
+\begin{enumerate}
+	\item \textbf{Clause 4 (\textit{Context of the Organization})}: Menentukan ruang lingkup ISMS dengan mempertimbangkan isu internal/eksternal, kebutuhan pihak berkepentingan, serta dependensi, yang harus didokumentasikan \cite{isoiec20227001}.
+	\item \textbf{Clause 5 (\textit{Leadership})}: Menekankan komitmen manajemen puncak dalam menetapkan kebijakan, tujuan, integrasi ke proses organisasi, serta mendorong perbaikan berkelanjutan.
+	\item \textbf{Clause 6 (\textit{Planning})}: Mengatur perencanaan berbasis risiko untuk menangani risiko dan peluang, termasuk penyusunan \textit{Statement of Applicability} (SoA) yang memuat kontrol, justifikasi, dan status implementasi.
+	\item \textbf{Clause 7 (\textit{Support})}: Mengatur penyediaan sumber daya yang diperlukan untuk implementasi dan peningkatan ISMS.
+	\item \textbf{Clause 8 (\textit{Operation})}: Mencakup pelaksanaan dan pengendalian proses operasional untuk memenuhi persyaratan ISMS.
+	\item \textbf{Clause 9 (\textit{Performance Evaluation})}: Mengatur pemantauan, evaluasi kinerja, serta audit internal untuk memastikan efektivitas ISMS; serta
+	\item \textbf{Clause 10 (\textit{Improvement})}: Berfokus pada perbaikan berkelanjutan melalui tindakan korektif terhadap ketidaksesuaian.
+\end{enumerate}
+
+\begin{figure}[!htbp]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Gambar/2.1Clause.png}
+	\caption{Struktur klausul ISO/IEC 27001:2022 \cite{kajianAuditDataCenter2023}}
+	\label{fig:iso27001_struktur}
+\end{figure}
+
+\subsection{Siklus \textit{Plan, Do, Check, Act} dalam ISO 27001}
+
+Konsep \textit{Plan--Do--Check--Act} (PDCA) merupakan suatu siklus manajemen yang digunakan untuk mendukung perbaikan berkelanjutan dalam berbagai domain, termasuk tata kelola TI, manajemen risiko, audit, dan keamanan informasi. Model ini secara umum dikaitkan dengan W. Edwards Deming dan dikenal sebagai pendekatan iteratif yang terdiri dari empat tahapan utama untuk mengelola dan meningkatkan proses secara sistematis.
+
+Dalam konteks ISO/IEC 27001, siklus PDCA digunakan sebagai kerangka kerja dalam pengelolaan \textit{Information Security Management System} (ISMS). Standar ini mengadopsi PDCA sebagai \textit{lifecycle} yang mencakup tahap \textit{Plan} (perencanaan), \textit{Do} (pelaksanaan dan pengoperasian), \textit{Check} (pemantauan dan peninjauan), serta \textit{Act} (pemeliharaan dan peningkatan) dalam pengelolaan keamanan informasi \cite{gantz2014itaudit}. Pendekatan ini menunjukkan bahwa ISMS tidak bersifat statis, melainkan merupakan sistem yang terus berkembang melalui proses evaluasi dan peningkatan berkelanjutan:
+
+\begin{enumerate}
+	\item \textbf{\textit{Plan}}
+
+	Organisasi melakukan proses \textit{risk assessment} dan \textit{risk treatment planning} untuk mengidentifikasi ancaman, kerentanan, serta menentukan kontrol yang sesuai. Proses ini mencakup penentuan ruang lingkup ISMS, kebijakan keamanan informasi, serta pemilihan kontrol yang mengacu pada Annex A.
+
+	\item \textbf{\textit{Do}}
+
+	ISO 27001 mencakup implementasi kontrol keamanan informasi yang telah direncanakan. Implementasi ini dapat berupa penerapan kebijakan akses, pengamanan jaringan, pelatihan kesadaran keamanan (\textit{security awareness}), serta prosedur operasional lainnya yang mendukung perlindungan aset informasi. Keberhasilan tahap ini sangat bergantung pada konsistensi pelaksanaan serta keterlibatan seluruh pemangku kepentingan dalam organisasi.
+
+	\item \textbf{\textit{Check}}
+
+	Kegiatan \textit{monitoring} dan evaluasi terhadap efektivitas kontrol yang telah diterapkan. Aktivitas ini meliputi \textit{internal audit}, \textit{management review}, serta pengukuran kinerja keamanan informasi berdasarkan indikator yang telah ditentukan. Tujuan utama tahap ini adalah untuk memastikan bahwa implementasi ISMS berjalan sesuai dengan kebijakan dan tujuan yang telah ditetapkan.
+
+	\item \textbf{\textit{Act}}
+
+	Perbaikan berkelanjutan terhadap sistem manajemen keamanan informasi. Organisasi melakukan tindakan korektif terhadap temuan audit, memperbaiki kelemahan kontrol, serta menyesuaikan kebijakan dan prosedur berdasarkan perubahan lingkungan bisnis maupun ancaman keamanan yang berkembang. Dengan demikian, siklus PDCA tidak hanya memastikan kepatuhan terhadap standar, tetapi juga meningkatkan ketahanan sistem terhadap risiko keamanan informasi.
+\end{enumerate}
+
+\begin{figure}[!htbp]
+	\centering
+	\includegraphics[width=0.85\textwidth]{Gambar/2.2PDCA.png}
+	\caption{Siklus PDCA dalam ISMS \cite{kajianAuditDataCenter2023}}
+	\label{fig:pdca_isms}
+\end{figure}
+
+\subsection{\textit{Statement of Applicability} (SoA)}
+
+\textit{Statement of Applicability} (SoA) merupakan salah satu dokumen inti dalam penerapan ISO/IEC 27001 yang berfungsi untuk mendefinisikan kontrol keamanan informasi yang relevan bagi organisasi. SoA berisi daftar kontrol yang dipilih dari Annex A, disertai dengan justifikasi apakah kontrol tersebut diterapkan (\textit{applicable}) atau tidak (\textit{not applicable}), serta alasan yang mendasarinya. Dengan demikian, SoA menjadi representasi formal dari keputusan organisasi dalam mengelola risiko keamanan informasi berdasarkan hasil \textit{risk assessment} dan \textit{risk treatment}.
+
+Dalam konteks siklus \textit{Plan--Do--Check--Act} (PDCA), SoA terutama muncul pada tahap \textit{Plan}. Pada fase ini, organisasi melakukan identifikasi risiko serta menentukan strategi penanganannya (\textit{risk treatment plan}). SoA berperan sebagai artefak yang menghubungkan hasil analisis risiko dengan pemilihan kontrol yang sesuai. Selain itu, SoA juga memiliki keterkaitan dengan tahap \textit{Do} (sebagai acuan implementasi kontrol) dan \textit{Check} (sebagai referensi dalam audit), namun fungsi utamanya tetap berada pada fase perencanaan. Oleh karena itu, SoA dapat dipandang sebagai jembatan antara proses analisis risiko dan implementasi kontrol dalam siklus ISMS.
+
+Lebih lanjut, SoA memiliki hubungan erat dengan praktik pengendalian dokumentasi dalam ISMS, khususnya terkait \textit{control of documents} dan \textit{control of records}. Sebagai dokumen formal, SoA harus dikelola secara sistematis, termasuk dalam hal versi, otorisasi, distribusi, serta penyimpanan. Hal ini penting untuk memastikan bahwa setiap perubahan pada kontrol keamanan dapat dilacak (\textit{traceable}) dan diaudit. Selain itu, SoA juga berfungsi sebagai dokumen pemetaan (\textit{mapping document}) yang menghubungkan risiko, kontrol yang dipilih, serta status implementasinya sebelum dituangkan lebih lanjut dalam \textit{risk treatment plan}. Dengan kata lain, SoA menyediakan transparansi dan akuntabilitas dalam proses pengambilan keputusan terkait keamanan informasi.
+
+Secara struktural, SoA umumnya disajikan dalam bentuk tabel yang terdiri dari beberapa kolom utama:
+
+\begin{enumerate}
+	\item \textbf{\textit{Control ID}} yang merujuk pada identifikasi unik setiap kontrol berdasarkan Annex A ISO/IEC 27001. Kolom ini memudahkan proses referensi dan pelacakan kontrol dalam standar.
+	\item \textbf{\textit{Control Description}} yang berisi penjelasan singkat mengenai tujuan dan ruang lingkup kontrol tersebut. Kolom ini memberikan konteks bagi organisasi dalam memahami fungsi kontrol yang dipilih.
+	\item \textbf{\textit{Applicability}} yang menunjukkan apakah suatu kontrol diterapkan atau tidak. Penentuan ini didasarkan pada hasil analisis risiko serta relevansi kontrol terhadap konteks organisasi.
+	\item \textbf{\textit{Justification}} menjelaskan alasan di balik keputusan tersebut, baik untuk kontrol yang diterapkan maupun yang tidak. Justifikasi ini penting untuk menunjukkan bahwa keputusan yang diambil bersifat rasional dan berbasis risiko, bukan arbitrer.
+	\item \textbf{\textit{Implementation Status}} yang menggambarkan tingkat implementasi kontrol, misalnya \textit{implemented}, \textit{partially implemented}, atau \textit{not implemented}.
+	\item \textbf{\textit{Related Documents}} yang mengaitkan kontrol dengan kebijakan, prosedur, atau dokumen pendukung lainnya dalam organisasi.
+\end{enumerate}
+
+\subsection{Annex A ISO/IEC 27001:2022}
+
+Annex A dalam ISO/IEC 27001:2022 berfungsi sebagai kumpulan kontrol keamanan (\textit{security controls}) yang digunakan sebagai referensi dalam proses mitigasi risiko pada \textit{Information Security Management System} (ISMS). Kontrol-kontrol ini tidak bersifat wajib untuk seluruhnya diterapkan, melainkan dipilih berdasarkan hasil \textit{risk assessment} dan \textit{risk treatment} yang dilakukan organisasi. Dengan demikian, Annex A menyediakan daftar kontrol yang terstandarisasi untuk membantu organisasi dalam menentukan langkah perlindungan yang relevan terhadap aset informasi. Pemilihan kontrol dari Annex A kemudian didokumentasikan dalam \textit{Statement of Applicability} (SoA), sehingga Annex A berperan sebagai sumber kontrol, sementara SoA menjadi artefak implementasi yang mencerminkan keputusan organisasi dalam konteks manajemen risiko.
+
+\vspace{4pt}
+\noindent\textbf{1. A.5 \textit{Organizational Controls}}
+
+Annex A.5 berfokus pada kontrol yang berkaitan dengan aspek organisasi dan tata kelola keamanan informasi. Kontrol dalam kategori ini mencakup kebijakan, struktur organisasi, pengelolaan risiko, serta hubungan dengan pihak eksternal. Tujuan utama dari kontrol A.5 adalah memastikan bahwa keamanan informasi dikelola secara strategis dan terintegrasi dalam proses bisnis organisasi.
+
+\begin{longtable}{|P{1.7cm}|P{5.2cm}|P{6.6cm}|}
+\caption{Kontrol Annex A.5 -- \textit{Organizational Controls}}
+\label{tab:annex_a5} \\
+\hline
+\textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
+\hline
+\endhead
+\hline
+\endfoot
+A.5.1  & \textit{Policies for Information Security}                              & Menetapkan kebijakan keamanan sebagai dasar ISMS \\
+\hline
+A.5.2  & \textit{Information Security Roles and Responsibilities}                & Mendefinisikan peran dan tanggung jawab keamanan \\
+\hline
+A.5.3  & \textit{Segregation of Duties}                                          & Memisahkan fungsi untuk mencegah konflik kepentingan \\
+\hline
+A.5.4  & \textit{Management Responsibilities}                                    & Menetapkan akuntabilitas manajemen terhadap keamanan informasi \\
+\hline
+A.5.5  & \textit{Contact with Authorities}                                       & Menjalin koordinasi dengan otoritas keamanan terkait \\
+\hline
+A.5.6  & \textit{Contact with Special Interest Groups}                           & Berpartisipasi dalam komunitas dan forum keamanan \\
+\hline
+A.5.7  & \textit{Threat Intelligence}                                            & Mengelola dan menganalisis informasi ancaman keamanan \\
+\hline
+A.5.8  & \textit{Information Security in Project Management}                     & Mengintegrasikan kontrol keamanan dalam manajemen proyek \\
+\hline
+A.5.9  & \textit{Inventory of Information and Other Associated Assets}           & Mengelola inventaris aset informasi secara terstruktur \\
+\hline
+A.5.10 & \textit{Acceptable Use of Information and Assets}                       & Mengatur penggunaan aset sesuai kebijakan organisasi \\
+\hline
+A.5.11 & \textit{Return of Assets}                                               & Mengelola pengembalian aset setelah masa penggunaan \\
+\hline
+A.5.12 & \textit{Classification of Information}                                  & Mengklasifikasikan informasi berdasarkan tingkat sensitivitasnya \\
+\hline
+A.5.13 & \textit{Labelling of Information}                                       & Memberikan label informasi sesuai klasifikasi keamanan \\
+\hline
+A.5.14 & \textit{Information Transfer}                                           & Mengatur mekanisme transfer informasi secara aman \\
+\hline
+A.5.15 & \textit{Access Control}                                                 & Menetapkan kebijakan dan mekanisme pengendalian akses \\
+\hline
+A.5.16 & \textit{Identity Management}                                            & Mengelola identitas pengguna dalam sistem organisasi \\
+\hline
+A.5.17 & \textit{Authentication Information}                                     & Mengelola kredensial dan informasi autentikasi pengguna \\
+\hline
+A.5.18 & \textit{Access Rights}                                                  & Mengatur dan memonitor hak akses pengguna \\
+\hline
+A.5.19 & \textit{Information Security in Supplier Relationships}                 & Mengelola risiko keamanan dalam hubungan pemasok \\
+\hline
+A.5.20 & \textit{Addressing Information Security within Supplier Agreements}     & Mengintegrasikan keamanan dalam perjanjian dengan \textit{supplier} \\
+\hline
+A.5.21 & \textit{Managing Information Security in ICT Supply Chain}              & Mengelola keamanan dalam rantai pasok teknologi informasi \\
+\hline
+A.5.22 & \textit{Monitoring, Review and Change Management of Supplier Services}  & Memantau dan mengevaluasi layanan yang diberikan \textit{supplier} \\
+\hline
+A.5.23 & \textit{Information Security for Use of Cloud Services}                 & Mengatur kontrol keamanan dalam penggunaan layanan \textit{cloud} \\
+\hline
+A.5.24 & \textit{Information Security Incident Management Planning and Preparation} & Menyusun rencana penanganan insiden keamanan informasi \\
+\hline
+A.5.25 & \textit{Assessment and Decision on Information Security Events}         & Melakukan evaluasi terhadap kejadian keamanan informasi \\
+\hline
+A.5.26 & \textit{Response to Information Security Incidents}                     & Menangani insiden keamanan secara efektif dan terstruktur \\
+\hline
+A.5.27 & \textit{Learning from Information Security Incidents}                   & Mengambil pembelajaran dari insiden keamanan sebelumnya \\
+\hline
+A.5.28 & \textit{Collection of Evidence}                                         & Mengumpulkan dan mengelola bukti insiden keamanan \\
+\hline
+A.5.29 & \textit{Information Security During Disruption}                         & Menjaga keamanan informasi selama kondisi gangguan \\
+\hline
+A.5.30 & \textit{ICT Readiness for Business Continuity}                          & Menjamin kesiapan ICT untuk kelangsungan bisnis \\
+\hline
+A.5.31 & \textit{Legal, Statutory, Regulatory and Contractual Requirements}      & Memastikan kepatuhan terhadap regulasi dan hukum \\
+\hline
+A.5.32 & \textit{Intellectual Property Rights}                                   & Melindungi hak kekayaan intelektual organisasi \\
+\hline
+A.5.33 & \textit{Protection of Records}                                          & Menjaga keamanan dan integritas catatan organisasi \\
+\hline
+A.5.34 & \textit{Privacy and Protection of PII}                                  & Melindungi data pribadi dan informasi sensitif \\
+\hline
+A.5.35 & \textit{Independent Review of Information Security}                     & Melakukan audit independen terhadap keamanan informasi \\
+\hline
+A.5.36 & \textit{Compliance with Policies and Standards for Information Security} & Memastikan kepatuhan terhadap kebijakan dan standar \\
+\hline
+A.5.37 & \textit{Documented Operating Procedures}                                & Menyusun prosedur operasional yang terdokumentasi dengan baik \\
+\hline
+\end{longtable}
+
+\vspace{4pt}
+\noindent\textbf{2. A.6 \textit{People Controls}}
+
+Annex A.6 berfokus pada aspek sumber daya manusia dalam keamanan informasi. Kontrol ini mencakup pengelolaan keamanan sebelum, selama, dan setelah masa kerja karyawan, dengan tujuan meminimalkan risiko yang berasal dari faktor manusia.
+
+\begin{table}[!htbp]
+\centering
+\caption{Kontrol Annex A.6 -- \textit{People Controls}}
+\label{tab:annex_a6}
+\begin{tabular}{|p{1.7cm}|p{5.2cm}|p{6.6cm}|}
+\hline
+\textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
+\hline
+A.6.1 & \textit{Screening}                                                    & Melakukan verifikasi latar belakang calon karyawan \\
+\hline
+A.6.2 & \textit{Terms and Conditions of Employment}                           & Menetapkan ketentuan kerja terkait keamanan informasi \\
+\hline
+A.6.3 & \textit{Information Security Awareness, Education and Training}       & Menyelenggarakan pelatihan dan kesadaran keamanan informasi \\
+\hline
+A.6.4 & \textit{Disciplinary Process}                                         & Menerapkan mekanisme disiplin terhadap pelanggaran keamanan \\
+\hline
+A.6.5 & \textit{Responsibilities After Termination}                           & Menetapkan tanggung jawab pasca pemutusan hubungan kerja \\
+\hline
+A.6.6 & \textit{Confidentiality or Non-disclosure Agreements}                 & Mengatur perjanjian kerahasiaan untuk perlindungan informasi \\
+\hline
+A.6.7 & \textit{Remote Working}                                               & Mengamankan aktivitas kerja jarak jauh karyawan \\
+\hline
+A.6.8 & \textit{Information Security Event Reporting}                         & Mendorong pelaporan insiden keamanan oleh karyawan \\
+\hline
+\end{tabular}
+\end{table}
+
+\vspace{4pt}
+\noindent\textbf{3. A.7 \textit{Physical Controls}}
+
+Annex A.7 mencakup kontrol yang berfokus pada perlindungan fisik terhadap aset informasi dan fasilitas organisasi. Tujuannya adalah mencegah akses fisik yang tidak sah, kerusakan, atau gangguan terhadap infrastruktur.
+
+\begin{table}[!htbp]
+\centering
+\caption{Kontrol Annex A.7 -- \textit{Physical Controls}}
+\label{tab:annex_a7}
+\begin{tabular}{|p{1.7cm}|p{5.2cm}|p{6.6cm}|}
+\hline
+\textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
+\hline
+A.7.1  & \textit{Physical Security Perimeters}                          & Menetapkan batas dan perimeter keamanan fisik \\
+\hline
+A.7.2  & \textit{Physical Entry Controls}                               & Mengendalikan akses masuk ke area fisik terbatas \\
+\hline
+A.7.3  & \textit{Securing Offices, Rooms and Facilities}                & Mengamankan ruang kerja dan fasilitas operasional \\
+\hline
+A.7.4  & \textit{Physical Security Monitoring}                          & Melakukan pemantauan aktivitas pada area fisik \\
+\hline
+A.7.5  & \textit{Protecting Against Physical and Environmental Threats}  & Melindungi aset dari ancaman fisik dan lingkungan \\
+\hline
+A.7.6  & \textit{Working in Secure Areas}                               & Mengatur prosedur kerja di area dengan keamanan tinggi \\
+\hline
+A.7.7  & \textit{Clear Desk and Clear Screen}                           & Menerapkan kebijakan meja bersih dan layar bersih \\
+\hline
+A.7.8  & \textit{Equipment Siting and Protection}                       & Menentukan penempatan perangkat secara aman dan terkendali \\
+\hline
+A.7.9  & \textit{Security of Assets Off-premises}                       & Menjaga keamanan aset saat digunakan di luar lokasi \\
+\hline
+A.7.10 & \textit{Storage Media}                                         & Mengelola media penyimpanan secara aman dan terkendali \\
+\hline
+A.7.11 & \textit{Supporting Utilities}                                  & Menjamin keamanan utilitas pendukung sistem informasi \\
+\hline
+A.7.12 & \textit{Cabling Security}                                      & Melindungi infrastruktur kabel dari gangguan dan kerusakan \\
+\hline
+A.7.13 & \textit{Equipment Maintenance}                                 & Melakukan pemeliharaan perangkat secara berkala dan aman \\
+\hline
+A.7.14 & \textit{Secure Disposal or Reuse of Equipment}                 & Mengelola penghapusan atau penggunaan ulang perangkat dengan aman \\
+\hline
+\end{tabular}
+\end{table}
+
+\vspace{4pt}
+\noindent\textbf{4. A.8 \textit{Technological Controls}}
+
+Annex A.8 berfokus pada kontrol teknis yang diterapkan pada sistem informasi, jaringan, dan aplikasi. Kontrol ini bertujuan untuk melindungi sistem dari ancaman siber serta memastikan keamanan operasional teknologi.
+
+{\setlength{\parskip}{0pt}\setlength{\parfillskip}{0pt plus 1fil}%
+\begin{longtable}{|P{1.7cm}|P{5.2cm}|P{6.6cm}|}
+\caption{Kontrol Annex A.8 -- \textit{Technological Controls}}
+\label{tab:annex_a8} \\
+\hline
+\textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
+\hline
+\endfirsthead
+\hline
+\textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
+\hline
+\endhead
+\hline
+\endfoot
+A.8.1  & \textit{User Endpoint Devices}                                        & Mengamankan perangkat \textit{endpoint} pengguna dari ancaman \\
+\hline
+A.8.2  & \textit{Privileged Access Rights}                                     & Mengelola hak akses istimewa secara ketat \\
+\hline
+A.8.3  & \textit{Information Access Restriction}                               & Membatasi akses informasi sesuai kebutuhan pengguna \\
+\hline
+A.8.4  & \textit{Access to Source Code}                                        & Melindungi akses terhadap kode sumber aplikasi \\
+\hline
+A.8.5  & \textit{Secure Authentication}                                        & Menerapkan mekanisme autentikasi yang aman \\
+\hline
+A.8.6  & \textit{Capacity Management}                                          & Mengelola kapasitas sistem untuk menjaga kinerja \\
+\hline
+A.8.7  & \textit{Protection Against Malware}                                   & Melindungi sistem dari serangan perangkat lunak berbahaya \\
+\hline
+A.8.8  & \textit{Management of Technical Vulnerabilities}                      & Mengidentifikasi dan menangani kerentanan teknis sistem \\
+\hline
+A.8.9  & \textit{Configuration Management}                                     & Mengelola konfigurasi sistem secara konsisten dan aman \\
+\hline
+A.8.10 & \textit{Information Deletion}                                         & Menghapus informasi secara aman dan permanen \\
+\hline
+A.8.11 & \textit{Data Masking}                                                 & Melindungi data sensitif melalui teknik \textit{masking} \\
+\hline
+A.8.12 & \textit{Data Leakage Prevention}                                      & Mencegah kebocoran data melalui kontrol keamanan \\
+\hline
+A.8.13 & \textit{Information Backup}                                           & Melakukan pencadangan data secara berkala dan aman \\
+\hline
+A.8.14 & \textit{Redundancy of Information Processing Facilities}              & Menyediakan redundansi untuk menjaga ketersediaan sistem \\
+\hline
+A.8.15 & \textit{Logging}                                                      & Mencatat aktivitas sistem untuk keperluan audit \\
+\hline
+A.8.16 & \textit{Monitoring Activities}                                        & Memantau aktivitas sistem secara berkelanjutan \\
+\hline
+A.8.17 & \textit{Clock Synchronisation}                                        & Menyelaraskan waktu sistem untuk konsistensi \textit{log} \\
+\hline
+A.8.18 & \textit{Use of Privileged Utility Programs}                           & Mengontrol penggunaan program utilitas khusus \\
+\hline
+A.8.19 & \textit{Installation of Software on Operational Systems}              & Mengatur instalasi perangkat lunak pada sistem operasional \\
+\hline
+A.8.20 & \textit{Network Security}                                             & Mengamankan jaringan dari ancaman dan serangan \\
+\hline
+A.8.21 & \textit{Security of Network Services}                                 & Melindungi layanan jaringan yang digunakan organisasi \\
+\hline
+A.8.22 & \textit{Segregation of Networks}                                      & Memisahkan jaringan untuk mengurangi risiko akses \\
+\hline
+A.8.23 & \textit{Web Filtering}                                                & Menyaring akses \textit{web} untuk mencegah konten berbahaya \\
+\hline
+A.8.24 & \textit{Use of Cryptography}                                          & Menggunakan kriptografi untuk melindungi informasi sensitif \\
+\hline
+A.8.25 & \textit{Secure Development Life Cycle}                                & Menerapkan siklus pengembangan sistem yang aman \\
+\hline
+A.8.26 & \textit{Application Security Requirements}                            & Menetapkan kebutuhan keamanan pada aplikasi \\
+\hline
+A.8.27 & \textit{Secure System Architecture}                                   & Merancang arsitektur sistem yang aman dan andal \\
+\hline
+A.8.28 & \textit{Secure Coding}                                                & Menerapkan praktik pengkodean yang aman \\
+\hline
+A.8.29 & \textit{Security Testing in Development}                              & Melakukan pengujian keamanan selama pengembangan \\
+\hline
+A.8.30 & \textit{Outsourced Development}                                       & Mengelola keamanan dalam pengembangan oleh pihak ketiga \\
+\hline
+A.8.31 & \textit{Separation of Development, Test and Production Environments}  & Memisahkan lingkungan pengembangan, uji, dan produksi \\
+\hline
+A.8.32 & \textit{Change Management}                                            & Mengelola perubahan sistem secara terkontrol \\
+\hline
+A.8.33 & \textit{Test Information}                                             & Mengelola data uji agar tetap aman \\
+\hline
+A.8.34 & \textit{Protection of Information Systems During Audit Testing}       & Melindungi sistem saat proses audit dan pengujian \\
+\hline
+\end{longtable}
+}
+
+\subsection{Keterbatasan Pendekatan Konvensional dalam Audit Keamanan Informasi}
+
+Meskipun kerangka ISO/IEC 27001:2022 dan ISMS telah menyediakan pendekatan sistematis, proses audit masih menghadapi kendala pada analisis dan penelusuran bukti. Auditor umumnya mengaitkan temuan dengan kontrol dan regulasi secara manual, yang bergantung pada pengetahuan individu sehingga membatasi efisiensi dan konsistensi. Di sisi lain, besarnya volume dokumen audit membuat proses menjadi memakan waktu, rentan kesalahan, dan berpotensi menimbulkan inkonsistensi \cite{auditgpt2025}.
+
+Perkembangan \textit{Natural Language Processing} melalui \textit{Large Language Models} menawarkan otomasi analisis dokumen, namun masih memiliki keterbatasan seperti kurangnya \textit{grounding} terhadap data spesifik. Oleh karena itu, \textit{Retrieval-Augmented Generation} menjadi pendekatan yang lebih andal dengan menggabungkan kemampuan generatif dan \textit{retrieval} berbasis dokumen untuk meningkatkan akurasi dan konsistensi dalam proses audit \cite{lajbr2025}.
+
+\subsection{\textit{Natural Language Processing}}
+
+Pemrosesan bahasa alami (\textit{natural language processing}, NLP) merupakan bagian dari kecerdasan buatan yang memungkinkan komputer untuk memahami dan menghasilkan bahasa manusia. NLP terdiri dari dua komponen utama, yaitu \textit{natural language understanding} (NLU) dan \textit{natural language generation} (NLG). NLU berfokus pada kemampuan sistem dalam memahami makna dari bahasa yang digunakan manusia, termasuk menangani konteks, ambiguitas, serta berbagai bentuk ekspresi bahasa. Sementara itu, NLG bertugas untuk menghasilkan teks yang menyerupai bahasa manusia, melalui proses pemilihan informasi yang relevan, penyusunan isi, serta pengaturan struktur dan gaya bahasa agar mudah dipahami \cite{pajila2023nlp}.
+
+\subsection{\textit{Transformer}}
+
+Arsitektur \textit{Transformer} merupakan model yang diperkenalkan oleh Vaswani et al. melalui publikasi berjudul \textit{``Attention Is All You Need''} \cite{vaswani2017attention}. Model ini menghadirkan pendekatan baru dalam pemodelan tugas NLP. Sebelum adanya \textit{Transformer}, berbagai tugas sekuensial umumnya mengandalkan arsitektur \textit{Recurrent Neural Network} (RNN) dan \textit{Convolutional Neural Network} (CNN). Kedua arsitektur tersebut memiliki kekurangan yaitu memproses data harus secara berurutan menyebabkan keterbatasan dalam efisiensi pelatihan serta kesulitan dalam menangkap hubungan konteks jangka panjang antar elemen dalam data.
+
+Sebagai solusi, \textit{Transformer} dirancang tanpa bergantung pada mekanisme RNN maupun CNN, melainkan mengandalkan mekanisme \textit{attention}, khususnya \textit{self-attention}. Mekanisme ini memungkinkan model untuk mengevaluasi keterkaitan antar kata dalam suatu urutan secara lebih fleksibel, sehingga mampu memahami konteks secara menyeluruh dan menghasilkan representasi yang lebih baik. Secara teknis, struktur arsitektur \textit{Transformer}, khususnya bagian \textit{encoder} umumnya disajikan dalam bentuk diagram untuk menggambarkan alur pemrosesannya (Gambar~\ref{fig:transformer}).
+
+\begin{figure}[!htbp]
+	\centering
+	\includegraphics[width=0.42\textwidth,height=0.38\textheight,keepaspectratio]{Gambar/2.3Transformer.png}
+	\caption{Arsitektur Transformer \cite{jurafsky2026slp}}
+	\label{fig:transformer}
+\end{figure}
+
+Arsitektur ini terdiri dari beberapa komponen utama yang bekerja secara terintegrasi dalam memproses dan menghasilkan teks:
+
+\begin{enumerate}
+	\item \textbf{\textit{Embedding}} dan \textbf{\textit{Unembedding}} berfungsi untuk mengubah token menjadi representasi vektor serta memetakan kembali representasi tersebut ke ruang kosakata untuk menghasilkan prediksi kata berikutnya \cite{jurafsky2026slp}.
+	\item \textbf{\textit{Positional Encoding}} ditambahkan ke \textit{embedding} untuk mempertahankan informasi urutan token dalam suatu kalimat.
+	\item \textbf{\textit{Layer Normalization}} digunakan untuk menstabilkan proses pelatihan dengan menjaga nilai dalam \textit{layer} tetap berada pada rentang yang mendukung optimasi berbasis gradien.
+	\item \textbf{\textit{Multi-head Attention}} merupakan mekanisme inti yang memungkinkan model menangkap hubungan kontekstual antar token melalui proses \textit{query}, \textit{key}, dan \textit{value} secara paralel.
+	\item \textbf{\textit{Feedforward Network}} berfungsi sebagai transformasi non-linear yang diterapkan pada setiap token untuk memperkaya representasi fitur.
+	\item \textbf{\textit{Softmax}} digunakan untuk mengubah \textit{output} model menjadi distribusi probabilitas atas seluruh kosakata, sehingga memungkinkan pemilihan token berikutnya secara probabilistik.
+\end{enumerate}
+
+\subsection{\textit{Large Language Model}}
+
+\textit{Large Language Models} (LLM) merupakan model \textit{machine learning} dalam bidang \textit{natural language processing} yang dirancang untuk memahami dan menghasilkan teks dengan mempelajari pola statistik dari data berskala besar. Secara umum, model bahasa bekerja dengan memprediksi kata berikutnya dalam suatu urutan serta menghasilkan distribusi probabilitas atas kemungkinan kata yang dapat muncul. Pendekatan ini memungkinkan model untuk mempelajari struktur linguistik, makna, serta hubungan kontekstual antar kata dari data pelatihan. Perkembangan LLM modern yang berbasis arsitektur \textit{transformer} mampu menangkap konteks secara lebih luas dan kompleks \cite{jurafsky2026slp}.
+
+Dengan kapasitas pengetahuan yang besar serta mekanisme pemrosesan yang kompleks, LLM mampu menjalankan berbagai tugas berbasis bahasa, seperti menghasilkan teks, merangkum dokumen, menjawab pertanyaan, menghasilkan kode program, hingga melakukan penalaran secara bertahap \cite{mienye2025llm,shao2024llmsurvey}. Kemampuan ini memungkinkan LLM untuk diterapkan pada berbagai domain yang memerlukan pemahaman spesifik. Sebagai contoh, dalam bidang hukum, LLM dimanfaatkan untuk mendukung pekerjaan profesional, seperti penyusunan dokumen, analisis kontrak, serta proses uji tuntas yang umumnya memerlukan waktu dan tenaga yang signifikan \cite{katz2024gpt4bar}.
+
+\subsection{\textit{Prompt Engineering}}
+
+Tidak seperti \textit{fine-tuning} yang membutuhkan \textit{training} parameter model, \textit{prompt engineering} berfokus pada penyusunan instruksi berbasis bahasa alami untuk menggunakan pengetahuan yang telah dipelajari oleh model \textit{pre-trained} \cite{vatsal2024prompt}. Tujuan utama dari teknik ini adalah mengontrol dan memberi arahan respons LLM secara spesifik, mengurangi ambiguitas konteks, serta menjaga relevansi jawaban tanpa perlu mengubah struktur maupun parameter model, sehingga dapat diterapkan pada berbagai kebutuhan domain spesifik \cite{chaubey2024ragcompare,chen2024prompt}.
+
+\subsection{\textit{Information Retrieval}}
+
+\textit{Information Retrieval} (IR) merupakan bidang yang berfokus pada proses pencarian dan pengambilan berbagai jenis informasi berdasarkan kebutuhan pengguna, yang umumnya diimplementasikan dalam bentuk \textit{search engine}. Salah satu tugas utama dalam IR adalah \textit{ad hoc retrieval}, di mana pengguna mengajukan kueri dan sistem mengembalikan sekumpulan dokumen yang telah diurutkan berdasarkan relevansi dari suatu koleksi tertentu. Dalam konteks ini, dokumen merujuk pada unit teks yang diindeks dan diambil (seperti halaman \textit{web}, artikel ilmiah, atau paragraf) serta koleksi adalah himpunan dokumen yang digunakan untuk memenuhi kebutuhan informasi.
+
+\begin{figure}[!htbp]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Gambar/2.4IR.png}
+	\caption{Arsitektur umum sistem information retrieval \cite{jurafsky2026slp}}
+	\label{fig:ir_arsitektur}
+\end{figure}
+
+Arsitektur tingkat tinggi dari sistem \textit{ad hoc retrieval} terdiri dari dua pendekatan utama berdasarkan representasi vektor yang digunakan, yaitu \textit{sparse retrieval} dan \textit{dense retrieval}. Pada \textit{sparse retrieval}, dokumen dan kueri direpresentasikan sebagai vektor berbasis frekuensi kata (\textit{count vectors}) yang umumnya diberi bobot menggunakan metode seperti TF-IDF atau BM25. Sementara itu, pada \textit{dense retrieval}, dokumen dan kueri direpresentasikan dalam bentuk \textit{embedding} yang dihasilkan oleh model bahasa (baik \textit{encoder} maupun \textit{decoder}), sehingga mampu menangkap hubungan semantik yang lebih kompleks \cite{jurafsky2026slp}.
+
+\subsection{\textit{Retrieval-Augmented Generation}}
+
+\textit{Retrieval-Augmented Generation} (RAG) merupakan metode yang mengintegrasikan teknik \textit{information retrieval} (IR) ke dalam \textit{language model} untuk meningkatkan kualitas jawaban yang dihasilkan. Dalam skenario dasar RAG, sistem terlebih dahulu mengambil dokumen yang relevan dari suatu basis pengetahuan menggunakan teknik \textit{retrieval}, kemudian memanfaatkan \textit{large language model} (LLM) untuk menghasilkan jawaban berdasarkan dokumen tersebut serta \textit{query} pengguna \cite{jurafsky2026slp}. Pendekatan ini memiliki beberapa tujuan utama, antara lain mengurangi halusinasi dengan menyediakan sumber informasi yang tepercaya, memungkinkan pemanfaatan data spesifik atau privat (seperti dokumen internal, rekam medis, atau \textit{email}), serta mengatasi keterbatasan pengetahuan model yang bersifat statis dan tidak selalu mutakhir.
+
+\begin{figure}[!htbp]
+	\centering
+	\includegraphics[width=0.9\textwidth]{Gambar/2.5RAG.png}
+	\caption{Arsitektur Retrieval-Augmented Generation \cite{jurafsky2026slp}}
+	\label{fig:rag_arsitektur}
+\end{figure}
+
+Secara arsitektural, RAG terdiri dari dua komponen utama, yaitu \textit{retriever} yang bertugas mengindeks dan mengambil data relevan (biasanya dalam bentuk vektor), serta \textit{generator} (LLM) yang memanfaatkan konteks tersebut untuk menghasilkan respons yang koheren dan berbasis fakta, sehingga meningkatkan keandalan dan mengurangi risiko halusinasi \cite{fan2024ragsurvey}.
+
+\subsection{Metrik Evaluasi}
+
+Evaluasi performa sistem \textit{Retrieval-Augmented Generation} (RAG) memerlukan metrik yang mampu mengukur kualitas hasil \textit{retrieval} serta efektivitas peringkat dokumen relevan, sekaligus mempertimbangkan efisiensi sistem dari sisi komputasi. Oleh karena itu, digunakan beberapa metrik evaluasi standar yang mencakup aspek keberhasilan \textit{retrieval}, kualitas pemeringkatan dokumen, serta efisiensi waktu respons sistem. Berikut adalah metrik-metrik yang digunakan:
+
+\begin{enumerate}
+	\item \textbf{Hit@k}
+
+	Hit@k digunakan untuk mengukur apakah setidaknya satu dokumen relevan muncul dalam top-$k$ hasil \textit{retrieval}. Metrik ini bersifat biner (\textit{hit} atau tidak), sehingga sering digunakan untuk mengevaluasi keberhasilan minimum sistem dalam menemukan jawaban yang benar.
+
+	\begin{equation}
+		\text{Hit@}k = \frac{\text{Jumlah \textit{query} dengan} \geq 1 \text{ dokumen relevan di top-}k}{\text{Total \textit{query}}}
+	\end{equation}
+
+	dengan:
+	\begin{itemize}
+		\item \textit{Query} dengan $\geq 1$ dokumen relevan: jumlah \textit{query} yang memiliki minimal satu hasil relevan dalam top-$k$
+		\item Total \textit{query}: jumlah seluruh \textit{query} yang diuji
+	\end{itemize}
+
+	\item \textbf{Recall@k}
+
+	Recall@k digunakan untuk mengukur kemampuan sistem dalam menemukan dokumen relevan dalam sejumlah top-$k$ hasil \textit{retrieval}. Metrik ini berfokus pada \textit{coverage}, yaitu seberapa banyak dokumen relevan yang berhasil ditemukan dibandingkan dengan seluruh dokumen relevan yang tersedia. Recall@k sangat penting dalam konteks RAG karena menentukan apakah informasi yang dibutuhkan sudah masuk ke dalam kandidat awal sebelum tahap generasi.
+
+	\begin{equation}
+		\text{Recall@}k = \frac{\text{Total dokumen relevan}}{\text{Jumlah dokumen relevan dalam top-}k}
+	\end{equation}
+
+	dengan:
+	\begin{itemize}
+		\item Total dokumen relevan: seluruh dokumen yang seharusnya relevan dalam \textit{corpus}
+		\item Dokumen relevan dalam top-$k$: jumlah dokumen relevan yang berhasil ditemukan dalam $k$ teratas
+	\end{itemize}
+
+	\item \textbf{Average Reciprocal Rank (ARR)}
+
+	\textit{Average Reciprocal Rank} (ARR) digunakan untuk mengukur kualitas posisi seluruh dokumen relevan yang berhasil ditemukan sistem pada hasil \textit{retrieval}. Berbeda dengan \textit{Mean Reciprocal Rank} (MRR) yang hanya mempertimbangkan dokumen relevan pertama, ARR menghitung kontribusi \textit{ranking} dari seluruh \textit{ground truth} yang berhasil ditemukan pada top-$k$ hasil \textit{retrieval}. Metrik ini berfokus pada seberapa baik sistem menempatkan banyak dokumen relevan pada posisi atas hasil pencarian. Semakin tinggi nilai ARR, maka semakin baik kemampuan sistem dalam mengembalikan keseluruhan dokumen relevan pada \textit{ranking} yang lebih tinggi.
+
+	\begin{equation}
+		\text{ARR} = \frac{1}{|G|} \sum_{i=1}^{|G|} \frac{1}{\text{rank}_i}
+	\end{equation}
+
+	dengan:
+	\begin{itemize}
+		\item $|G|$ = jumlah total \textit{ground truth} unik
+		\item $\text{rank}_i$ = posisi dokumen relevan pertama untuk \textit{query} ke-$i$
+	\end{itemize}
+
+	\item \textbf{Normalized Discounted Cumulative Gain (NDCG)}
+
+	nDCG digunakan untuk mengevaluasi kualitas \textit{ranking} dengan mempertimbangkan posisi dan tingkat relevansi dokumen. Dokumen yang relevan pada posisi lebih atas akan memberikan kontribusi nilai yang lebih tinggi. Metrik ini cocok untuk skenario di mana relevansi tidak bersifat biner.
+
+	\begin{equation}
+		\text{NDCG@}k = \frac{\text{DCG@}k}{\text{IDCG@}k}
+	\end{equation}
+
+	\begin{equation}
+		\text{DCG@}k = \sum_{i=1}^{k} \frac{2^{rel_i} - 1}{\log_2(i+1)}
+	\end{equation}
+
+	\begin{equation}
+		\text{IDCG@}k = \sum_{i=1}^{k} \frac{2^{rel_{ideal,i}} - 1}{\log_2(i+1)}
+	\end{equation}
+
+	dengan:
+	\begin{itemize}
+		\item DCG@$k$: \textit{Discounted Cumulative Gain}, yaitu akumulasi skor relevansi dengan pembobotan posisi
+		\item IDCG@$k$: nilai DCG ideal (\textit{ranking} terbaik)
+		\item $rel_i$: skor relevansi bertingkat dari dokumen pada posisi $i$
+		\item Faktor diskonto logaritmik $\log_2(i + 1)$ digunakan untuk memberi penalti pada dokumen yang berada di peringkat lebih rendah
+	\end{itemize}
+
+	\item \textbf{Latensi Waktu}
+
+	Evaluasi sistem ketepatan \textit{Information Retrieval} pemilihan dokumen pada \textit{Information Retrieval} tidak hanya berfokus pada kualitas hasil (akurasi dan relevansi), tetapi juga pada efisiensi waktu pemrosesan. Oleh karena itu, metrik latensi digunakan untuk mengukur waktu yang dibutuhkan sistem dalam memproses satu \textit{query} hingga menentukan dokumen yang relevan. Latensi menjadi penting terutama pada sistem yang melibatkan beberapa tahapan seperti \textit{hybrid retrieval}, dan \textit{reranking}, karena setiap komponen tambahan berpotensi meningkatkan waktu eksekusi.
+
+	\begin{equation}
+		\text{Latensi}_{\text{Total}} = t_{\text{retrieval}} + t_{\text{rerank}}
+	\end{equation}
+
+	dengan:
+	\begin{itemize}
+		\item $t_{\text{retrieval}}$ = waktu untuk mengambil kandidat dokumen dari basis pengetahuan
+		\item $t_{\text{rerank}}$ = waktu untuk melakukan pengurutan ulang hasil menggunakan \textit{reranker}
+	\end{itemize}
+\end{enumerate}
+
+\section{Analisis Perbandingan Metode}
+
+Bagian ini menyajikan analisis komparatif antara komponen metode dalam \textit{Retrieval-Augmented Generation} (RAG), yaitu \textit{hybrid retrieval} dan \textit{reranking}, serta kombinasinya. Perbandingan lengkap disajikan dalam Tabel berikut:
+
+\begin{table}[!htbp]
+\centering
+\caption{Perbandingan Komponen Metode RAG}
+\label{tab:komparasi_metode}
+\begin{tabular}{|p{2.3cm}|p{5.8cm}|p{5.8cm}|}
+\hline
+\textbf{Metode} & \textbf{Kelebihan} & \textbf{Kekurangan} \\
+\hline
+\textit{Hybrid Retrieval} &
+$\bullet$ Menggabungkan pendekatan leksikal dan semantik sehingga meningkatkan cakupan dokumen relevan (Recall@100: 0,49 $\rightarrow$ 0,60; +11\%) [Rustamov et al., 2025]. \newline
+$\bullet$ Meningkatkan \textit{coverage} dibanding metode \textit{dense} tunggal [Liu et al., 2025]. \newline
+$\bullet$ Lebih \textit{robust} terhadap variasi \textit{query} melalui pendekatan \textit{multi-path retrieval} [Liu et al., 2025].
+&
+$\bullet$ Kompleksitas implementasi lebih tinggi karena melibatkan beberapa komponen \textit{retrieval} dan mekanisme \textit{score fusion} [Ravishankar-Varalakshmi, 2025; Elkiran-Rasheed, 2026]. \newline
+$\bullet$ Memerlukan penyesuaian parameter fusi skor (mis. $\alpha$) [Ravishankar-Varalakshmi, 2025]. \newline
+$\bullet$ Kualitas peringkat awal belum optimal tanpa \textit{reranking} (NDCG awal 0,39) [Rustamov et al., 2025].
+\\
+\hline
+\textit{Reranking} (\textit{Cross-Encoder}) &
+$\bullet$ Meningkatkan presisi dan kualitas hasil peringkat teratas (NDCG: 0,39 $\rightarrow$ 0,44) [Rustamov et al., 2025]. \newline
+$\bullet$ Menghasilkan peringkat yang lebih relevan (R@1 = 0,687; MRR = 0,725) [Elkiran-Rasheed, 2026]. \newline
+$\bullet$ Meningkatkan kualitas pada metrik tertentu seperti NDCG dan \textit{correctness} [Rustamov et al., 2025; Elkiran-Rasheed, 2026]. \newline
+$\bullet$ Mengurangi hasil tidak relevan (\textit{false positive} sebesar 6\%) [Gupta et al., 2025].
+&
+$\bullet$ Biaya komputasi lebih tinggi dibanding tahap \textit{retrieval} awal [Gupta et al., 2025; Elkiran-Rasheed, 2026]. \newline
+$\bullet$ Menambah latensi (2,76--3,12 detik pada \textit{reranker}) [Elkiran-Rasheed, 2026]. \newline
+$\bullet$ Kurang efisien untuk jumlah kandidat besar karena keterbatasan skala pada \textit{cross-encoder} [Gupta et al., 2025].
+\\
+\hline
+Kombinasi (\textit{Hybrid} + \textit{Reranking}) &
+$\bullet$ Mengoptimalkan \textit{recall} dan \textit{precision} secara simultan (Precision@10 = 98,2\%) [Gupta et al., 2025]. \newline
+$\bullet$ Menunjukkan performa tinggi pada konfigurasi terbaik (\textit{combined score} 0,9441) [Ravishankar-Varalakshmi, 2025]. \newline
+$\bullet$ Mengungguli konfigurasi parsial pada studi \textit{ablation} ($\sim$21\% peningkatan Hit dan $\sim$30\% peningkatan MRR dibanding \textit{dense-only}) [Liu et al., 2025]. \newline
+$\bullet$ Adaptif terhadap variasi \textit{query} [Elkiran-Rasheed, 2026].
+&
+$\bullet$ Kompleksitas \textit{pipeline} paling tinggi karena melibatkan beberapa tahap (\textit{retrieval}, fusi, \textit{reranking}, dan generasi) [Ravishankar-Varalakshmi, 2025; Elkiran-Rasheed, 2026]. \newline
+$\bullet$ Latensi lebih tinggi dibanding metode tunggal (sekitar 3,4 detik) [Gupta et al., 2025]. \newline
+$\bullet$ Membutuhkan proses \textit{tuning} yang lebih kompleks (top-$k$, \textit{reranker}, parameter $\alpha$) [Ravishankar-Varalakshmi, 2025]. \newline
+$\bullet$ Risiko penurunan efisiensi (\textit{diminishing return}) [Rustamov et al., 2025; Elkiran-Rasheed, 2026].
+\\
+\hline
+\end{tabular}
+\end{table}
+
+Berdasarkan analisis pada Tabel tersebut, pemilihan variasi metode dalam penelitian ini didasarkan pada pertimbangan terkait kontribusi masing-masing komponen dalam meningkatkan kualitas \textit{retrieval} serta dampaknya terhadap efisiensi sistem:
+
+\begin{enumerate}
+	\item \textit{Hybrid retrieval} dipilih sebagai \textit{baseline} karena mampu meningkatkan cakupan dokumen relevan melalui kombinasi pendekatan leksikal dan semantik, serta terbukti memberikan peningkatan \textit{recall} dibanding metode tunggal.
+	\item \textit{Reranking} berbasis \textit{cross-encoder} digunakan untuk meningkatkan presisi dan kualitas hasil pada peringkat teratas dengan menyaring kandidat yang kurang relevan.
+	\item Kombinasi dua komponen dianalisis untuk mengevaluasi potensi peningkatan performa secara menyeluruh sekaligus mengidentifikasi \textit{trade-off} terhadap kompleksitas dan latensi sistem.
+\end{enumerate}
+
+
