@@ -74,169 +74,285 @@ Komponen \textit{Hybrid Retrieval} dibangun untuk menggabungkan kekuatan pencari
 
 \subsection{Pembangunan Komponen \textit{Reranker}}
 
+\subsubsection{Inisialisasi \textit{Pipeline Reranking}}
+
+Komponen \textit{Reranker} dibangun sebagai pengembangan dari komponen \textit{hybrid retrieval} pada RAG V1. Pada tahap ini, sistem tetap menggunakan \textit{hybrid retrieval} sebagai tahap pertama untuk menghasilkan kumpulan kandidat dokumen, kemudian menambahkan tahap kedua berupa \textit{cross-encoder reranking} untuk melakukan evaluasi ulang terhadap kandidat tersebut. Dengan demikian, sistem tidak langsung menggunakan hasil \textit{hybrid retrieval} sebagai keluaran akhir, tetapi terlebih dahulu menilai kembali relevansi setiap kandidat berdasarkan interaksi langsung antara \textit{query} dan dokumen.
+
+\begin{enumerate}
+	\item \textbf{Inisialisasi \textit{Pipeline}}: Menggunakan \textit{class} \texttt{RAGPipelineV3} untuk mengatur alur kerja sistem mulai dari \textit{retrieval}, \textit{reranking}, hingga pembentukan konteks untuk tahap generasi. Pada proses inisialisasi, sistem menentukan lokasi \textit{root} RAG V3 dan RAG V1, kemudian menggunakan kembali komponen \texttt{HybridRetriever} dari RAG V1. Penggunaan kembali komponen ini dilakukan agar tahap \textit{retrieval} tetap konsisten dengan konfigurasi \textit{dense}, \textit{sparse}, dan \textit{hybrid retrieval} yang telah dibangun sebelumnya.
+
+	\item \textbf{Penggunaan Korpus yang Diperkaya}: Sistem menggunakan berkas \texttt{iso\_controls\_enriched.json} sebagai sumber data kontrol ISO. Berkas ini memuat atribut dasar seperti \texttt{control\_id}, \texttt{title}, \texttt{objective}, dan \texttt{description}, serta atribut tambahan seperti \texttt{keywords\_en}, \texttt{keywords\_id}, \texttt{audit\_indicators\_en}, dan \texttt{audit\_indicators\_id}. Penggunaan korpus yang diperkaya bertujuan untuk menyediakan sinyal semantik yang lebih lengkap, baik pada tahap \textit{hybrid retrieval} maupun pada tahap \textit{reranking}.
+
+	\item \textbf{Konfigurasi Jumlah Kandidat}: Menggunakan konstanta \texttt{CANDIDATE\_POOL\_SIZE} bernilai 10 sebagai jumlah kandidat awal yang diambil dari \textit{hybrid retrieval}. Nilai ini lebih besar dari jumlah keluaran akhir agar \textit{reranker} memiliki ruang kandidat yang lebih luas untuk dinilai ulang. Setelah proses \textit{reranking}, sistem menggunakan \texttt{DEFAULT\_TOP\_K} bernilai 3 sebagai jumlah dokumen akhir yang dipilih.
+\end{enumerate}
+
+\subsubsection{Pembentukan \textit{Candidate Pool}}
+
+Pembentukan \textit{candidate pool} dilakukan untuk menyediakan daftar awal kontrol ISO yang berpotensi relevan sebelum dievaluasi ulang oleh model \textit{cross-encoder}. Tahap ini menggunakan mekanisme \textit{hybrid retrieval} yang sama dengan komponen sebelumnya, yaitu menggabungkan skor \textit{dense} dan \textit{sparse} melalui proses normalisasi dan \textit{weighted sum}.
+
+\begin{enumerate}
+	\item \textbf{Pemanggilan \textit{Hybrid Retrieval}}: Menggunakan \textit{function} \texttt{retrieve()} pada \texttt{HybridRetriever} dengan parameter \texttt{method\_order=[``hybrid'']}. Pengaturan ini membuat sistem hanya mengambil hasil \textit{hybrid} sebagai kandidat awal, sedangkan perhitungan skor \textit{dense} dan \textit{sparse} tetap dilakukan secara internal. Dengan demikian, hasil yang masuk ke tahap \textit{reranking} merupakan dokumen yang telah mempertimbangkan kecocokan semantik dan kecocokan kata kunci.
+
+	\item \textbf{Pengaturan Bobot \textit{Dense} dan \textit{Sparse}}: Parameter \texttt{alpha\_dense} dan \texttt{alpha\_sparse} digunakan untuk meneruskan konfigurasi pembobotan ke komponen \textit{hybrid retrieval}. Skor \textit{dense} dan \textit{sparse} dinormalisasi menggunakan metode \textit{min-max}, kemudian digabungkan menggunakan formula \textit{weighted sum}. Skor hasil penggabungan ini disimpan sebagai \texttt{hybrid\_score} dan menjadi dasar pengurutan kandidat tahap pertama.
+
+	\item \textbf{Penyimpanan Informasi Kandidat}: Setiap dokumen pada \textit{candidate pool} mempertahankan informasi kontrol ISO seperti \texttt{control\_id}, \texttt{title}, \texttt{objective}, dan \texttt{description}. Selain itu, setiap kandidat juga menyimpan \texttt{dense\_score}, \texttt{sparse\_score}, dan \texttt{hybrid\_score}. Informasi skor ini tetap dipertahankan karena digunakan kembali pada proses kombinasi skor setelah model \textit{cross-encoder} menghasilkan skor \textit{reranking}.
+\end{enumerate}
+
 \subsubsection{Komponen \textit{Cross-Encoder Reranking}}
 
-Komponen \textit{Reranker} dibangun untuk meningkatkan kualitas hasil \textit{retrieval} melalui evaluasi ulang terhadap kandidat dokumen menggunakan model \textit{cross-encoder} BAAI/bge-reranker-v2-m3. Proses \textit{reranking} mengambil \textit{candidate pool} dari hasil \textit{hybrid retrieval}, kemudian setiap pasangan \textit{query} dan dokumen diproses secara bersamaan oleh model \textit{cross-encoder} untuk menghasilkan skor relevansi yang lebih akurat. Skor tersebut selanjutnya dinormalisasi dan dikombinasikan dengan skor \textit{hybrid} menggunakan skema pembobotan, sehingga diperoleh skor akhir yang lebih representatif. Berdasarkan skor ini, dipilih sejumlah dokumen terbaik, yaitu \textit{top@3}, yang digunakan sebagai konteks dalam tahap generasi selanjutnya.
+Komponen \textit{Cross-Encoder Reranking} dibangun untuk menilai ulang relevansi kandidat dokumen dengan cara memproses pasangan \textit{query} dan dokumen secara bersamaan. Berbeda dengan pendekatan \textit{dense retrieval} yang membentuk \textit{embedding} \textit{query} dan dokumen secara terpisah, model \textit{cross-encoder} menerima kedua teks dalam satu pasangan masukan sehingga dapat menangkap hubungan yang lebih rinci antara kebutuhan informasi pengguna dan isi kontrol ISO.
+
+\begin{enumerate}
+	\item \textbf{Inisialisasi Model \textit{Cross-Encoder}}: Menggunakan \textit{function} \texttt{get\_model() -> CrossEncoder} untuk memuat model \textit{BAAI/bge-reranker-v2-m3}. Model ini dimuat dengan mekanisme \textit{lazy loading}, sehingga model hanya diinisialisasi satu kali pada pemanggilan pertama dan digunakan kembali pada pemanggilan berikutnya. Model ini dipilih karena mendukung banyak bahasa, termasuk Bahasa Indonesia, sehingga sesuai dengan karakteristik korpus kontrol ISO dan variasi \textit{query} yang digunakan pada penelitian.
+
+	\item \textbf{Alternatif Model Pembanding}: Selain model utama, sistem juga menyediakan \textit{function} \texttt{get\_model\_minilm() -> CrossEncoder} untuk memuat model \textit{cross-encoder/ms-marco-MiniLM-L-6-v2}. Model ini digunakan sebagai jalur alternatif untuk kebutuhan evaluasi atau perbandingan. Dengan adanya dua jalur model, sistem dapat menguji pengaruh pemilihan model \textit{cross-encoder} terhadap kualitas hasil \textit{reranking}.
+
+	\item \textbf{Representasi Teks Dokumen}: Menggunakan \textit{function} \texttt{\_doc\_to\_rerank\_text(doc: dict) -> str} untuk mengubah kandidat dokumen menjadi representasi teks yang digunakan oleh model \textit{cross-encoder}. Representasi ini mencakup \texttt{title}, \texttt{objective}, \texttt{description}, \texttt{keywords\_en}, \texttt{keywords\_id}, serta \texttt{audit\_indicators}. Beberapa atribut tambahan diberi label eksplisit seperti \texttt{Keywords EN}, \texttt{Kata kunci ID}, dan \texttt{Audit indicators} agar model memperoleh konteks semantik yang lebih jelas.
+
+	\item \textbf{Pembentukan Pasangan \textit{Query}-Dokumen}: Sistem membentuk daftar pasangan \texttt{(query, document\_text)} untuk seluruh dokumen dalam \textit{candidate pool}. Setiap pasangan kemudian diproses oleh model \textit{cross-encoder} menggunakan \texttt{model.predict()}. Hasil proses ini berupa \textit{array} skor mentah \textit{cross-encoder} yang merepresentasikan tingkat relevansi setiap kandidat terhadap \textit{query}.
+
+	\item \textbf{Normalisasi Skor \textit{Reranking}}: Menggunakan \textit{function} \texttt{\_normalize(arr: np.ndarray) -> np.ndarray} untuk mengubah skor \textit{cross-encoder} ke rentang 0 sampai 1. Normalisasi dilakukan menggunakan metode \textit{min-max}. Jika seluruh skor memiliki nilai yang sama, \textit{function} ini mengembalikan vektor nol agar proses penggabungan skor tetap stabil.
+\end{enumerate}
+
+\subsubsection{Penggabungan Skor dan \textit{Final Ranking}}
+
+Penggabungan skor dilakukan untuk menghasilkan urutan akhir dokumen dengan mempertimbangkan dua sumber informasi, yaitu skor \textit{cross-encoder} sebagai hasil evaluasi ulang dan skor \textit{hybrid retrieval} sebagai sinyal relevansi awal. Pendekatan ini digunakan agar model \textit{reranker} tetap menjadi komponen utama dalam penentuan relevansi, tetapi tidak sepenuhnya mengabaikan hasil \textit{retrieval} tahap pertama.
+
+\begin{enumerate}
+	\item \textbf{Normalisasi Skor \textit{Hybrid}}: Skor \textit{hybrid} dari setiap kandidat diambil dari atribut \texttt{hybrid\_score}, kemudian dinormalisasi menggunakan metode \textit{min-max}. Normalisasi ini dilakukan secara terpisah dari skor \textit{cross-encoder} karena keduanya memiliki skala nilai yang berbeda. Hasilnya disimpan sebagai \texttt{hybrid\_score\_norm}.
+
+	\item \textbf{Perhitungan \textit{Combined Score}}: Sistem menghitung skor akhir menggunakan formula $\textit{combined\_score} = \alpha \times \textit{ce\_norm} + (1 - \alpha) \times \textit{hybrid\_norm}$. Nilai \texttt{ALPHA} bawaan adalah 0.8, sehingga skor \textit{cross-encoder} memiliki bobot lebih besar dibanding skor \textit{hybrid}. Skema ini membuat hasil akhir lebih dipengaruhi oleh penilaian ulang \textit{cross-encoder}, tetapi tetap mempertahankan kontribusi dari tahap \textit{hybrid retrieval}.
+
+	\item \textbf{Penambahan Atribut Hasil \textit{Reranking}}: Setiap kandidat hasil \textit{reranking} diperkaya dengan atribut \texttt{rerank\_score}, \texttt{rerank\_score\_norm}, \texttt{hybrid\_score\_norm}, dan \texttt{combined\_score}. Atribut \texttt{rerank\_score} menyimpan skor mentah dari model \textit{cross-encoder}, sedangkan \texttt{combined\_score} digunakan sebagai skor utama untuk menentukan urutan akhir dokumen.
+
+	\item \textbf{Pengurutan Akhir Dokumen}: Setelah \texttt{combined\_score} diperoleh, sistem mengurutkan seluruh kandidat secara \textit{descending}. Dokumen dengan skor tertinggi ditempatkan pada peringkat teratas karena dianggap paling relevan terhadap \textit{query}. Hasil akhir kemudian dipotong berdasarkan parameter \texttt{top\_n}, dengan konfigurasi bawaan sebanyak 3 dokumen.
+
+	\item \textbf{Keluaran \textit{Reranker}}: Hasil akhir \textit{reranking} berupa daftar kontrol ISO terbaik yang mempertahankan informasi asli dari tahap \textit{retrieval} dan menambahkan informasi skor dari tahap \textit{reranking}. Dokumen \textit{top@3} ini kemudian digunakan sebagai konteks yang dikirimkan ke tahap generasi jawaban, sehingga jawaban yang dihasilkan didasarkan pada kontrol ISO yang telah melalui seleksi dua tahap.
+\end{enumerate}
 
 \section{Analisis Hasil Eksperimen}
+
+Analisis hasil eksperimen dilakukan untuk mengevaluasi kinerja berbagai konfigurasi sistem \textit{information retrieval} terhadap \textit{query} sintetis dan \textit{query} dokumen DTI. Evaluasi dilakukan secara bertahap, dimulai dari analisis komparatif komposisi \textit{dense} dan \textit{sparse} pada \textit{hybrid retrieval}, analisis komparatif jumlah \textit{candidate pool} pada \textit{reranking retrieval}, analisis komparatif independen antara \textit{hybrid retrieval} dan \textit{reranking}, hingga analisis komparatif komposisi \textit{scoring hybrid retrieval} dan \textit{reranking}. Metrik evaluasi yang digunakan pada setiap analisis mengacu pada Subbab 2.3.10, yang mencakup Hit@3 dan Recall@3 sebagai metrik \textit{coverage}, serta ARR dan NDCG@3 sebagai metrik \textit{rank-sensitive}.
 
 \subsection{Analisis Hasil Eksperimen \textit{Query} Sintesis}
 
 \subsubsection{Analisis Komparatif Komposisi \textit{Dense} dan \textit{Sparse} pada \textit{Hybrid Retrieval}}
 
-\textbf{Hasil pada \textit{Query} Pendek Eksplisit}
+Analisis pada subbab ini dilakukan untuk mengevaluasi pengaruh komposisi pembobotan \textit{dense} dan \textit{sparse} terhadap kualitas hasil \textit{hybrid retrieval}. Tiga komposisi yang diuji adalah \textit{dense}=0.25 (dominan \textit{sparse}), \textit{dense}=0.50 (seimbang), dan \textit{dense}=0.75 (dominan \textit{dense}). Metrik evaluasi yang digunakan mencakup Hit@3, Recall@3, ARR, dan NDCG@3, sebagaimana telah dijelaskan pada Subbab 2.3.10. Hasil evaluasi pada keempat jenis \textit{query} ditunjukkan pada Gambar~\ref{fig:4211_eksplisit_short}--\ref{fig:4211_implisit_long}.
 
-Komposisi seimbang 0.5:0.5 konsisten menghasilkan nilai terbaik pada seluruh metrik. Jika dibandingkan antara pembobotan dominan \textit{sparse} dan dominan \textit{dense}, metrik \textit{coverage} relatif sangat dekat dengan selisih Hit@3 mendekati 0 dan Recall@3 = 0.002. Namun, pada metrik \textit{rank-sensitive}, dominan \textit{dense} menunjukkan hasil lebih baik dibanding dominan \textit{sparse}, yaitu ARR lebih tinggi 0.028 dan NDCG@3 lebih tinggi 0.019.
+\textbf{Hasil pada \textit{Query} Pendek Eksplisit}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.85\textwidth]{Gambar/4.2.1.1/viz_A_eksplisit_short.png}
-	\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{dense-sparse} pada \textit{query} pendek eksplisit}
-	\label{fig:komposisi_eksplisit_short}
+	\includegraphics[width=0.85\textwidth,keepaspectratio]{Gambar/4.2.1.1_eksplisit_short.png}
+	\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{dense} dan \textit{sparse} pada \textit{query} pendek eksplisit}
+	\label{fig:4211_eksplisit_short}
 \end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4211_eksplisit_short} menunjukkan bahwa komposisi seimbang 0.50:0.50 konsisten menghasilkan nilai terbaik pada seluruh metrik. Komposisi \textit{dense}=0.50 memperoleh Hit@3 sebesar 0.996, Recall@3 sebesar 0.921, ARR sebesar 0.725, dan NDCG@3 sebesar 0.906. Jika dibandingkan antara pembobotan dominan \textit{sparse} (\textit{dense}=0.25) dan dominan \textit{dense} (\textit{dense}=0.75), metrik \textit{coverage} relatif sangat dekat dengan selisih Hit@3 mendekati 0 dan Recall@3 sebesar 0.002. Namun, pada metrik \textit{rank-sensitive}, dominan \textit{dense} menunjukkan hasil lebih baik dibanding dominan \textit{sparse}, yaitu ARR lebih tinggi 0.028 dan NDCG@3 lebih tinggi 0.019. Peningkatan ini mengindikasikan bahwa pada \textit{query} eksplisit pendek, komponen \textit{dense} memberikan kontribusi yang lebih besar terhadap kualitas peringkat dibandingkan \textit{sparse}, meskipun selisih pada metrik \textit{coverage} relatif kecil.
 
 \textbf{Hasil pada \textit{Query} Panjang Eksplisit}
 
-Komposisi dominan \textit{sparse} memberikan hasil lebih unggul pada metrik \textit{coverage}, dengan Hit@3 lebih tinggi 0.044 dan Recall@3 lebih tinggi 0.050 dibanding dominan \textit{dense}. Pada metrik \textit{rank-sensitive}, perbedaannya lebih kecil, tetapi dominan \textit{sparse} tetap sedikit lebih baik pada NDCG@3 sebesar 0.019, sedangkan ARR relatif setara. Hal ini menunjukkan bahwa \textit{query} eksplisit panjang lebih terbantu oleh pencocokan leksikal/\textit{sparse}.
-
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.85\textwidth]{Gambar/4.2.1.1/viz_A_eksplisit_long.png}
-	\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{dense-sparse} pada \textit{query} panjang eksplisit}
-	\label{fig:komposisi_eksplisit_long}
+	\includegraphics[width=0.85\textwidth,keepaspectratio]{Gambar/4.2.1.1_eksplisit_long.png}
+	\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{dense} dan \textit{sparse} pada \textit{query} panjang eksplisit}
+	\label{fig:4211_eksplisit_long}
 \end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4211_eksplisit_long} menunjukkan bahwa komposisi dominan \textit{sparse} (\textit{dense}=0.25) memberikan hasil lebih unggul pada metrik \textit{coverage}, dengan Hit@3 sebesar 0.912 dan Recall@3 sebesar 0.685, lebih tinggi masing-masing 0.044 dan 0.050 dibanding dominan \textit{dense} (\textit{dense}=0.75) yang memperoleh Hit@3 sebesar 0.868 dan Recall@3 sebesar 0.635. Pada metrik \textit{rank-sensitive}, perbedaannya lebih kecil, tetapi dominan \textit{sparse} tetap sedikit lebih baik pada NDCG@3 dengan selisih 0.019, sedangkan ARR relatif setara. Hal ini menunjukkan bahwa \textit{query} eksplisit panjang lebih terbantu oleh pencocokan leksikal (\textit{sparse}) karena teks yang panjang mengandung lebih banyak kata kunci yang dapat dicocokkan secara langsung dengan dokumen kontrol.
 
 \textbf{Hasil pada \textit{Query} Pendek Implisit}
 
-Komposisi seimbang 0.5:0.5 menjadi pembobotan terbaik pada seluruh metrik. Jika dibandingkan antara dominan \textit{sparse} dan dominan \textit{dense}, dominan \textit{sparse} sedikit lebih unggul, terutama pada ARR sebesar 0.015 dan NDCG@3 sebesar 0.013. Namun, peningkatan terbesar tetap diperoleh ketika \textit{dense} dan \textit{sparse} dikombinasikan secara seimbang.
-
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.85\textwidth]{Gambar/4.2.1.1/viz_A_implisit_short.png}
-	\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{dense-sparse} pada \textit{query} pendek implisit}
-	\label{fig:komposisi_implisit_short}
+	\includegraphics[width=0.85\textwidth,keepaspectratio]{Gambar/4.2.1.1_implisit_short.png}
+	\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{dense} dan \textit{sparse} pada \textit{query} pendek implisit}
+	\label{fig:4211_implisit_short}
 \end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4211_implisit_short} menunjukkan bahwa komposisi seimbang 0.50:0.50 menjadi pembobotan terbaik pada seluruh metrik. Komposisi \textit{dense}=0.50 memperoleh Hit@3 sebesar 0.760, Recall@3 sebesar 0.553, ARR sebesar 0.423, dan NDCG@3 sebesar 0.533. Jika dibandingkan antara dominan \textit{sparse} (\textit{dense}=0.25) dan dominan \textit{dense} (\textit{dense}=0.75), dominan \textit{sparse} sedikit lebih unggul, terutama pada ARR sebesar 0.015 dan NDCG@3 sebesar 0.013. Namun, peningkatan terbesar tetap diperoleh ketika \textit{dense} dan \textit{sparse} dikombinasikan secara seimbang. Temuan ini mengindikasikan bahwa \textit{query} implisit pendek membutuhkan keseimbangan antara pencocokan semantik dan leksikal karena tidak mengandung istilah kontrol secara eksplisit.
 
 \textbf{Hasil pada \textit{Query} Panjang Implisit}
 
-Komposisi seimbang 0.5:0.5 kembali menghasilkan performa terbaik pada seluruh metrik. Dominan \textit{sparse} juga lebih baik dibanding dominan \textit{dense}, dengan selisih Hit@3 sebesar 0.056, Recall@3 sebesar 0.052, ARR sebesar 0.045, dan NDCG@3 sebesar 0.058. Hasil ini menunjukkan bahwa dominasi \textit{dense} kurang optimal untuk \textit{query} implisit panjang, sementara kombinasi seimbang mampu menjaga cakupan sekaligus kualitas peringkat.
-
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.85\textwidth]{Gambar/4.2.1.1/viz_A_implisit_long.png}
-	\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{dense-sparse} pada \textit{query} panjang implisit}
-	\label{fig:komposisi_implisit_long}
+	\includegraphics[width=0.85\textwidth,keepaspectratio]{Gambar/4.2.1.1_implisit_long.png}
+	\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{dense} dan \textit{sparse} pada \textit{query} panjang implisit}
+	\label{fig:4211_implisit_long}
 \end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4211_implisit_long} menunjukkan bahwa komposisi seimbang 0.50:0.50 kembali menghasilkan performa terbaik pada seluruh metrik. Komposisi \textit{dense}=0.50 memperoleh Hit@3 sebesar 0.796, Recall@3 sebesar 0.574, ARR sebesar 0.444, dan NDCG@3 sebesar 0.573. Dominan \textit{sparse} (\textit{dense}=0.25) juga lebih baik dibanding dominan \textit{dense} (\textit{dense}=0.75), dengan selisih Hit@3 sebesar 0.056, Recall@3 sebesar 0.052, ARR sebesar 0.045, dan NDCG@3 sebesar 0.058. Hasil ini menunjukkan bahwa dominasi \textit{dense} kurang optimal untuk \textit{query} implisit panjang, sementara kombinasi seimbang mampu menjaga cakupan sekaligus kualitas peringkat. Temuan ini mengindikasikan bahwa pada \textit{query} implisit yang tidak menyebutkan istilah kontrol secara langsung, representasi semantik (\textit{dense}) dan leksikal (\textit{sparse}) perlu diberi bobot yang setara agar sistem dapat menangkap makna maupun kecocokan kata kunci secara optimal.
+
+Secara keseluruhan, analisis pada subbab ini menunjukkan bahwa komposisi seimbang 0.50:0.50 merupakan konfigurasi yang paling sering menghasilkan performa terbaik pada berbagai jenis \textit{query}, kecuali pada \textit{query} eksplisit panjang di mana dominan \textit{sparse} lebih unggul pada metrik \textit{coverage}. Dominan \textit{sparse} juga selalu lebih baik dibanding dominan \textit{dense} pada seluruh jenis \textit{query}, yang menunjukkan bahwa pencocokan leksikal memiliki kontribusi penting dalam sistem \textit{hybrid retrieval} untuk domain kontrol keamanan ISO 27001.
 
 \subsubsection{Analisis Komparatif Jumlah \textit{Candidate Pool} pada \textit{Reranking Retrieval}}
 
-\textbf{Hasil pada \textit{Query} Pendek Eksplisit}
+Analisis pada subbab ini dilakukan untuk mengevaluasi pengaruh ukuran \textit{candidate pool} terhadap kualitas hasil \textit{reranking retrieval}. Empat ukuran \textit{pool} yang diuji adalah 5, 10, 15, dan 20. Metrik evaluasi yang digunakan mencakup Hit@3, Recall@3, ARR, dan NDCG@3, sebagaimana telah dijelaskan pada Subbab 2.3.10. Selain itu, analisis juga mencakup metrik latensi waktu untuk melihat konsekuensi operasional dari penambahan ukuran \textit{pool}. Hasil evaluasi pada keempat jenis \textit{query} ditunjukkan pada Gambar~\ref{fig:4212_eksplisit_short}--\ref{fig:4212_implisit_long}.
 
-\textit{Candidate pool} dengan ukuran terkecil, yaitu 5, konsisten memberikan nilai terbaik pada seluruh metrik dibanding \textit{pool} yang lebih besar. Metrik \textit{coverage} menunjukkan perbedaan kecil (Hit@3 = 0.004, Recall@3 = 0.014), sedangkan pada metrik \textit{rank-sensitive}, \textit{pool} 5 lebih unggul signifikan dengan ARR lebih tinggi 0.011 dan NDCG@3 lebih tinggi 0.013 dibanding \textit{pool} 10 hingga 20. \textit{Pool} 10, 15, dan 20 menghasilkan nilai yang hampir identik, sehingga penambahan kandidat di atas 10 tidak memberikan perbaikan.
-
-\textbf{Hasil pada \textit{Query} Panjang Eksplisit}
-
-\textit{Pool} 15 menjadi konfigurasi terbaik dengan unggul pada Hit@3 (0.968) dan ARR (0.582). Pola yang menarik adalah peningkatan kandidat dari \textit{pool} 5 ke 15 meningkatkan performa secara bertahap, namun \textit{pool} 20 justru menurun pada semua metrik. Penurunan ini menunjukkan bahwa terlalu banyak kandidat justru menurunkan kualitas \textit{reranking} pada \textit{query} eksplisit panjang, di mana \textit{noise} dari kandidat tambahan melemahkan akurasi peringkat.
-
-\textbf{Hasil pada \textit{Query} Pendek Implisit}
-
-\textit{Pool} 5 kembali memberikan performa terbaik pada seluruh metrik, dengan keunggulan yang lebih konsisten. Hit@3 lebih tinggi 0.032, Recall@3 lebih tinggi 0.048, ARR lebih tinggi 0.020, dan NDCG@3 lebih tinggi 0.031 dibanding \textit{pool} 20. Terlihat tren penurunan yang jelas seiring penambahan ukuran \textit{pool}, rata-rata penurunan konsisten terjadi pada setiap kenaikan \textit{step pool} (+5), yaitu Hit@3 turun rata-rata 0.019, Recall@3 turun 0.024, ARR turun 0.012, dan NDCG@3 turun 0.017 per \textit{step}. Hasil ini mengindikasikan bahwa \textit{query} implisit pendek sangat sensitif terhadap \textit{noise} dari kandidat tambahan.
-
-\textbf{Hasil pada \textit{Query} Panjang Implisit}
-
-\textit{Pool} 5 secara dominan mengungguli semua konfigurasi \textit{pool} lainnya pada seluruh metrik, dengan selisih yang paling besar dibanding tiga jenis \textit{query} sebelumnya. Hit@3 lebih tinggi 0.100, Recall@3 lebih tinggi 0.126, ARR lebih tinggi 0.094, dan NDCG@3 lebih tinggi 0.122 dibanding \textit{pool} 20. Rata-rata penurunan konsisten terjadi pada setiap kenaikan \textit{step pool} (+5), yaitu Hit@3 turun rata-rata 0.033, Recall@3 turun 0.042, ARR turun 0.031, dan NDCG@3 turun 0.041 per \textit{step}. Tren penurunan monoton yang tajam dari \textit{pool} 5 hingga \textit{pool} 20 menunjukkan bahwa \textit{query} implisit panjang sangat rentan terhadap degradasi akibat penambahan kandidat yang kurang relevan.
+\vspace{4pt}
+\noindent\\textbf{Hasil pada \textit{Query} Pendek Eksplisit}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.85\textwidth]{Gambar/4.2.1.2/viz_optionA_eksplisit_short.png}
+	\includegraphics[width=0.76\textwidth,height=0.38\textheight,keepaspectratio]{Gambar/4.2.1.2_eksplisit_short.png}
 	\caption{Perbandingan metrik evaluasi berdasarkan ukuran \textit{candidate pool} pada \textit{query} pendek eksplisit}
-	\label{fig:pool_eksplisit_short}
+	\label{fig:4212_eksplisit_short}
 \end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4212_eksplisit_short} menunjukkan bahwa \textit{candidate pool} dengan ukuran terkecil, yaitu 5, konsisten memberikan nilai terbaik pada seluruh metrik dibanding \textit{pool} yang lebih besar. \textit{Pool} 5 memperoleh Hit@3 sebesar 1.000, Recall@3 sebesar 0.941, ARR sebesar 0.745, dan NDCG@3 sebesar 0.931. Metrik \textit{coverage} menunjukkan perbedaan kecil (Hit@3 selisih 0.004, Recall@3 selisih 0.014), sedangkan pada metrik \textit{rank-sensitive}, \textit{pool} 5 lebih unggul signifikan dengan ARR lebih tinggi 0.011 dan NDCG@3 lebih tinggi 0.013 dibanding \textit{pool} 10 hingga 20. \textit{Pool} 10, 15, dan 20 menghasilkan nilai yang hampir identik, sehingga penambahan kandidat di atas 10 tidak memberikan perbaikan. Hal ini mengindikasikan bahwa pada \textit{query} eksplisit pendek, \textit{reranker} sudah mampu mengidentifikasi dokumen relevan dari kandidat yang sedikit.
+
+\vspace{4pt}
+\noindent\\textbf{Hasil pada \textit{Query} Panjang Eksplisit}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.85\textwidth]{Gambar/4.2.1.2/viz_optionA_eksplisit_long.png}
+	\includegraphics[width=0.76\textwidth,height=0.38\textheight,keepaspectratio]{Gambar/4.2.1.2_eksplisit_long.png}
 	\caption{Perbandingan metrik evaluasi berdasarkan ukuran \textit{candidate pool} pada \textit{query} panjang eksplisit}
-	\label{fig:pool_eksplisit_long}
+	\label{fig:4212_eksplisit_long}
 \end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4212_eksplisit_long} menunjukkan bahwa \textit{pool} 15 menjadi konfigurasi terbaik dengan unggul pada Hit@3 (0.968) dan ARR (0.582). Pola yang menarik adalah peningkatan kandidat dari \textit{pool} 5 ke 15 meningkatkan performa secara bertahap, namun \textit{pool} 20 justru menurun pada semua metrik. \textit{Pool} 20 memperoleh Hit@3 sebesar 0.936, lebih rendah 0.032 dibanding \textit{pool} 15. Penurunan ini menunjukkan bahwa terlalu banyak kandidat justru menurunkan kualitas \textit{reranking} pada \textit{query} eksplisit panjang, di mana \textit{noise} dari kandidat tambahan melemahkan akurasi peringkat.
+
+\vspace{4pt}
+\noindent\\textbf{Hasil pada \textit{Query} Pendek Implisit}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.85\textwidth]{Gambar/4.2.1.2/viz_optionA_implisit_short.png}
+	\includegraphics[width=0.76\textwidth,height=0.38\textheight,keepaspectratio]{Gambar/4.2.1.2_implisit_short.png}
 	\caption{Perbandingan metrik evaluasi berdasarkan ukuran \textit{candidate pool} pada \textit{query} pendek implisit}
-	\label{fig:pool_implisit_short}
+	\label{fig:4212_implisit_short}
 \end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4212_implisit_short} menunjukkan bahwa \textit{pool} 5 kembali memberikan performa terbaik pada seluruh metrik, dengan keunggulan yang lebih konsisten. \textit{Pool} 5 memperoleh Hit@3 lebih tinggi 0.032, Recall@3 lebih tinggi 0.048, ARR lebih tinggi 0.020, dan NDCG@3 lebih tinggi 0.031 dibanding \textit{pool} 20. Terlihat tren penurunan yang jelas seiring penambahan ukuran \textit{pool}, rata-rata penurunan konsisten terjadi pada setiap kenaikan \textit{step pool} (+5), yaitu Hit@3 turun rata-rata 0.019, Recall@3 turun 0.024, ARR turun 0.012, dan NDCG@3 turun 0.017 per \textit{step}. Hasil ini mengindikasikan bahwa \textit{query} implisit pendek sangat sensitif terhadap \textit{noise} dari kandidat tambahan.
+
+\vspace{4pt}
+\noindent\\textbf{Hasil pada \textit{Query} Panjang Implisit}
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.85\textwidth]{Gambar/4.2.1.2/viz_optionA_implisit_long.png}
+	\includegraphics[width=0.76\textwidth,height=0.38\textheight,keepaspectratio]{Gambar/4.2.1.2_implisit_long.png}
 	\caption{Perbandingan metrik evaluasi berdasarkan ukuran \textit{candidate pool} pada \textit{query} panjang implisit}
-	\label{fig:pool_implisit_long}
+	\label{fig:4212_implisit_long}
 \end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4212_implisit_long} menunjukkan bahwa \textit{pool} 5 secara dominan mengungguli semua konfigurasi \textit{pool} lainnya pada seluruh metrik, dengan selisih yang paling besar dibanding tiga jenis \textit{query} sebelumnya. \textit{Pool} 5 memperoleh Hit@3 sebesar 0.840 dan Recall@3 sebesar 0.624, lebih tinggi masing-masing 0.100 dan 0.126 dibanding \textit{pool} 20. Rata-rata penurunan konsisten terjadi pada setiap kenaikan \textit{step pool} (+5), yaitu Hit@3 turun rata-rata 0.033, Recall@3 turun 0.042, ARR turun 0.031, dan NDCG@3 turun 0.041 per \textit{step}. Tren penurunan monoton yang tajam dari \textit{pool} 5 hingga \textit{pool} 20 menunjukkan bahwa \textit{query} implisit panjang sangat rentan terhadap degradasi akibat penambahan kandidat yang kurang relevan.
 
-\textbf{Hasil Waktu Latensi}
+\vspace{4pt}
+\noindent\\textbf{Hasil Waktu Latensi}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.76\textwidth,height=0.38\textheight,keepaspectratio]{Gambar/4.2.1.2_time_per_pool.png}
+	\caption{Perbandingan waktu latensi berdasarkan ukuran \textit{candidate pool}}
+	\label{fig:4212_time_per_pool}
+\end{figure}
 
 Berdasarkan rata-rata seluruh jenis \textit{query}, \textit{pool} 5 membutuhkan waktu 8.04 detik, \textit{pool} 10 meningkat menjadi 17.52 detik, \textit{pool} 15 menjadi 27.41 detik, dan \textit{pool} 20 mencapai 35.17 detik. Setiap penambahan 5 kandidat meningkatkan waktu rata-rata sekitar 9.49 detik dari \textit{pool} 5 ke 10, 9.89 detik dari \textit{pool} 10 ke 15, dan 7.75 detik dari \textit{pool} 15 ke 20. Hal ini menunjukkan bahwa semakin besar \textit{candidate pool}, semakin tinggi beban waktu proses \textit{reranking}.
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.85\textwidth]{Gambar/4.2.1.2/viz_time_per_pool.png}
-	\caption{Perbandingan waktu latensi rata-rata berdasarkan ukuran \textit{candidate pool}}
-	\label{fig:latensi_pool}
-\end{figure}
+Secara keseluruhan, analisis pada subbab ini menunjukkan bahwa \textit{candidate pool} berukuran 5 merupakan konfigurasi yang paling optimal untuk sebagian besar jenis \textit{query}, karena memberikan kualitas \textit{retrieval} terbaik sekaligus meminimalkan latensi tambahan. Pengecualian ditemukan pada \textit{query} eksplisit panjang di mana \textit{pool} 15 menghasilkan performa sedikit lebih baik. Namun, secara umum, penambahan kandidat di atas 5 cenderung menurunkan akurasi dan meningkatkan latensi secara konsisten, terutama pada \textit{query} implisit.
 
 \subsubsection{Analisis Komparatif Independen antara \textit{Hybrid Retrieval} dan \textit{Reranking}}
 
-Perbandingan ini mengacu pada konfigurasi CE=0 (\textit{hybrid retrieval} dengan komposisi optimal 0.5:0.5) dan CE=1 (\textit{reranking retrieval} dengan \textit{pool} optimal 5). Secara umum, \textit{reranker} lebih unggul dibandingkan \textit{hybrid retrieval} pada sebagian besar jenis \textit{query}.
+Analisis pada subbab ini dilakukan untuk membandingkan kinerja dua pendekatan secara independen, yaitu \textit{Hybrid Retrieval} dengan komposisi optimal (\textit{dense}=0.50) dan \textit{Reranking Retrieval} dengan \textit{pool} optimal (\textit{pool}=5). Perbandingan ini bertujuan untuk melihat sejauh mana penambahan komponen \textit{cross-encoder reranking} mampu meningkatkan kualitas hasil dibandingkan \textit{hybrid retrieval} tanpa \textit{reranking}. Hasil evaluasi pada keempat jenis \textit{query} ditunjukkan pada Gambar~\ref{fig:4213_eksplisit_short}--\ref{fig:4213_implisit_long}.
 
 \textbf{Hasil pada \textit{Query} Pendek Eksplisit}
 
-Metode \textit{Reranking} optimal dengan \textit{pool} 5 konsisten menghasilkan nilai terbaik pada seluruh metrik dibanding \textit{Hybrid Scoring} optimal komposisi 0.5:0.5. Keunggulan paling terlihat pada Recall@3 dan metrik \textit{rank-sensitive}, dengan Recall@3 lebih tinggi 0.020, ARR lebih tinggi 0.020, dan NDCG@3 lebih tinggi 0.025. Pada Hit@3, selisihnya relatif kecil yaitu 0.004, karena kedua metode sama-sama sudah mencapai cakupan yang sangat tinggi.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\textwidth,keepaspectratio]{Gambar/4.2.1.3_eksplisit_short.png}
+	\caption{Perbandingan metrik evaluasi antara \textit{hybrid retrieval} dan \textit{reranking} pada \textit{query} pendek eksplisit}
+	\label{fig:4213_eksplisit_short}
+\end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4213_eksplisit_short} menunjukkan bahwa metode \textit{Reranking} optimal dengan \textit{pool} 5 konsisten menghasilkan nilai terbaik pada seluruh metrik dibanding \textit{Hybrid Retrieval} optimal komposisi 0.50:0.50. \textit{Reranker} memperoleh Hit@3 sebesar 1.000 dan Recall@3 sebesar 0.941, lebih tinggi masing-masing 0.004 dan 0.020 dibanding \textit{Hybrid}. Keunggulan paling terlihat pada metrik \textit{rank-sensitive}, dengan ARR lebih tinggi 0.020 dan NDCG@3 lebih tinggi 0.025. Pada Hit@3, selisihnya relatif kecil karena kedua metode sama-sama sudah mencapai cakupan yang sangat tinggi.
 
 \textbf{Hasil pada \textit{Query} Panjang Eksplisit}
 
-Performa \textit{Hybrid} dan \textit{Reranker} relatif seimbang pada \textit{query} eksplisit panjang. \textit{Reranker} sedikit lebih unggul pada Hit@3 sebesar 0.012, sedangkan Recall@3 menghasilkan nilai yang sama. Namun, pada metrik \textit{rank-sensitive}, \textit{Hybrid} sedikit lebih baik dengan ARR lebih tinggi 0.008 dan NDCG@3 lebih tinggi 0.005. Hal ini menunjukkan bahwa untuk \textit{query} eksplisit panjang, \textit{Hybrid} masih kompetitif dalam menjaga kualitas urutan dokumen.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\textwidth,keepaspectratio]{Gambar/4.2.1.3_eksplisit_long.png}
+	\caption{Perbandingan metrik evaluasi antara \textit{hybrid retrieval} dan \textit{reranking} pada \textit{query} panjang eksplisit}
+	\label{fig:4213_eksplisit_long}
+\end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4213_eksplisit_long} menunjukkan bahwa performa \textit{Hybrid} dan \textit{Reranker} relatif seimbang pada \textit{query} eksplisit panjang. \textit{Reranker} sedikit lebih unggul pada Hit@3 sebesar 0.012, sedangkan Recall@3 menghasilkan nilai yang sama (0.662). Namun, pada metrik \textit{rank-sensitive}, \textit{Hybrid} sedikit lebih baik dengan ARR lebih tinggi 0.008 dan NDCG@3 lebih tinggi 0.005. Hal ini menunjukkan bahwa untuk \textit{query} eksplisit panjang, \textit{Hybrid} masih kompetitif dalam menjaga kualitas urutan dokumen.
 
 \textbf{Hasil pada \textit{Query} Pendek Implisit}
 
-\textit{Reranker pool} 5 memberikan peningkatan paling konsisten dibanding \textit{Hybrid} pada seluruh metrik. Selisih terbesar muncul pada metrik \textit{coverage}, yaitu Hit@3 lebih tinggi 0.068 dan Recall@3 lebih tinggi 0.070. Pada metrik \textit{rank-sensitive}, \textit{Reranker} juga unggul dengan ARR lebih tinggi 0.031 dan NDCG@3 lebih tinggi 0.044. Hasil ini menunjukkan bahwa \textit{reranking} membantu memperbaiki relevansi pada \textit{query} implisit pendek.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\textwidth,keepaspectratio]{Gambar/4.2.1.3_implisit_short.png}
+	\caption{Perbandingan metrik evaluasi antara \textit{hybrid retrieval} dan \textit{reranking} pada \textit{query} pendek implisit}
+	\label{fig:4213_implisit_short}
+\end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4213_implisit_short} menunjukkan bahwa \textit{Reranker pool} 5 memberikan peningkatan paling konsisten dibanding \textit{Hybrid} pada seluruh metrik. Selisih terbesar muncul pada metrik \textit{coverage}, yaitu Hit@3 lebih tinggi 0.068 (0.828 vs 0.760) dan Recall@3 lebih tinggi 0.070 (0.623 vs 0.553). Pada metrik \textit{rank-sensitive}, \textit{Reranker} juga unggul dengan ARR lebih tinggi 0.031 dan NDCG@3 lebih tinggi 0.044. Hasil ini menunjukkan bahwa \textit{reranking} membantu memperbaiki relevansi pada \textit{query} implisit pendek yang tidak mengandung istilah kontrol secara eksplisit.
 
 \textbf{Hasil pada \textit{Query} Panjang Implisit}
 
-\textit{Reranker} kembali unggul pada seluruh metrik untuk \textit{query} implisit panjang. Dibanding \textit{Hybrid}, \textit{Reranker} meningkatkan Hit@3 sebesar 0.044 dan Recall@3 sebesar 0.050, sedangkan pada metrik \textit{rank-sensitive} ARR meningkat 0.010 dan NDCG@3 meningkat 0.025. Dengan demikian, \textit{Reranker} lebih efektif untuk \textit{query} implisit karena mampu menyaring kandidat yang lebih relevan setelah proses \textit{retrieval} awal.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\textwidth,keepaspectratio]{Gambar/4.2.1.3_implisit_long.png}
+	\caption{Perbandingan metrik evaluasi antara \textit{hybrid retrieval} dan \textit{reranking} pada \textit{query} panjang implisit}
+	\label{fig:4213_implisit_long}
+\end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4213_implisit_long} menunjukkan bahwa \textit{Reranker} kembali unggul pada seluruh metrik untuk \textit{query} implisit panjang. Dibanding \textit{Hybrid}, \textit{Reranker} meningkatkan Hit@3 sebesar 0.044 (0.840 vs 0.796) dan Recall@3 sebesar 0.050 (0.624 vs 0.574), sedangkan pada metrik \textit{rank-sensitive} ARR meningkat 0.010 dan NDCG@3 meningkat 0.025. Dengan demikian, \textit{Reranker} lebih efektif untuk \textit{query} implisit karena mampu menyaring kandidat yang lebih relevan setelah proses \textit{retrieval} awal.
+
+Secara keseluruhan, analisis pada subbab ini menunjukkan bahwa \textit{Reranker} dengan \textit{pool} 5 lebih unggul dibanding \textit{Hybrid Retrieval} pada sebagian besar jenis \textit{query}, terutama pada \textit{query} implisit yang memiliki ambiguitas tinggi. Pengecualian ditemukan pada \textit{query} eksplisit panjang, di mana kedua metode menunjukkan performa yang relatif seimbang. Temuan ini mengindikasikan bahwa penambahan komponen \textit{cross-encoder reranking} memberikan kontribusi yang paling signifikan ketika \textit{query} tidak menyebutkan istilah kontrol secara langsung.
 
 \subsubsection{Analisis Komparatif Komposisi \textit{Scoring Hybrid Retrieval} dan \textit{Reranking}}
 
+Analisis pada subbab ini dilakukan untuk mengevaluasi pengaruh komposisi pembobotan antara skor \textit{hybrid retrieval} dan skor \textit{cross-encoder reranking} dalam proses \textit{score fusion}. Tiga komposisi yang diuji adalah CE=0.25 (dominan \textit{Hybrid}), CE=0.50 (seimbang), dan CE=0.75 (dominan CE). Metrik evaluasi yang digunakan mencakup Hit@3, Recall@3, ARR, dan NDCG@3. Hasil evaluasi pada keempat jenis \textit{query} ditunjukkan pada Gambar~\ref{fig:4214_eksplisit_short}--\ref{fig:4214_implisit_long}.
+
 \textbf{Hasil pada \textit{Query} Pendek Eksplisit}
 
-Komposisi dominan CE memberikan hasil lebih unggul pada metrik \textit{coverage}, dengan Recall@3 lebih tinggi 0.011 dibanding dominan \textit{Hybrid}, sedangkan Hit@3 relatif setara karena seluruh konfigurasi mencapai nilai 1.000. Pada metrik \textit{rank-sensitive}, dominan CE juga konsisten lebih baik, dengan ARR lebih tinggi 0.021 dan NDCG@3 lebih tinggi 0.021. Hal ini menunjukkan bahwa \textit{query} eksplisit pendek lebih terbantu oleh dominasi \textit{Cross-Encoder} dalam proses \textit{score fusion}.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\textwidth,keepaspectratio]{Gambar/4.2.1.4_eksplisit_short.png}
+	\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{scoring} pada \textit{query} pendek eksplisit}
+	\label{fig:4214_eksplisit_short}
+\end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4214_eksplisit_short} menunjukkan bahwa komposisi dominan CE memberikan hasil lebih unggul pada metrik \textit{coverage}, dengan CE=0.75 memperoleh Recall@3 sebesar 0.938, lebih tinggi 0.011 dibanding CE=0.25 yang memperoleh 0.927, sedangkan Hit@3 relatif setara karena seluruh konfigurasi mencapai nilai 1.000. Pada metrik \textit{rank-sensitive}, dominan CE juga konsisten lebih baik, dengan ARR lebih tinggi 0.021 dan NDCG@3 lebih tinggi 0.021. Hal ini menunjukkan bahwa \textit{query} eksplisit pendek lebih terbantu oleh dominasi \textit{Cross-Encoder} dalam proses \textit{score fusion}.
 
 \textbf{Hasil pada \textit{Query} Panjang Eksplisit}
 
-Komposisi dominan \textit{Hybrid} memberikan hasil lebih unggul pada metrik \textit{coverage}, dengan Hit@3 lebih tinggi 0.004 dan Recall@3 lebih tinggi 0.015 dibanding dominan CE. Pada metrik \textit{rank-sensitive}, perbedaannya relatif kecil, di mana dominan CE sedikit lebih baik pada ARR sebesar 0.002, sedangkan dominan \textit{Hybrid} lebih unggul pada NDCG@3 sebesar 0.004. Namun, komposisi seimbang CE=0.50 menghasilkan ARR dan NDCG@3 terbaik, sehingga \textit{query} eksplisit panjang lebih optimal ketika bobot CE dan \textit{Hybrid} tidak terlalu dominan pada salah satu sisi.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\textwidth,keepaspectratio]{Gambar/4.2.1.4_eksplisit_long.png}
+	\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{scoring} pada \textit{query} panjang eksplisit}
+	\label{fig:4214_eksplisit_long}
+\end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4214_eksplisit_long} menunjukkan bahwa komposisi dominan \textit{Hybrid} (CE=0.25) memberikan hasil lebih unggul pada metrik \textit{coverage}, dengan Hit@3 sebesar 0.884 dan Recall@3 sebesar 0.668, lebih tinggi masing-masing 0.004 dan 0.015 dibanding dominan CE (CE=0.75). Pada metrik \textit{rank-sensitive}, perbedaannya relatif kecil, di mana dominan CE sedikit lebih baik pada ARR sebesar 0.002, sedangkan dominan \textit{Hybrid} lebih unggul pada NDCG@3 sebesar 0.004. Namun, komposisi seimbang CE=0.50 menghasilkan ARR sebesar 0.570 dan NDCG@3 sebesar 0.686 yang merupakan nilai terbaik, sehingga \textit{query} eksplisit panjang lebih optimal ketika bobot CE dan \textit{Hybrid} tidak terlalu dominan pada salah satu sisi.
 
 \textbf{Hasil pada \textit{Query} Pendek Implisit}
 
-Pada \textit{query} pendek implisit, konfigurasi dengan CE dominan (0.75) menghasilkan performa yang lebih baik pada metrik \textit{coverage}, sedangkan konfigurasi \textit{Hybrid} dominan lebih unggul pada metrik \textit{rank-sensitive}. Komposisi seimbang 0.5:0.5 kembali menjadi titik \textit{trade-off} yang optimal di antara keduanya.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\textwidth,keepaspectratio]{Gambar/4.2.1.4_implisit_short.png}
+	\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{scoring} pada \textit{query} pendek implisit}
+	\label{fig:4214_implisit_short}
+\end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4214_implisit_short} menunjukkan bahwa pada \textit{query} pendek implisit, konfigurasi dengan CE dominan (CE=0.75) menghasilkan performa yang lebih baik pada metrik \textit{coverage}. CE=0.75 memperoleh Hit@3 sebesar 0.840 dan Recall@3 sebesar 0.635, lebih tinggi masing-masing 0.008 dan 0.016 dibanding CE=0.25. Sementara itu, pada metrik \textit{rank-sensitive}, konfigurasi \textit{Hybrid} dominan (CE=0.25) sedikit lebih unggul dengan ARR lebih tinggi 0.006 dan NDCG@3 lebih tinggi 0.002. Komposisi seimbang CE=0.50 kembali menjadi titik \textit{trade-off} yang optimal di antara keduanya.
 
 \textbf{Hasil pada \textit{Query} Panjang Implisit}
 
-Selain Hit@3 yang hasilnya relatif setara, komposisi seimbang 0.5:0.5 konsisten menghasilkan nilai terbaik pada metrik lainnya. Dominan \textit{Hybrid} sedikit lebih unggul pada Recall@3, sedangkan dominan CE sedikit lebih baik pada ARR dan NDCG@3. Hal ini mengonfirmasi bahwa keseimbangan bobot antara \textit{Hybrid} dan CE menghasilkan performa yang paling stabil pada \textit{query} implisit panjang.
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.85\textwidth,keepaspectratio]{Gambar/4.2.1.4_implisit_long.png}
+	\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{scoring} pada \textit{query} panjang implisit}
+	\label{fig:4214_implisit_long}
+\end{figure}
+Hasil evaluasi pada Gambar~\ref{fig:4214_implisit_long} menunjukkan bahwa selain Hit@3 yang hasilnya relatif setara (0.860 pada ketiga konfigurasi), komposisi seimbang CE=0.50 konsisten menghasilkan nilai terbaik pada metrik lainnya. CE=0.50 memperoleh Recall@3 sebesar 0.648, ARR sebesar 0.481, dan NDCG@3 sebesar 0.629. Dominan \textit{Hybrid} (CE=0.25) sedikit lebih unggul pada Recall@3 sebesar 0.637 vs CE=0.75 sebesar 0.643, sedangkan dominan CE sedikit lebih baik pada ARR dan NDCG@3. Hal ini mengonfirmasi bahwa keseimbangan bobot antara \textit{Hybrid} dan CE menghasilkan performa yang paling stabil pada \textit{query} implisit panjang.
+
+Secara keseluruhan, analisis pada subbab ini menunjukkan bahwa komposisi \textit{scoring} yang optimal bergantung pada jenis \textit{query}. Pada \textit{query} eksplisit pendek, dominasi CE memberikan hasil terbaik. Pada \textit{query} eksplisit panjang dan implisit panjang, komposisi seimbang CE=0.50 menjadi konfigurasi yang paling stabil. Pada \textit{query} implisit pendek, terdapat \textit{trade-off} antara \textit{coverage} yang diuntungkan oleh dominasi CE dan kualitas peringkat yang diuntungkan oleh dominasi \textit{Hybrid}. Temuan ini mengindikasikan bahwa penyesuaian bobot \textit{score fusion} perlu disesuaikan dengan karakteristik \textit{query} untuk memperoleh performa yang optimal.
 
 \subsection{Analisis Hasil Eksperimen \textit{Query} Dokumen DTI}
 
 \subsubsection{Analisis Komparatif Komposisi \textit{Dense} dan \textit{Sparse} pada \textit{Hybrid Retrieval}}
 
-Sama seperti pada \textit{query} sintetis, proporsi 0.5:0.5 menjadi konfigurasi paling optimal untuk seluruh metrik kecuali Hit@3. Dominan \textit{sparse} selalu konsisten lebih baik dibanding dominan \textit{dense}, yang menunjukkan bahwa pencocokan leksikal tetap memiliki kontribusi penting pada dokumen DTI.
+Hasil evaluasi pada \textit{query} dokumen DTI menunjukkan pola yang serupa dengan \textit{query} sintetis. Proporsi seimbang 0.50:0.50 menjadi konfigurasi paling optimal untuk seluruh metrik kecuali Hit@3. Dominan \textit{sparse} selalu konsisten lebih baik dibanding dominan \textit{dense}, yang menunjukkan bahwa pencocokan leksikal tetap memiliki kontribusi penting pada dokumen DTI. Hal ini mengindikasikan bahwa karakteristik \textit{query} dari dokumen nyata DTI yang cenderung menggunakan istilah formal dan terstruktur lebih sesuai dengan pendekatan \textit{sparse retrieval}.
 
 \subsubsection{Analisis Komparatif Jumlah \textit{Candidate Pool} pada \textit{Reranking Retrieval}}
 
-Sama seperti pada \textit{query} sintetis, semakin banyak \textit{candidate pool} maka hasil akurasi menurun secara konsisten untuk keempat metrik evaluasi. \textit{Pool} 5 tetap menjadi konfigurasi terbaik yang meminimalkan \textit{noise} dan latensi tambahan.
+Sama seperti pada \textit{query} sintetis, semakin banyak \textit{candidate pool} maka hasil akurasi menurun secara konsisten untuk keempat metrik evaluasi. \textit{Pool} 5 tetap menjadi konfigurasi terbaik yang meminimalkan \textit{noise} dan latensi tambahan. Temuan ini mengonfirmasi bahwa pola penurunan akurasi akibat penambahan kandidat tidak hanya terjadi pada \textit{query} sintetis, tetapi juga pada \textit{query} yang bersumber dari dokumen nyata.
 
 \subsubsection{Analisis Komparatif Independen antara \textit{Hybrid Retrieval} dan \textit{Reranking}}
 
-Berbeda dari \textit{query} sintetis yang lebih menguntungkan \textit{reranker}, pada kasus dokumen DTI komponen \textit{hybrid} lebih dominan dan menunjukkan performa yang lebih baik. Hal ini mengindikasikan bahwa karakteristik \textit{query} dari dokumen nyata DTI lebih sesuai dengan pendekatan \textit{hybrid retrieval} dibandingkan \textit{reranking} murni.
+Berbeda dari \textit{query} sintetis yang lebih menguntungkan \textit{reranker}, pada kasus dokumen DTI komponen \textit{hybrid} lebih dominan dan menunjukkan performa yang lebih baik. Hal ini mengindikasikan bahwa karakteristik \textit{query} dari dokumen nyata DTI lebih sesuai dengan pendekatan \textit{hybrid retrieval} dibandingkan \textit{reranking} murni. Perbedaan ini dapat dikaitkan dengan sifat dokumen DTI yang lebih terstruktur dan menggunakan istilah kebijakan yang lebih konsisten, sehingga \textit{hybrid retrieval} yang menggabungkan pencocokan leksikal dan semantik mampu menangkap relevansi dengan lebih efektif.
 
 \subsubsection{Analisis Komparatif Komposisi \textit{Scoring Hybrid Retrieval} dan \textit{Reranking}}
 
-Sejalan dengan hasil analisis independen, pada kasus dokumen DTI komponen \textit{hybrid} lebih dominan dalam proses \textit{score fusion}. Hal ini berbeda dengan pola pada \textit{query} sintetis yang lebih diuntungkan dengan dominasi \textit{Cross-Encoder}.
+Sejalan dengan hasil analisis independen, pada kasus dokumen DTI komponen \textit{hybrid} lebih dominan dalam proses \textit{score fusion}. Hal ini berbeda dengan pola pada \textit{query} sintetis yang lebih diuntungkan dengan dominasi \textit{Cross-Encoder}. Temuan ini memperkuat kesimpulan bahwa konfigurasi \textit{scoring} yang optimal bergantung pada sumber dan karakteristik \textit{query}, di mana \textit{query} sintetis yang bersifat evaluatif lebih terbantu oleh \textit{reranking}, sedangkan \textit{query} dokumen DTI yang bersifat nyata lebih terbantu oleh \textit{hybrid retrieval}.
+
+
+
