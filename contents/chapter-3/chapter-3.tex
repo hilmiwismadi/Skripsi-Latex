@@ -159,19 +159,31 @@ Lalu untuk menguji sensitivitas sistem terhadap variasi \textit{input}, \textit{
 \hline
 Pendek Eksplisit &
 \textit{Query} singkat (1--2 kalimat) yang secara langsung menyebutkan istilah kontrol keamanan informasi seperti dokumentasi, persetujuan, atau aktivitas pemantauan. Memiliki tingkat ambiguitas rendah dan mudah dipetakan ke kontrol ISO 27001 melalui pencocokan kata kunci. &
-``Sistem belum memiliki perlindungan terhadap \textit{malware} yang memadai. Selain itu, tidak terdapat aktivitas pemantauan yang konsisten untuk mendeteksi ancaman.'' \\
+``Sistem belum memiliki perlindungan terhadap \textbf{malware} yang memadai. Selain itu, tidak terdapat \textbf{aktivitas pemantauan} yang konsisten untuk mendeteksi ancaman.'' \\
 \hline
 Panjang Eksplisit &
 \textit{Query} berbentuk paragraf (3--5 kalimat) dengan gaya bahasa formal dan deskriptif seperti dokumen organisasi. Tetap menyebutkan istilah kontrol secara eksplisit, namun mengandung tambahan konteks atau \textit{noise} sehingga menyerupai teks nyata dalam dokumen profesional. &
-``Organisasi perlu menyelenggarakan perlindungan terhadap \textit{malware} secara konsisten, mencakup pengendalian risiko, aktivitas pemantauan, dan dokumentasi prosedur yang dapat ditinjau berkala.'' \\
+``Untuk mendukung keberlangsungan operasional sistem informasi yang aman, organisasi perlu menyelenggarakan perlindungan terhadap \textbf{malware} secara konsisten dan berkesinambungan. Mekanisme tersebut mencakup memastikan informasi dan fasilitas pemrosesan informasi dilindungi dari malware serta pengendalian terhadap potensi risiko yang dapat mengganggu operasional. Dalam hubungannya dengan hal tersebut, pelaksanaan \textbf{aktivitas pemantauan} menjadi esensial dalam menjamin efektivitas pengendalian keamanan informasi. Pengendalian tersebut perlu didukung oleh komitmen seluruh unit kerja serta didokumentasikan dalam bentuk prosedur yang dapat ditinjau secara berkala.'' \\
 \hline
 Pendek Implisit &
 \textit{Query} singkat (1--2 kalimat) yang tidak menyebutkan istilah kontrol secara langsung, melainkan menggambarkan gejala atau dampak dari ketidakhadiran kontrol. Memiliki ambiguitas lebih tinggi dan membutuhkan pemahaman semantik. &
-``Beberapa komputer terinfeksi setelah staf mengunduh lampiran \textit{email} mencurigakan, namun tim keamanan tidak memiliki \textit{log} untuk menelusuri penyebarannya.'' \\
+``DTI UGM mendeteksi beberapa komputer di fakultas yang \textbf{terinfeksi} setelah staf mengunduh lampiran \textbf{email mencurigakan}, namun tim keamanan tidak memiliki \textbf{log aktivitas jaringan} untuk melacak sejauh mana penyebarannya ke sistem lain di universitas.'' \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Jenis Variasi \textit{Query} (lanjutan)}
+\label{tab:jenis_query_lanjutan}
+\begin{tabular}{|P{2.2cm}|P{4.4cm}|P{5.8cm}|}
+\hline
+\textbf{Jenis \textit{Query}} & \textbf{Deskripsi} & \textbf{Contoh} \\
 \hline
 Panjang Implisit &
 \textit{Query} berbentuk paragraf (3--6 kalimat) dengan gaya bahasa formal dan netral seperti peraturan atau dokumen administratif. Tidak mengandung istilah kontrol secara eksplisit, tetapi menggambarkan kondisi organisasi, ketidakkonsistenan, atau kebutuhan akan keselarasan dalam operasional. &
-``Tim keamanan mendeteksi lonjakan aktivitas jaringan mencurigakan, indikasi infeksi perangkat, dan dokumen terenkripsi akibat \textit{phishing}, namun belum memiliki pemantauan dan peringatan dini yang memadai.'' \\
+``Tim keamanan DTI mendeteksi lonjakan aktivitas jaringan yang mencurigakan di server pusat saat jam operasional pelayanan akademik berlangsung, namun belum memiliki \textbf{mekanisme pemantauan real-time} untuk mengidentifikasi sumber anomali tersebut secara akurat. Dua unit kerja di fakultas melaporkan bahwa perangkat laptop staf sering mengalami kinerja lambat dan \textbf{muncul iklan pop-up} yang tidak diinginkan, mengindikasikan kemungkinan \textbf{infeksi perangkat lunak} berbahaya melalui unduhan yang tidak aman. Pengelola portal layanan akademik menyatakan belum memiliki sistem deteksi otomatis yang dapat memberikan peringatan dini ketika terdapat upaya akses yang tidak wajar terhadap basis data rekam mahasiswa.'' \\
 \hline
 \end{tabular}
 \end{table}
