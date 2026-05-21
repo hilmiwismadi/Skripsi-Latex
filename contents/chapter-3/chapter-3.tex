@@ -62,54 +62,31 @@ Dalam proses pengembangan dan evaluasi sistem \textit{Retrieval-Augmented Genera
 
 Desain penelitian disusun dengan menentukan variabel independen, dependen, dan kontrol agar proses pengujian dapat dilakukan secara sistematis dan terukur. Variabel independen mencakup variasi jenis \textit{query}, metode \textit{retrieval}, serta kombinasi \textit{scoring} yang diterapkan pada sistem. Variabel dependen digunakan untuk mengukur performa sistem berdasarkan akurasi \textit{retrieval} dan waktu latensi. Sementara itu, variabel kontrol dijaga tetap konstan selama eksperimen untuk memastikan hasil pengujian lebih konsisten dan dapat dibandingkan secara objektif.
 
-\begin{table}[!htbp]
+
+\begin{table}[H]
 \centering
+\small
 \caption{Variabel Penelitian}
 \label{tab:variabel_penelitian}
-\begin{tabular}{|p{1.5cm}|p{3.2cm}|p{4.8cm}|p{3.8cm}|}
+\begin{tabular}{|p{1.8cm}|p{3.0cm}|p{4.6cm}|p{3.4cm}|}
 \hline
 \textbf{Jenis} & \textbf{Nama Variabel} & \textbf{Deskripsi} & \textbf{Indikator / Parameter} \\
 \hline
-\multirow{2}{*}{Independen} &
-Jenis \textit{Query} &
-Variasi bentuk \textit{query} yang digunakan dalam pengujian sistem RAG &
-\textit{Query} eksplisit dan singkat \newline
-\textit{Query} eksplisit dan panjang \newline
-\textit{Query} implisit dan singkat \newline
-\textit{Query} implisit dan panjang \newline
-\textit{Query} dari dokumen DTI \\
-\cline{2-4}
-& Metode \textit{Retrieval} &
-Pendekatan \textit{retrieval} yang digunakan dalam \textit{pipeline} RAG &
-\textit{Hybrid retrieval} \newline
-\textit{Reranking retrieval} \newline
-Kombinasi pembobotan \textit{scoring} \\
+Independen & Jenis \textit{Query} & Variasi bentuk \textit{query} yang digunakan dalam pengujian sistem RAG & Eksplisit singkat, eksplisit panjang, implisit singkat, implisit panjang, dan dokumen DTI \\
 \hline
-\multirow{2}{*}{Dependen} &
-Akurasi \textit{Retrieval} &
-Tingkat relevansi hasil \textit{retrieval} terhadap \textit{ground truth} &
-Hit@K, Recall@K, ARR, NDCG \\
-\cline{2-4}
-& Latensi Sistem &
-Waktu yang dibutuhkan sistem dalam memproses hingga menghasilkan \textit{output} &
-Waktu eksekusi (ms/detik) \\
+Independen & Metode \textit{Retrieval} & Pendekatan \textit{retrieval} yang digunakan dalam \textit{pipeline} RAG & \textit{Hybrid retrieval}, \textit{reranking retrieval}, dan kombinasi pembobotan \textit{scoring} \\
 \hline
-\multirow{4}{*}{Kontrol} &
-Model \textit{Embedding} \& \textit{Reranker} &
-Model yang digunakan selama eksperimen dijaga tetap sama untuk semua skenario &
-paraphrase-multilingual-MiniLM-L12-v2, BGE \textit{reranker} \\
-\cline{2-4}
-& \textit{Dataset Query} &
-\textit{Dataset query} yang digunakan tetap sama pada seluruh skenario pengujian &
-\textit{Query ground truth} yang telah disusun \\
-\cline{2-4}
-& \textit{Dataset} Dokumen &
-Dokumen sumber yang digunakan dalam \textit{retrieval} tidak berubah &
-Dokumen ISO 27001:2022 \\
-\cline{2-4}
-& Lingkungan Sistem &
-Spesifikasi perangkat dan \textit{environment} eksekusi dijaga konstan &
-Laptop, OS, \textit{dependency} \\
+Dependen & Akurasi \textit{Retrieval} & Tingkat relevansi hasil \textit{retrieval} terhadap \textit{ground truth} & Hit@K, Recall@K, ARR, NDCG \\
+\hline
+Dependen & Latensi Sistem & Waktu yang dibutuhkan sistem dalam memproses hingga menghasilkan \textit{output} & Waktu eksekusi \\
+\hline
+Kontrol & Model \textit{Embedding} dan \textit{Reranker} & Model yang digunakan dijaga tetap sama untuk semua skenario & paraphrase-multilingual-MiniLM-L12-v2 dan BGE \textit{reranker} \\
+\hline
+Kontrol & \textit{Dataset Query} & \textit{Dataset query} yang digunakan tetap sama pada seluruh skenario pengujian & \textit{Query ground truth} \\
+\hline
+Kontrol & \textit{Dataset} Dokumen & Dokumen sumber yang digunakan dalam \textit{retrieval} tidak berubah & Dokumen ISO 27001:2022 \\
+\hline
+Kontrol & Lingkungan Sistem & Spesifikasi perangkat dan \textit{environment} eksekusi dijaga konstan & Laptop, OS, \textit{dependency} \\
 \hline
 \end{tabular}
 \end{table}
@@ -120,11 +97,13 @@ Pembangunan basis pengetahuan pada penelitian ini dilakukan dengan mengumpulkan 
 
 Seluruh dokumen yang digunakan sebagai sumber pengetahuan (korpus) disimpan dalam format JSON (\textit{JavaScript Object Notation}). Setiap kontrol direpresentasikan sebagai satu entitas data yang terdiri dari atribut deskriptif, indikator audit, serta kata kunci dalam dua bahasa (Bahasa Inggris dan Bahasa Indonesia). Struktur ini dirancang untuk meningkatkan kualitas pencarian semantik serta mendukung variasi \textit{query} pengguna. Struktur data JSON yang digunakan ditunjukkan pada Tabel berikut.
 
-\begin{table}[!htbp]
+
+\begin{table}[H]
 \centering
+\small
 \caption{Struktur Data JSON Basis Pengetahuan}
 \label{tab:json_struktur}
-\begin{tabular}{|p{3.5cm}|p{5.0cm}|p{5.0cm}|}
+\begin{tabular}{|p{3.2cm}|p{4.8cm}|p{4.8cm}|}
 \hline
 \textbf{Nama Atribut} & \textbf{Penjelasan} & \textbf{Contoh Isian} \\
 \hline
@@ -132,27 +111,27 @@ Seluruh dokumen yang digunakan sebagai sumber pengetahuan (korpus) disimpan dala
 \hline
 \texttt{title} & Judul dari kontrol keamanan & Manajemen perubahan \\
 \hline
-\texttt{objective} & Tujuan utama dari kontrol & Memastikan perubahan pada fasilitas pemrosesan informasi dikelola dengan aman \\
+\texttt{objective} & Tujuan utama dari kontrol & Memastikan perubahan fasilitas pemrosesan informasi dikelola dengan aman \\
 \hline
-\texttt{description} & Deskripsi lengkap mengenai kontrol dan implementasinya & Perubahan pada fasilitas pemrosesan informasi dan sistem informasi harus tunduk pada prosedur manajemen perubahan... \\
+\texttt{description} & Deskripsi lengkap mengenai kontrol dan implementasinya & Perubahan sistem informasi harus tunduk pada prosedur manajemen perubahan \\
 \hline
-\texttt{implementation\_guidance} & Panduan implementasi kontrol secara ringkas & Implementasikan proses manajemen perubahan formal dengan penilaian dampak keamanan... \\
+\texttt{implementation}\newline\texttt{\_guidance} & Panduan implementasi kontrol secara ringkas & Proses manajemen perubahan formal dengan penilaian dampak keamanan \\
 \hline
-\texttt{keywords\_en} & Kata kunci dalam Bahasa Inggris untuk mendukung \textit{retrieval} & ``change management'', ``change control'',... \\
+\texttt{keywords\_en} & Kata kunci dalam Bahasa Inggris untuk mendukung \textit{retrieval} & ``change management'', ``change control'' \\
 \hline
 \texttt{keywords\_id} & Kata kunci dalam Bahasa Indonesia & ``manajemen perubahan'', ``kontrol perubahan'' \\
 \hline
-\texttt{audit\_indicators\_en} & Indikator audit dalam Bahasa Inggris untuk mendeteksi ketidaksesuaian & ``unapproved changes made'', ``no change records'' \\
+\texttt{audit}\newline\texttt{\_indicators\_en} & Indikator audit dalam Bahasa Inggris & ``unapproved changes'', ``no change records'' \\
 \hline
-\texttt{audit\_indicators\_id} & Indikator audit dalam Bahasa Indonesia & ``perubahan tidak disetujui'', ``tidak ada catatan perubahan'' \\
+\texttt{audit}\newline\texttt{\_indicators\_id} & Indikator audit dalam Bahasa Indonesia & ``perubahan tidak disetujui'', ``tidak ada catatan perubahan'' \\
 \hline
-\texttt{related\_assets\_en} & Aset terkait dalam Bahasa Inggris & ``production systems'', ``test environment'' \\
+\texttt{related}\newline\texttt{\_assets\_en} & Aset terkait dalam Bahasa Inggris & ``production systems'', ``test environment'' \\
 \hline
-\texttt{related\_assets\_id} & Aset terkait dalam Bahasa Indonesia & ``sistem produksi'', ``lingkungan pengujian'' \\
+\texttt{related}\newline\texttt{\_assets\_id} & Aset terkait dalam Bahasa Indonesia & ``sistem produksi'', ``lingkungan pengujian'' \\
 \hline
-\texttt{security\_principles\_en} & Prinsip keamanan terkait (CIA, dll) dalam Bahasa Inggris & ``integrity'', ``availability'' \\
+\texttt{security}\newline\texttt{\_principles\_en} & Prinsip keamanan terkait dalam Bahasa Inggris & ``integrity'', ``availability'' \\
 \hline
-\texttt{security\_principles\_id} & Prinsip keamanan dalam Bahasa Indonesia & ``integritas'', ``ketersediaan'' \\
+\texttt{security}\newline\texttt{\_principles\_id} & Prinsip keamanan dalam Bahasa Indonesia & ``integritas'', ``ketersediaan'' \\
 \hline
 \end{tabular}
 \end{table}
@@ -169,38 +148,33 @@ Penyusunan \textit{query} sintetis disusun dengan mengacu pada 93 kontrol dalam 
 
 Lalu untuk menguji sensitivitas sistem terhadap variasi \textit{input}, \textit{query} dirancang berdasarkan kombinasi dua variabel, yaitu variasi panjang antara pendek dan panjang serta variasi level eksplisitasi yaitu antara eksplisit atau implisit. Kombinasi kedua variabel ini menghasilkan empat jenis variasi \textit{query}.
 
-{\setlength{\parskip}{0pt}\setlength{\parfillskip}{0pt plus 1fil}%
-\begin{longtable}{|P{2.3cm}|P{4.5cm}|P{6.2cm}|}
+\begin{table}[H]
+\centering
+\footnotesize
 \caption{Jenis Variasi \textit{Query}}
-\label{tab:jenis_query} \\
+\label{tab:jenis_query}
+\begin{tabular}{|P{2.2cm}|P{4.4cm}|P{5.8cm}|}
 \hline
 \textbf{Jenis \textit{Query}} & \textbf{Deskripsi} & \textbf{Contoh} \\
 \hline
-\endfirsthead
-\hline
-\textbf{Jenis \textit{Query}} & \textbf{Deskripsi} & \textbf{Contoh} \\
-\hline
-\endhead
-\hline
-\endfoot
 Pendek Eksplisit &
 \textit{Query} singkat (1--2 kalimat) yang secara langsung menyebutkan istilah kontrol keamanan informasi seperti dokumentasi, persetujuan, atau aktivitas pemantauan. Memiliki tingkat ambiguitas rendah dan mudah dipetakan ke kontrol ISO 27001 melalui pencocokan kata kunci. &
 ``Sistem belum memiliki perlindungan terhadap \textit{malware} yang memadai. Selain itu, tidak terdapat aktivitas pemantauan yang konsisten untuk mendeteksi ancaman.'' \\
 \hline
 Panjang Eksplisit &
 \textit{Query} berbentuk paragraf (3--5 kalimat) dengan gaya bahasa formal dan deskriptif seperti dokumen organisasi. Tetap menyebutkan istilah kontrol secara eksplisit, namun mengandung tambahan konteks atau \textit{noise} sehingga menyerupai teks nyata dalam dokumen profesional. &
-``Untuk mendukung keberlangsungan operasional sistem informasi yang aman, organisasi perlu menyelenggarakan perlindungan terhadap \textit{malware} secara konsisten dan berkesinambungan. Mekanisme tersebut mencakup memastikan informasi dan fasilitas pemrosesan informasi dilindungi dari \textit{malware} serta pengendalian terhadap potensi risiko yang dapat mengganggu operasional. Dalam hubungannya dengan hal tersebut, pelaksanaan aktivitas pemantauan menjadi esensial dalam menjamin efektivitas pengendalian keamanan informasi. Pengendalian tersebut perlu didukung oleh komitmen seluruh unit kerja serta didokumentasikan dalam bentuk prosedur yang dapat ditinjau secara berkala.'' \\
+``Organisasi perlu menyelenggarakan perlindungan terhadap \textit{malware} secara konsisten, mencakup pengendalian risiko, aktivitas pemantauan, dan dokumentasi prosedur yang dapat ditinjau berkala.'' \\
 \hline
 Pendek Implisit &
 \textit{Query} singkat (1--2 kalimat) yang tidak menyebutkan istilah kontrol secara langsung, melainkan menggambarkan gejala atau dampak dari ketidakhadiran kontrol. Memiliki ambiguitas lebih tinggi dan membutuhkan pemahaman semantik. &
-``DTI UGM mendeteksi beberapa komputer di fakultas yang terinfeksi setelah staf mengunduh lampiran \textit{email} mencurigakan, namun tim keamanan tidak memiliki \textit{log} aktivitas jaringan untuk melacak sejauh mana penyebarannya ke sistem lain di universitas.'' \\
+``Beberapa komputer terinfeksi setelah staf mengunduh lampiran \textit{email} mencurigakan, namun tim keamanan tidak memiliki \textit{log} untuk menelusuri penyebarannya.'' \\
 \hline
 Panjang Implisit &
 \textit{Query} berbentuk paragraf (3--6 kalimat) dengan gaya bahasa formal dan netral seperti peraturan atau dokumen administratif. Tidak mengandung istilah kontrol secara eksplisit, tetapi menggambarkan kondisi organisasi, ketidakkonsistenan, atau kebutuhan akan keselarasan dalam operasional. &
-``Tim keamanan DTI mendeteksi lonjakan aktivitas jaringan yang mencurigakan di server pusat saat jam operasional pelayanan akademik berlangsung, namun belum memiliki mekanisme pemantauan \textit{real-time} untuk mengidentifikasi sumber anomali tersebut secara akurat. Dua unit kerja di fakultas melaporkan bahwa perangkat laptop staf sering mengalami kinerja lambat dan muncul iklan \textit{pop-up} yang tidak diinginkan, mengindikasikan kemungkinan infeksi perangkat lunak berbahaya melalui unduhan yang tidak aman. Pengelola portal layanan akademik menyatakan belum memiliki sistem deteksi otomatis yang dapat memberikan peringatan dini ketika terdapat upaya akses yang tidak wajar terhadap basis data rekam mahasiswa. Staf administrasi mengeluhkan dokumen penting secara tiba-tiba tidak dapat diakses karena terenkripsi oleh program berbahaya yang masuk melalui lampiran \textit{email phishing} yang sebelumnya lolos dari \textit{filter} keamanan \textit{email} kampus.'' \\
+``Tim keamanan mendeteksi lonjakan aktivitas jaringan mencurigakan, indikasi infeksi perangkat, dan dokumen terenkripsi akibat \textit{phishing}, namun belum memiliki pemantauan dan peringatan dini yang memadai.'' \\
 \hline
-\end{longtable}
-}
+\end{tabular}
+\end{table}
 
 Selanjutnya, \textit{query} asli disusun menggunakan dokumen kebijakan dan prosedur milik Direktorat Teknologi Informasi (DTI) UGM yang berkaitan dengan implementasi tata kelola dan teknologi informasi terkini. Dokumen-dokumen tersebut digunakan untuk merepresentasikan kondisi dan kebijakan terbaru organisasi sehingga dapat menjadi acuan dalam menggambarkan status implementasi keamanan informasi UGM saat ini. Berikut merupakan dokumen-dokumen yang digunakan dalam penyusunan \textit{query} asli pada penelitian ini.
 
@@ -241,7 +215,7 @@ Untuk meningkatkan akurasi dan kualitas peringkat hasil \textit{retrieval}, digu
 
 Perancangan komponen \textit{retrieval} pada sistem dilakukan dengan mengimplementasikan pendekatan \textit{hybrid} yang menggabungkan metode berbasis representasi semantik (\textit{dense}) dan pencocokan kata kunci (\textit{sparse}). Komponen pertama adalah transformasi dokumen yang mencakup pengolahan data kontrol standar ISO dari sumber basis pengetahuan menjadi representasi teks yang terstruktur dan siap digunakan dalam proses \textit{retrieval}. Komponen kedua adalah transformasi \textit{query} yaitu proses merepresentasikan \textit{query} ke dalam bentuk yang dapat diproses oleh sistem, baik melalui pendekatan semantik (\textit{dense}) maupun berbasis kata kunci (\textit{sparse}). Komponen ketiga adalah \textit{scoring}, yaitu mekanisme pengolahan dan penggabungan skor dari kedua pendekatan untuk menghasilkan nilai akhir yang digunakan dalam menentukan relevansi dan peringkat dokumen hasil pencarian.
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.68\textwidth,height=0.42\textheight,keepaspectratio]{Gambar/3.6HybridComponent.png}
 	\caption{Komponen hybrid retrieval pada sistem}
@@ -268,7 +242,7 @@ Berdasarkan alur yang ditunjukkan pada Gambar~\ref{fig:retrieval_komponen}, pros
 
 Pengembangan sistem \textit{Retrieval-Augmented Generation} dengan menambahkan tahapan \textit{reranking} berbasis \textit{cross-encoder} dilakukan untuk meningkatkan kualitas hasil \textit{retrieval}. Secara umum, \textit{pipeline} ini terdiri dari 2 tahap utama yaitu melanjutkan bagian dari komponen \textit{retrieval hybrid} sebelumnya dan diproses lebih lanjut untuk pengurutan dokumen berdasarkan relevansi yang lebih mendalam.
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.68\textwidth,height=0.42\textheight,keepaspectratio]{Gambar/3.7RerankerComponent.png}
 	\caption{Komponen cross-encoder reranking pada sistem}
@@ -293,7 +267,7 @@ Penelitian ini dilaksanakan melalui serangkaian tahapan yang dirancang secara si
 
 Gambar~\ref{fig:alur_penelitian} menunjukkan diagram alur penelitian secara keseluruhan yang menggambarkan hubungan antar tahapan penelitian mulai dari tahap persiapan hingga proses evaluasi akhir.
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.76\textwidth,height=0.48\textheight,keepaspectratio]{Gambar/3.8AlurPenelitian.png}
 	\caption{Alur penelitian}

@@ -98,10 +98,10 @@ Secara struktural, ISO/IEC 27001:2022 terdiri dari klausul utama (Clause 4--10) 
 	\item \textbf{Clause 10 (\textit{Improvement})}: Berfokus pada perbaikan berkelanjutan melalui tindakan korektif terhadap ketidaksesuaian.
 \end{enumerate}
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{Gambar/2.1Clause.png}
-	\caption{Struktur klausul ISO/IEC 27001:2022 \cite{kajianAuditDataCenter2023}}
+	\caption{Struktur klausul ISO/IEC 27001:2022. Sumber: \cite{kajianAuditDataCenter2023}}
 	\label{fig:iso27001_struktur}
 \end{figure}
 
@@ -129,10 +129,10 @@ Dalam konteks ISO/IEC 27001, siklus PDCA digunakan sebagai kerangka kerja dalam 
 	Perbaikan berkelanjutan terhadap sistem manajemen keamanan informasi. Organisasi melakukan tindakan korektif terhadap temuan audit, memperbaiki kelemahan kontrol, serta menyesuaikan kebijakan dan prosedur berdasarkan perubahan lingkungan bisnis maupun ancaman keamanan yang berkembang. Dengan demikian, siklus PDCA tidak hanya memastikan kepatuhan terhadap standar, tetapi juga meningkatkan ketahanan sistem terhadap risiko keamanan informasi.
 \end{enumerate}
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.85\textwidth]{Gambar/2.2PDCA.png}
-	\caption{Siklus PDCA dalam ISMS \cite{kajianAuditDataCenter2023}}
+	\caption{Siklus PDCA dalam ISMS. Sumber: \cite{kajianAuditDataCenter2023}}
 	\label{fig:pdca_isms}
 \end{figure}
 
@@ -164,19 +164,15 @@ Annex A dalam ISO/IEC 27001:2022 berfungsi sebagai kumpulan kontrol keamanan (\t
 
 Annex A.5 berfokus pada kontrol yang berkaitan dengan aspek organisasi dan tata kelola keamanan informasi. Kontrol dalam kategori ini mencakup kebijakan, struktur organisasi, pengelolaan risiko, serta hubungan dengan pihak eksternal. Tujuan utama dari kontrol A.5 adalah memastikan bahwa keamanan informasi dikelola secara strategis dan terintegrasi dalam proses bisnis organisasi.
 
-\begin{longtable}{|P{1.7cm}|P{5.2cm}|P{6.6cm}|}
+\begin{table}[H]
+\centering
+\small
 \caption{Kontrol Annex A.5 -- \textit{Organizational Controls}}
-\label{tab:annex_a5} \\
+\label{tab:annex_a5}
+\begin{tabular}{|P{1.6cm}|P{5.0cm}|P{6.4cm}|}
 \hline
 \textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
 \hline
-\endfirsthead
-\hline
-\textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
-\hline
-\endhead
-\hline
-\endfoot
 A.5.1  & \textit{Policies for Information Security}                              & Menetapkan kebijakan keamanan sebagai dasar ISMS \\
 \hline
 A.5.2  & \textit{Information Security Roles and Responsibilities}                & Mendefinisikan peran dan tanggung jawab keamanan \\
@@ -251,18 +247,20 @@ A.5.36 & \textit{Compliance with Policies and Standards for Information Security
 \hline
 A.5.37 & \textit{Documented Operating Procedures}                                & Menyusun prosedur operasional yang terdokumentasi dengan baik \\
 \hline
-\end{longtable}
+\end{tabular}
+\end{table}
 
 \vspace{4pt}
 \noindent\textbf{2. A.6 \textit{People Controls}}
 
 Annex A.6 berfokus pada aspek sumber daya manusia dalam keamanan informasi. Kontrol ini mencakup pengelolaan keamanan sebelum, selama, dan setelah masa kerja karyawan, dengan tujuan meminimalkan risiko yang berasal dari faktor manusia.
 
-\begin{table}[!htbp]
+\begin{table}[H]
 \centering
+\small
 \caption{Kontrol Annex A.6 -- \textit{People Controls}}
 \label{tab:annex_a6}
-\begin{tabular}{|p{1.7cm}|p{5.2cm}|p{6.6cm}|}
+\begin{tabular}{|P{1.6cm}|P{5.0cm}|P{6.4cm}|}
 \hline
 \textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
 \hline
@@ -290,11 +288,12 @@ A.6.8 & \textit{Information Security Event Reporting}                         & 
 
 Annex A.7 mencakup kontrol yang berfokus pada perlindungan fisik terhadap aset informasi dan fasilitas organisasi. Tujuannya adalah mencegah akses fisik yang tidak sah, kerusakan, atau gangguan terhadap infrastruktur.
 
-\begin{table}[!htbp]
+\begin{table}[H]
 \centering
+\small
 \caption{Kontrol Annex A.7 -- \textit{Physical Controls}}
 \label{tab:annex_a7}
-\begin{tabular}{|p{1.7cm}|p{5.2cm}|p{6.6cm}|}
+\begin{tabular}{|P{1.6cm}|P{5.0cm}|P{6.4cm}|}
 \hline
 \textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
 \hline
@@ -334,20 +333,15 @@ A.7.14 & \textit{Secure Disposal or Reuse of Equipment}                 & Mengel
 
 Annex A.8 berfokus pada kontrol teknis yang diterapkan pada sistem informasi, jaringan, dan aplikasi. Kontrol ini bertujuan untuk melindungi sistem dari ancaman siber serta memastikan keamanan operasional teknologi.
 
-{\setlength{\parskip}{0pt}\setlength{\parfillskip}{0pt plus 1fil}%
-\begin{longtable}{|P{1.7cm}|P{5.2cm}|P{6.6cm}|}
+\begin{table}[H]
+\centering
+\small
 \caption{Kontrol Annex A.8 -- \textit{Technological Controls}}
-\label{tab:annex_a8} \\
+\label{tab:annex_a8}
+\begin{tabular}{|P{1.6cm}|P{5.0cm}|P{6.4cm}|}
 \hline
 \textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
 \hline
-\endfirsthead
-\hline
-\textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
-\hline
-\endhead
-\hline
-\endfoot
 A.8.1  & \textit{User Endpoint Devices}                                        & Mengamankan perangkat \textit{endpoint} pengguna dari ancaman \\
 \hline
 A.8.2  & \textit{Privileged Access Rights}                                     & Mengelola hak akses istimewa secara ketat \\
@@ -366,6 +360,18 @@ A.8.8  & \textit{Management of Technical Vulnerabilities}                      &
 \hline
 A.8.9  & \textit{Configuration Management}                                     & Mengelola konfigurasi sistem secara konsisten dan aman \\
 \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Kontrol Annex A.8 -- \textit{Technological Controls} (lanjutan 1)}
+\label{tab:annex_a8_lanjutan1}
+\begin{tabular}{|P{1.6cm}|P{5.0cm}|P{6.4cm}|}
+\hline
+\textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
+\hline
 A.8.10 & \textit{Information Deletion}                                         & Menghapus informasi secara aman dan permanen \\
 \hline
 A.8.11 & \textit{Data Masking}                                                 & Melindungi data sensitif melalui teknik \textit{masking} \\
@@ -381,6 +387,76 @@ A.8.15 & \textit{Logging}                                                      &
 A.8.16 & \textit{Monitoring Activities}                                        & Memantau aktivitas sistem secara berkelanjutan \\
 \hline
 A.8.17 & \textit{Clock Synchronisation}                                        & Menyelaraskan waktu sistem untuk konsistensi \textit{log} \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Kontrol Annex A.8 -- \textit{Technological Controls} (lanjutan 2)}
+\label{tab:annex_a8_lanjutan2}
+\begin{tabular}{|P{1.6cm}|P{5.0cm}|P{6.4cm}|}
+\hline
+\textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
+\hline
+A.8.18 & \textit{Use of Privileged Utility Programs}                           & Mengontrol penggunaan program utilitas khusus \\
+\hline
+A.8.19 & \textit{Installation of Software on Operational Systems}              & Mengatur instalasi perangkat lunak pada sistem operasional \\
+\hline
+A.8.20 & \textit{Network Security}                                             & Mengamankan jaringan dari ancaman dan serangan \\
+\hline
+A.8.21 & \textit{Security of Network Services}                                 & Melindungi layanan jaringan yang digunakan organisasi \\
+\hline
+A.8.22 & \textit{Segregation of Networks}                                      & Memisahkan jaringan untuk mengurangi risiko akses \\
+\hline
+A.8.23 & \textit{Web Filtering}                                                & Menyaring akses \textit{web} untuk mencegah konten berbahaya \\
+\hline
+A.8.24 & \textit{Use of Cryptography}                                          & Menggunakan kriptografi untuk melindungi informasi sensitif \\
+\hline
+A.8.25 & \textit{Secure Development Life Cycle}                                & Menerapkan siklus pengembangan sistem yang aman \\
+\hline
+A.8.26 & \textit{Application Security Requirements}                            & Menetapkan kebutuhan keamanan pada aplikasi \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Kontrol Annex A.8 -- \textit{Technological Controls} (lanjutan 3)}
+\label{tab:annex_a8_lanjutan3}
+\begin{tabular}{|P{1.6cm}|P{5.0cm}|P{6.4cm}|}
+\hline
+\textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
+\hline
+A.8.27 & \textit{Secure System Architecture}                                   & Merancang arsitektur sistem yang aman dan andal \\
+\hline
+A.8.28 & \textit{Secure Coding}                                                & Menerapkan praktik pengkodean yang aman \\
+\hline
+A.8.29 & \textit{Security Testing in Development}                              & Melakukan pengujian keamanan selama pengembangan \\
+\hline
+A.8.30 & \textit{Outsourced Development}                                       & Mengelola keamanan dalam pengembangan oleh pihak ketiga \\
+\hline
+A.8.31 & \textit{Separation of Development, Test and Production Environments}  & Memisahkan lingkungan pengembangan, uji, dan produksi \\
+\hline
+A.8.32 & \textit{Change Management}                                            & Mengelola perubahan sistem secara terkontrol \\
+\hline
+A.8.33 & \textit{Test Information}                                             & Mengelola data uji agar tetap aman \\
+\hline
+A.8.34 & \textit{Protection of Information Systems During Audit Testing}       & Melindungi sistem saat proses audit dan pengujian \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Kontrol Annex A.8 -- \textit{Technological Controls} (lanjutan)}
+\label{tab:annex_a8_lanjutan}
+\begin{tabular}{|P{1.6cm}|P{5.0cm}|P{6.4cm}|}
+\hline
+\textbf{Annex ID} & \textbf{Nama Kontrol} & \textbf{Penjelasan Singkat} \\
 \hline
 A.8.18 & \textit{Use of Privileged Utility Programs}                           & Mengontrol penggunaan program utilitas khusus \\
 \hline
@@ -415,9 +491,8 @@ A.8.32 & \textit{Change Management}                                            &
 A.8.33 & \textit{Test Information}                                             & Mengelola data uji agar tetap aman \\
 \hline
 A.8.34 & \textit{Protection of Information Systems During Audit Testing}       & Melindungi sistem saat proses audit dan pengujian \\
-\hline
-\end{longtable}
-}
+\hline\end{tabular}
+\end{table}
 
 \subsection{Keterbatasan Pendekatan Konvensional dalam Audit Keamanan Informasi}
 
@@ -435,10 +510,10 @@ Arsitektur \textit{Transformer} merupakan model yang diperkenalkan oleh Vaswani 
 
 Sebagai solusi, \textit{Transformer} dirancang tanpa bergantung pada mekanisme RNN maupun CNN, melainkan mengandalkan mekanisme \textit{attention}, khususnya \textit{self-attention}. Mekanisme ini memungkinkan model untuk mengevaluasi keterkaitan antar kata dalam suatu urutan secara lebih fleksibel, sehingga mampu memahami konteks secara menyeluruh dan menghasilkan representasi yang lebih baik. Secara teknis, struktur arsitektur \textit{Transformer}, khususnya bagian \textit{encoder} umumnya disajikan dalam bentuk diagram untuk menggambarkan alur pemrosesannya (Gambar~\ref{fig:transformer}).
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
 	\centering
-	\includegraphics[width=0.42\textwidth,height=0.38\textheight,keepaspectratio]{Gambar/2.3Transformer.png}
-	\caption{Arsitektur Transformer \cite{jurafsky2026slp}}
+	\includegraphics[width=0.36\textwidth,height=0.32\textheight,keepaspectratio]{Gambar/2.3Transformer.png}
+	\caption{Arsitektur Transformer. Sumber: \cite{jurafsky2026slp}}
 	\label{fig:transformer}
 \end{figure}
 
@@ -467,10 +542,10 @@ Tidak seperti \textit{fine-tuning} yang membutuhkan \textit{training} parameter 
 
 \textit{Information Retrieval} (IR) merupakan bidang yang berfokus pada proses pencarian dan pengambilan berbagai jenis informasi berdasarkan kebutuhan pengguna, yang umumnya diimplementasikan dalam bentuk \textit{search engine}. Salah satu tugas utama dalam IR adalah \textit{ad hoc retrieval}, di mana pengguna mengajukan kueri dan sistem mengembalikan sekumpulan dokumen yang telah diurutkan berdasarkan relevansi dari suatu koleksi tertentu. Dalam konteks ini, dokumen merujuk pada unit teks yang diindeks dan diambil (seperti halaman \textit{web}, artikel ilmiah, atau paragraf) serta koleksi adalah himpunan dokumen yang digunakan untuk memenuhi kebutuhan informasi.
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{Gambar/2.4IR.png}
-	\caption{Arsitektur umum sistem information retrieval \cite{jurafsky2026slp}}
+	\caption{Arsitektur umum sistem information retrieval. Sumber: \cite{jurafsky2026slp}}
 	\label{fig:ir_arsitektur}
 \end{figure}
 
@@ -480,10 +555,10 @@ Arsitektur tingkat tinggi dari sistem \textit{ad hoc retrieval} terdiri dari dua
 
 \textit{Retrieval-Augmented Generation} (RAG) merupakan metode yang mengintegrasikan teknik \textit{information retrieval} (IR) ke dalam \textit{language model} untuk meningkatkan kualitas jawaban yang dihasilkan. Dalam skenario dasar RAG, sistem terlebih dahulu mengambil dokumen yang relevan dari suatu basis pengetahuan menggunakan teknik \textit{retrieval}, kemudian memanfaatkan \textit{large language model} (LLM) untuk menghasilkan jawaban berdasarkan dokumen tersebut serta \textit{query} pengguna \cite{jurafsky2026slp}. Pendekatan ini memiliki beberapa tujuan utama, antara lain mengurangi halusinasi dengan menyediakan sumber informasi yang tepercaya, memungkinkan pemanfaatan data spesifik atau privat (seperti dokumen internal, rekam medis, atau \textit{email}), serta mengatasi keterbatasan pengetahuan model yang bersifat statis dan tidak selalu mutakhir.
 
-\begin{figure}[!htbp]
+\begin{figure}[H]
 	\centering
 	\includegraphics[width=0.9\textwidth]{Gambar/2.5RAG.png}
-	\caption{Arsitektur Retrieval-Augmented Generation \cite{jurafsky2026slp}}
+	\caption{Arsitektur Retrieval-Augmented Generation. Sumber: \cite{jurafsky2026slp}}
 	\label{fig:rag_arsitektur}
 \end{figure}
 
