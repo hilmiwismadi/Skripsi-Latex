@@ -284,22 +284,70 @@ Hasil evaluasi pada Gambar~\ref{fig:4214_implisit_long} menunjukkan bahwa selain
 
 Secara keseluruhan, analisis pada subbab ini menunjukkan bahwa komposisi \textit{scoring} yang optimal bergantung pada jenis \textit{query}. Pada \textit{query} eksplisit pendek, dominasi CE memberikan hasil terbaik. Pada \textit{query} eksplisit panjang dan implisit panjang, komposisi seimbang CE=0.50 menjadi konfigurasi yang paling stabil. Pada \textit{query} implisit pendek, terdapat \textit{trade-off} antara \textit{coverage} yang diuntungkan oleh dominasi CE dan kualitas peringkat yang diuntungkan oleh dominasi \textit{Hybrid}. Temuan ini mengindikasikan bahwa penyesuaian bobot \textit{score fusion} perlu disesuaikan dengan karakteristik \textit{query} untuk memperoleh performa yang optimal.
 
+
 \subsection{Analisis Hasil Eksperimen \textit{Query} Dokumen DTI}
+
+Analisis pada subbab ini dilakukan untuk mengevaluasi performa sistem terhadap \textit{query} yang berasal dari dokumen kebijakan DTI UGM. Berbeda dengan \textit{query} sintetis yang disusun secara terkontrol berdasarkan variasi panjang dan eksplisitasi, \textit{query} dokumen DTI merepresentasikan bentuk kebutuhan informasi yang muncul dari dokumen organisasi nyata. Oleh karena itu, analisis ini digunakan untuk melihat apakah pola performa pada \textit{query} sintetis tetap berlaku ketika sistem diuji pada konteks dokumen aktual. Evaluasi dilakukan terhadap empat skenario yang sama, yaitu komposisi \textit{dense} dan \textit{sparse}, ukuran \textit{candidate pool}, perbandingan independen antara \textit{hybrid retrieval} dan \textit{reranking}, serta komposisi \textit{score fusion} antara skor \textit{hybrid} dan skor CE.
 
 \subsubsection{Analisis Komparatif Komposisi \textit{Dense} dan \textit{Sparse} pada \textit{Hybrid Retrieval}}
 
-Hasil evaluasi pada \textit{query} dokumen DTI menunjukkan pola yang serupa dengan \textit{query} sintetis. Proporsi seimbang 0.50:0.50 menjadi konfigurasi paling optimal untuk seluruh metrik kecuali Hit@3. Dominan \textit{sparse} selalu konsisten lebih baik dibanding dominan \textit{dense}, yang menunjukkan bahwa pencocokan leksikal tetap memiliki kontribusi penting pada dokumen DTI. Hal ini mengindikasikan bahwa karakteristik \textit{query} dari dokumen nyata DTI yang cenderung menggunakan istilah formal dan terstruktur lebih sesuai dengan pendekatan \textit{sparse retrieval}.
+Analisis komposisi \textit{dense} dan \textit{sparse} pada \textit{query} dokumen DTI dilakukan dengan tiga konfigurasi pembobotan, yaitu \textit{dense}=0.25, \textit{dense}=0.50, dan \textit{dense}=0.75. Hasil evaluasi ditunjukkan pada Gambar~\ref{fig:4221_hybrid_scoring_dti}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\textwidth,height=0.46\textheight,keepaspectratio]{Gambar/4.2.2.1_hybrid_scoring_dti.png}
+\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{dense} dan \textit{sparse} pada \textit{query} dokumen DTI}
+\label{fig:4221_hybrid_scoring_dti}
+\end{figure}
+
+Hasil evaluasi pada Gambar~\ref{fig:4221_hybrid_scoring_dti} menunjukkan bahwa konfigurasi seimbang \textit{dense}=0.50 menghasilkan performa terbaik pada tiga dari empat metrik evaluasi, yaitu Recall@3, ARR, dan NDCG@3. Konfigurasi ini memperoleh Recall@3 sebesar 0.537, ARR sebesar 0.364, dan NDCG@3 sebesar 0.575. Sementara itu, konfigurasi dominan \textit{sparse} (\textit{dense}=0.25) memperoleh Hit@3 tertinggi sebesar 0.948, tetapi nilai Recall@3, ARR, dan NDCG@3 masih lebih rendah dibanding konfigurasi seimbang. Adapun konfigurasi dominan \textit{dense} (\textit{dense}=0.75) menghasilkan nilai paling rendah pada seluruh metrik, dengan Hit@3 sebesar 0.831, Recall@3 sebesar 0.468, ARR sebesar 0.327, dan NDCG@3 sebesar 0.511.
+
+Temuan ini menunjukkan bahwa \textit{query} dari dokumen DTI lebih diuntungkan oleh kombinasi seimbang antara pencocokan semantik dan leksikal. Dominasi \textit{sparse} masih membantu meningkatkan peluang menemukan minimal satu dokumen relevan pada top-3, sebagaimana terlihat dari nilai Hit@3 yang paling tinggi. Namun, ketika dilihat dari cakupan dokumen relevan dan kualitas peringkat, komposisi seimbang lebih stabil. Hal ini mengindikasikan bahwa teks dokumen DTI mengandung istilah formal yang dapat dicocokkan secara leksikal, tetapi tetap membutuhkan representasi semantik agar sistem dapat menangkap keterkaitan kontrol yang tidak selalu muncul secara eksplisit dalam kata kunci.
 
 \subsubsection{Analisis Komparatif Jumlah \textit{Candidate Pool} pada \textit{Reranking Retrieval}}
 
-Sama seperti pada \textit{query} sintetis, semakin banyak \textit{candidate pool} maka hasil akurasi menurun secara konsisten untuk keempat metrik evaluasi. \textit{Pool} 5 tetap menjadi konfigurasi terbaik yang meminimalkan \textit{noise} dan latensi tambahan. Temuan ini mengonfirmasi bahwa pola penurunan akurasi akibat penambahan kandidat tidak hanya terjadi pada \textit{query} sintetis, tetapi juga pada \textit{query} yang bersumber dari dokumen nyata.
+Analisis jumlah \textit{candidate pool} dilakukan untuk mengevaluasi pengaruh banyaknya kandidat awal terhadap hasil \textit{reranking}. Empat ukuran \textit{pool} yang diuji adalah 5, 10, 15, dan 20. Hasil evaluasi metrik dan latensi ditunjukkan pada Gambar~\ref{fig:4222_candidate_pool_dti}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\textwidth,height=0.46\textheight,keepaspectratio]{Gambar/4.2.2.2_candidate_pool_dti.png}
+\caption{Perbandingan metrik evaluasi berdasarkan ukuran \textit{candidate pool} pada \textit{query} dokumen DTI}
+\label{fig:4222_candidate_pool_dti}
+\end{figure}
+
+Hasil evaluasi pada Gambar~\ref{fig:4222_candidate_pool_dti} menunjukkan bahwa \textit{candidate pool} berukuran 5 menghasilkan nilai terbaik pada seluruh metrik. Pada konfigurasi ini, sistem memperoleh Hit@3 sebesar 0.857, Recall@3 sebesar 0.468, ARR sebesar 0.302, dan NDCG@3 sebesar 0.485. Ketika ukuran \textit{pool} ditingkatkan menjadi 10, seluruh metrik mengalami penurunan, yaitu Hit@3 menjadi 0.753, Recall@3 menjadi 0.424, ARR menjadi 0.285, dan NDCG@3 menjadi 0.451. Penurunan terus berlanjut pada \textit{pool} 15 dan 20, dengan nilai terendah pada \textit{pool} 20, yaitu Hit@3 sebesar 0.688, Recall@3 sebesar 0.377, ARR sebesar 0.258, dan NDCG@3 sebesar 0.405.
+
+Pola tersebut menunjukkan bahwa penambahan kandidat tidak selalu meningkatkan kualitas hasil \textit{reranking}. Pada \textit{query} dokumen DTI, semakin besar \textit{candidate pool}, semakin besar pula kemungkinan kandidat yang kurang relevan masuk ke tahap \textit{reranking}. Kandidat tambahan tersebut dapat meningkatkan \textit{noise} dan melemahkan kualitas pemeringkatan akhir. Dari sisi efisiensi, waktu total juga meningkat secara konsisten, dari 9.007 detik pada \textit{pool} 5 menjadi 25.610 detik pada \textit{pool} 20. Dengan demikian, \textit{pool} 5 menjadi konfigurasi paling efektif karena memberikan akurasi tertinggi sekaligus latensi paling rendah.
 
 \subsubsection{Analisis Komparatif Independen antara \textit{Hybrid Retrieval} dan \textit{Reranking}}
 
-Berbeda dari \textit{query} sintetis yang lebih menguntungkan \textit{reranker}, pada kasus dokumen DTI komponen \textit{hybrid} lebih dominan dan menunjukkan performa yang lebih baik. Hal ini mengindikasikan bahwa karakteristik \textit{query} dari dokumen nyata DTI lebih sesuai dengan pendekatan \textit{hybrid retrieval} dibandingkan \textit{reranking} murni. Perbedaan ini dapat dikaitkan dengan sifat dokumen DTI yang lebih terstruktur dan menggunakan istilah kebijakan yang lebih konsisten, sehingga \textit{hybrid retrieval} yang menggabungkan pencocokan leksikal dan semantik mampu menangkap relevansi dengan lebih efektif.
+Analisis komparatif independen dilakukan untuk membandingkan konfigurasi terbaik dari \textit{hybrid retrieval} dan konfigurasi terbaik dari \textit{reranking retrieval}. Pada skenario ini, \textit{Hybrid Scoring} menggunakan komposisi \textit{dense}=0.50, sedangkan \textit{Candidate Pool + Reranker} menggunakan \textit{pool}=5. Hasil perbandingan ditunjukkan pada Gambar~\ref{fig:4223_optimal_comparison_dti}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\textwidth,height=0.46\textheight,keepaspectratio]{Gambar/4.2.2.3_optimal_comparison_dti.png}
+\caption{Perbandingan metrik evaluasi antara \textit{hybrid retrieval} dan \textit{reranking} pada \textit{query} dokumen DTI}
+\label{fig:4223_optimal_comparison_dti}
+\end{figure}
+
+Hasil evaluasi pada Gambar~\ref{fig:4223_optimal_comparison_dti} menunjukkan bahwa \textit{Hybrid Scoring} dengan komposisi \textit{dense}=0.50 unggul pada seluruh metrik dibanding \textit{Candidate Pool + Reranker} dengan \textit{pool}=5. \textit{Hybrid Scoring} memperoleh Hit@3 sebesar 0.935, Recall@3 sebesar 0.537, ARR sebesar 0.364, dan NDCG@3 sebesar 0.575. Sebaliknya, konfigurasi \textit{reranker} memperoleh Hit@3 sebesar 0.857, Recall@3 sebesar 0.468, ARR sebesar 0.302, dan NDCG@3 sebesar 0.485.
+
+Selisih performa tersebut menunjukkan bahwa pada \textit{query} dokumen DTI, tahap \textit{hybrid retrieval} sudah mampu menghasilkan peringkat yang lebih relevan dibandingkan proses \textit{reranking} independen. Perbedaan paling besar terlihat pada NDCG@3 dengan selisih 0.090, diikuti Hit@3 dengan selisih 0.078, Recall@3 dengan selisih 0.069, dan ARR dengan selisih 0.062. Dari sisi waktu, \textit{Hybrid Scoring} juga jauh lebih efisien karena hanya membutuhkan rata-rata 94.991 ms, sedangkan konfigurasi \textit{reranker} membutuhkan total 9.007 detik. Temuan ini berbeda dengan pola pada \textit{query} sintetis, di mana \textit{reranking} cenderung memberikan peningkatan performa. Pada dokumen DTI, struktur bahasa yang lebih formal dan konsisten tampaknya lebih sesuai dengan mekanisme \textit{hybrid retrieval} yang menggabungkan pencocokan leksikal dan semantik sejak tahap awal.
 
 \subsubsection{Analisis Komparatif Komposisi \textit{Scoring Hybrid Retrieval} dan \textit{Reranking}}
 
-Sejalan dengan hasil analisis independen, pada kasus dokumen DTI komponen \textit{hybrid} lebih dominan dalam proses \textit{score fusion}. Hal ini berbeda dengan pola pada \textit{query} sintetis yang lebih diuntungkan dengan dominasi \textit{Cross-Encoder}. Temuan ini memperkuat kesimpulan bahwa konfigurasi \textit{scoring} yang optimal bergantung pada sumber dan karakteristik \textit{query}, di mana \textit{query} sintetis yang bersifat evaluatif lebih terbantu oleh \textit{reranking}, sedangkan \textit{query} dokumen DTI yang bersifat nyata lebih terbantu oleh \textit{hybrid retrieval}.
+Analisis komposisi \textit{scoring} dilakukan untuk mengevaluasi pengaruh pembobotan antara skor \textit{hybrid retrieval} dan skor CE pada proses \textit{score fusion}. Tiga konfigurasi yang diuji adalah CE=0.25, CE=0.50, dan CE=0.75. Hasil evaluasi ditunjukkan pada Gambar~\ref{fig:4224_scoring_fusion_dti}.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.82\textwidth,height=0.46\textheight,keepaspectratio]{Gambar/4.2.2.4_scoring_fusion_dti.png}
+\caption{Perbandingan metrik evaluasi berdasarkan komposisi \textit{score fusion} pada \textit{query} dokumen DTI}
+\label{fig:4224_scoring_fusion_dti}
+\end{figure}
+
+Hasil evaluasi pada Gambar~\ref{fig:4224_scoring_fusion_dti} menunjukkan bahwa konfigurasi CE=0.25, atau dominan \textit{hybrid}, menghasilkan performa terbaik pada seluruh metrik. Konfigurasi ini memperoleh Hit@3 sebesar 0.935, Recall@3 sebesar 0.541, ARR sebesar 0.367, dan NDCG@3 sebesar 0.579. Ketika bobot CE dinaikkan menjadi 0.50, performa menurun menjadi Hit@3 sebesar 0.896, Recall@3 sebesar 0.528, ARR sebesar 0.346, dan NDCG@3 sebesar 0.553. Penurunan berlanjut pada CE=0.75, yang memperoleh Hit@3 sebesar 0.883, Recall@3 sebesar 0.502, ARR sebesar 0.323, dan NDCG@3 sebesar 0.519.
+
+Temuan ini menunjukkan bahwa pada \textit{query} dokumen DTI, dominasi skor \textit{hybrid retrieval} lebih menguntungkan dibanding dominasi skor \textit{cross-encoder}. Semakin besar bobot CE, semakin rendah nilai pada seluruh metrik evaluasi. Hal ini mengindikasikan bahwa \textit{reranking} berbasis CE tidak selalu memberikan keuntungan ketika kandidat awal sudah memiliki struktur relevansi yang cukup baik dari \textit{hybrid retrieval}. Selain itu, konfigurasi CE=0.25 juga memiliki performa akurasi tertinggi meskipun waktu totalnya 6.497 detik, sedangkan CE=0.75 lebih cepat dengan waktu 5.930 detik tetapi menghasilkan performa terendah. Dengan demikian, terdapat \textit{trade-off} antara akurasi dan waktu, namun konfigurasi dominan \textit{hybrid} tetap menjadi pilihan terbaik apabila prioritas utama adalah kualitas hasil \textit{retrieval}.
+
+Secara keseluruhan, analisis terhadap \textit{query} dokumen DTI menunjukkan bahwa konfigurasi berbasis \textit{hybrid retrieval} lebih dominan dibandingkan konfigurasi berbasis \textit{reranking}. Komposisi \textit{dense}=0.50 memberikan performa terbaik pada skenario \textit{hybrid retrieval}, \textit{candidate pool} 5 menjadi ukuran terbaik ketika \textit{reranking} digunakan, dan komposisi CE=0.25 menjadi konfigurasi \textit{score fusion} terbaik. Hasil ini memperlihatkan bahwa karakteristik dokumen DTI yang lebih formal dan terstruktur membuat pencocokan leksikal-semantik pada tahap awal menjadi sangat penting, sedangkan penambahan \textit{reranking} perlu digunakan secara hati-hati karena dapat meningkatkan latensi dan tidak selalu memperbaiki kualitas peringkat.
 
