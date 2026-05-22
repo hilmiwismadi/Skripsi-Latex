@@ -1,0 +1,111 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{times}
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{hyperref}
+\onehalfspacing
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{6pt}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\begin{document}
+
+\begin{center}
+\textbf{Subbab 3.2.4.1 — Versi Usulan dengan Penjelasan Per Grup}\par
+\vspace{6pt}
+Penjelasan per grup (\textit{Knowledge Base}, \textit{Query Processing}, \textit{Hybrid Scoring}) selaras dengan diagram hybrid retrieval.
+\end{center}
+
+\section*{Perancangan Komponen \textit{Retrieval} pada Sistem}
+
+Perancangan komponen \textit{retrieval} pada sistem dilakukan menggunakan pendekatan \textit{hybrid retrieval} yang menggabungkan jalur \textit{dense retrieval} dan \textit{sparse retrieval}. Jalur \textit{dense} digunakan untuk menangkap kemiripan semantik antara \textit{query} dan dokumen melalui representasi \textit{embedding}, sedangkan jalur \textit{sparse} digunakan untuk menangkap kecocokan leksikal berbasis kata kunci menggunakan BM25. Kedua jalur tersebut kemudian digabungkan melalui proses normalisasi dan pembobotan skor untuk menghasilkan kandidat dokumen yang paling relevan.
+
+Berdasarkan rancangan tersebut, komponen \textit{retrieval} dibagi ke dalam tiga bagian utama, yaitu \textit{knowledge base} sebagai tahap inisialisasi indeks dokumen, \textit{query processing} sebagai tahap pemrosesan \textit{query} dan perhitungan skor, serta \textit{hybrid scoring} sebagai tahap penggabungan skor dan pemilihan kandidat. Ketiga bagian ini ditunjukkan pada diagram hybrid retrieval dengan warna berbeda, yaitu biru (\textit{Knowledge Base}), hijau (\textit{Query Processing}), dan kuning (\textit{Hybrid Scoring}).
+
+\subsection*{1. \textit{Knowledge Base} --- Fase Inisialisasi}
+
+Tahap \textit{knowledge base} merupakan fase inisialisasi yang dijalankan sekali saat sistem dimulai. Pada tahap ini, data kontrol ISO berbentuk JSON dimuat dan dikonversi menjadi representasi teks terstruktur. Representasi tersebut kemudian diproses pada dua jalur secara paralel: jalur \textit{dense} membentuk \textit{embedding} dokumen, sedangkan jalur \textit{sparse} membangun indeks BM25. Kedua indeks yang dihasilkan disimpan dalam memori dan digunakan ulang pada setiap pemrosesan \textit{query}.
+
+\subsubsection*{Proses Pembentukan \textit{Embedding} Dokumen (Jalur Dense)}
+
+Proses pembentukan \textit{embedding} dokumen bertujuan untuk mengubah seluruh kontrol ISO menjadi representasi vektor yang dapat digunakan untuk perhitungan kemiripan semantik. Proses ini dimulai dari konversi data JSON menjadi teks terstruktur, kemudian dilakukan \textit{embedding} menggunakan model bahasa, dan diakhiri dengan normalisasi serta penyimpanan vektor hasil \textit{embedding}.
+
+\begin{enumerate}[label=\alph*., leftmargin=1.1cm]
+\item \textbf{Representasi Teks}: Menggunakan \textit{function} \texttt{control\_to\_text(control: dict) -> str} untuk menggabungkan field JSON menjadi satu teks utuh. Representasi ini menjadi masukan utama bagi proses \textit{embedding} dan tokenisasi agar konteks dokumen dapat diproses secara konsisten.
+
+\item \textbf{Inisiasi Model dan Dimensi \textit{Embedding}}: Menggunakan \textit{function} \texttt{get\_model() -> SentenceTransformer} untuk memuat model \textit{paraphrase-multilingual-MiniLM-L12-v2} dengan mekanisme \textit{lazy loading}. Selanjutnya, \texttt{get\_embedding\_dim() -> int} digunakan untuk memperoleh dimensi \textit{embedding} sebesar 384 dimensi.
+
+\item \textbf{Pembentukan \textit{Embedding} Teks}: Menggunakan \textit{function} \texttt{encode\_texts(texts: list[str]) -> np.ndarray} untuk mengubah seluruh teks kontrol ISO menjadi vektor \textit{embedding}. Hasilnya berupa \textit{array} NumPy berdimensi $(93, 384)$ dengan tipe data \texttt{float32}.
+
+\item \textbf{Normalisasi \textit{Embedding}}: Menggunakan \textit{function} \texttt{normalize(vectors: np.ndarray) -> np.ndarray} untuk melakukan normalisasi L2 pada vektor \textit{embedding}. Normalisasi ini membuat perhitungan \textit{dot product} setara dengan \textit{cosine similarity} dan menjaga stabilitas ketika terdapat vektor bernilai nol.
+
+\item \textbf{Penyimpanan \textit{Embedding} Dokumen}: \textit{Embedding} dokumen disimpan pada atribut \texttt{HybridRetriever.doc\_embeddings} secara \textit{in-memory}. Penyimpanan dilakukan dalam bentuk \textit{array} NumPy dan dibangun ulang setiap kali sistem dijalankan.
+\end{enumerate}
+
+\subsubsection*{Proses Pembangunan Indeks BM25 (Jalur Sparse)}
+
+Proses pembangunan indeks BM25 bertujuan untuk menyusun struktur indeks leksikal yang memungkinkan pencarian dokumen berdasarkan kecocokan kata kunci. Proses ini dimulai dari tokenisasi seluruh dokumen, kemudian dilakukan perhitungan statistik seperti panjang dokumen, \textit{document frequency}, dan \textit{inverse document frequency}.
+
+\begin{enumerate}[label=\alph*., leftmargin=1.1cm]
+\item \textbf{\textit{Preprocessing} Teks untuk BM25}: Menggunakan \textit{function} \texttt{tokenize(text: str) -> list[str]} untuk mengubah teks dokumen menjadi daftar \textit{token}. Proses ini dilakukan dengan \textit{lowercase} dan pengambilan karakter alfanumerik menggunakan \textit{regex} \texttt{[A-Za-z0-9]+}.
+
+\item \textbf{Pembangunan Indeks BM25}: Pada saat \texttt{BM25Retriever} diinisialisasi, seluruh representasi teks kontrol ISO diproses menggunakan \texttt{tokenize()}, kemudian sistem menghitung panjang dokumen (\texttt{doc\_lens}), \textit{document frequency} (\texttt{\_compute\_doc\_freq()}), dan \textit{inverse document frequency} menggunakan formula Okapi BM25, yaitu $\log(1 + (N - df + 0.5) / (df + 0.5))$. Indeks yang dihasilkan disimpan dalam memori dan siap digunakan pada tahap \textit{query processing}.
+\end{enumerate}
+
+\subsection*{2. \textit{Query Processing} --- Pemrosesan \textit{Query} dan Perhitungan Skor}
+
+Tahap \textit{query processing} dijalankan setiap kali pengguna memberikan \textit{query}. Pada tahap ini, \textit{query} diproses secara paralel pada dua jalur: jalur \textit{dense} mengubah \textit{query} menjadi vektor \textit{embedding} dan menghitung kemiripan semantik terhadap seluruh dokumen, sedangkan jalur \textit{sparse} menokenisasi \textit{query} dan menghitung skor BM25. Hasil dari kedua jalur adalah masing-masing 93 skor relevansi yang akan digunakan pada tahap \textit{hybrid scoring}.
+
+\subsubsection*{Proses Perhitungan \textit{Dense Score} (Jalur Dense)}
+
+Proses perhitungan \textit{dense score} bertujuan untuk mengukur kemiripan semantik antara \textit{query} dan seluruh dokumen. \textit{Query} diubah menjadi vektor \textit{embedding} yang sama dengan dokumen, kemudian dilakukan perhitungan \textit{dot product} untuk menghasilkan skor kemiripan semantik.
+
+\begin{enumerate}[label=\alph*., leftmargin=1.1cm]
+\item \textbf{Pembentukan \textit{Embedding Query}}: Menggunakan \textit{function} \texttt{encode\_texts([query])} untuk mengubah \textit{query} menjadi vektor \textit{embedding} berdimensi 384. Karena fungsi yang sama digunakan untuk dokumen dan \textit{query}, keduanya direpresentasikan dalam ruang vektor yang sama.
+
+\item \textbf{Perhitungan \textit{Dense Score}}: Menggunakan \textit{function} \texttt{\_dense\_scores(query: str) -> np.ndarray} untuk menghitung \textit{dot product} antara vektor \textit{query} dan \textit{embedding} seluruh dokumen yang telah disimpan pada fase inisialisasi. Karena kedua vektor telah dinormalisasi, nilai \textit{dot product} ini setara dengan \textit{cosine similarity}.
+\end{enumerate}
+
+\subsubsection*{Proses Perhitungan \textit{Sparse Score} (Jalur Sparse)}
+
+Proses perhitungan \textit{sparse score} bertujuan untuk mengukur kecocokan leksikal antara \textit{query} dan seluruh dokumen. \textit{Query} diubah menjadi daftar \textit{token} yang konsisten dengan dokumen, kemudian dilakukan perhitungan skor BM25 berdasarkan \textit{term frequency} dan \textit{inverse document frequency}.
+
+\begin{enumerate}[label=\alph*., leftmargin=1.1cm]
+\item \textbf{Tokenisasi \textit{Query}}: Pada jalur \textit{sparse}, \textit{query} diproses menggunakan \texttt{tokenize()} yang sama dengan dokumen. Konsistensi tokenisasi ini memastikan bahwa proses pencocokan \textit{term} pada BM25 berjalan dengan aturan yang sama.
+
+\item \textbf{Perhitungan \textit{Sparse Score}}: Menggunakan \textit{function} \texttt{score\_query(query: str) -> list[float]} untuk menghitung skor BM25 \textit{query} terhadap seluruh dokumen berdasarkan kombinasi \textit{term frequency}, IDF, dan normalisasi panjang dokumen.
+\end{enumerate}
+
+\subsection*{3. \textit{Hybrid Scoring} --- Penggabungan Skor dan Pemilihan Kandidat}
+
+Tahap \textit{hybrid scoring} menggabungkan skor dari jalur \textit{dense} dan \textit{sparse} menjadi satu nilai akhir yang merepresentasikan relevansi dokumen. Skor dari kedua jalur terlebih dahulu dinormalisasi agar memiliki skala yang sama, kemudian digabungkan menggunakan \textit{weighted sum}. Berdasarkan skor hasil penggabungan, sistem mengurutkan dokumen dan memilih kandidat teratas yang digunakan sebagai konteks untuk tahap generasi.
+
+\begin{enumerate}[label=\alph*., leftmargin=1.1cm]
+\item \textbf{Normalisasi Skor}: Menggunakan \textit{function} \texttt{\_minmax(scores: list[float]) -> np.ndarray} untuk menormalisasi skor \textit{dense} dan \textit{sparse} ke rentang 0 sampai 1. Normalisasi dilakukan secara terpisah karena kedua skor memiliki skala yang berbeda.
+
+\item \textbf{\textit{Fusion Score}}: Menggunakan metode \textit{weighted sum} untuk menggabungkan skor \textit{dense} dan \textit{sparse} yang telah dinormalisasi. Formula yang digunakan adalah $\textit{hybrid\_score} = w_{\textit{dense}} \times \textit{dense\_norm} + w_{\textit{sparse}} \times \textit{sparse\_norm}$, dengan bobot bawaan $w_{\textit{dense}} = 0{,}6$ dan $w_{\textit{sparse}} = 0{,}4$.
+
+\item \textbf{\textit{Final Ranking}}: Setelah \textit{hybrid score} diperoleh, sistem mengurutkan seluruh dokumen secara \textit{descending} menggunakan \texttt{np.argsort} dan memilih 3 dokumen dengan skor tertinggi.
+
+\item \textbf{Pembentukan Hasil}: Menggunakan \textit{function} \texttt{\_build\_result(idx)} untuk mengambil metadata kontrol terpilih, yaitu \texttt{control\_id}, \texttt{title}, \texttt{objective}, dan \texttt{description}, serta skor \textit{dense}, \textit{sparse}, dan \textit{hybrid}. Hasil ini dikirimkan sebagai konteks ke LLM pada tahap generasi.
+\end{enumerate}
+
+\section*{Checklist Pemetaan Inti 4.1.3}
+
+\begin{longtable}{|P{0.22\textwidth}|P{0.50\textwidth}|P{0.18\textwidth}|}
+\hline
+\textbf{Sumber} & \textbf{Poin inti} & \textbf{Masuk ke versi usulan} \\
+\hline
+4.1.3.1 Dense & Representasi teks; inisiasi model; dimensi \textit{embedding}; pembentukan \textit{embedding}; normalisasi; penyimpanan \textit{embedding} dokumen. & Ya, bagian \textit{Knowledge Base} (Dense: a--e) dan \textit{Query Processing} (Dense: a--b). \\
+\hline
+4.1.3.2 Sparse & \textit{Preprocessing}; tokenisasi dokumen; panjang dokumen; \textit{document frequency}; IDF; skor BM25. & Ya, bagian \textit{Knowledge Base} (Sparse: a--b) dan \textit{Query Processing} (Sparse: a--b). \\
+\hline
+4.1.3.3 Hybrid & Inisialisasi \textit{HybridRetriever}; \textit{dense score}; \textit{sparse score}; \texttt{method\_order}; \textit{candidate merging}; normalisasi; \textit{fusion score}; \textit{final ranking}. & Ya, bagian \textit{Hybrid Scoring} (a--d). \\
+\hline
+\end{longtable}
+
+\end{document}

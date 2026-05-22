@@ -63,6 +63,7 @@ Dalam proses pengembangan dan evaluasi sistem \textit{Retrieval-Augmented Genera
 Desain penelitian disusun dengan menentukan variabel independen, dependen, dan kontrol agar proses pengujian dapat dilakukan secara sistematis dan terukur. Variabel independen mencakup variasi jenis \textit{query}, metode \textit{retrieval}, serta kombinasi \textit{scoring} yang diterapkan pada sistem. Variabel dependen digunakan untuk mengukur performa sistem berdasarkan akurasi \textit{retrieval} dan waktu latensi. Sementara itu, variabel kontrol dijaga tetap konstan selama eksperimen untuk memastikan hasil pengujian lebih konsisten dan dapat dibandingkan secara objektif.
 
 
+
 \begin{table}[H]
 \centering
 \small
@@ -77,6 +78,18 @@ Independen & Jenis \textit{Query} & Variasi bentuk \textit{query} yang digunakan
 Independen & Metode \textit{Retrieval} & Pendekatan \textit{retrieval} yang digunakan dalam \textit{pipeline} RAG & \textit{Hybrid retrieval}, \textit{reranking retrieval}, dan kombinasi pembobotan \textit{scoring} \\
 \hline
 Dependen & Akurasi \textit{Retrieval} & Tingkat relevansi hasil \textit{retrieval} terhadap \textit{ground truth} & Hit@K, Recall@K, ARR, NDCG \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Variabel Penelitian (lanjutan)}
+\label{tab:variabel_penelitian_lanjutan}
+\begin{tabular}{|p{1.8cm}|p{3.0cm}|p{4.6cm}|p{3.4cm}|}
+\hline
+\textbf{Jenis} & \textbf{Nama Variabel} & \textbf{Deskripsi} & \textbf{Indikator / Parameter} \\
 \hline
 Dependen & Latensi Sistem & Waktu yang dibutuhkan sistem dalam memproses hingga menghasilkan \textit{output} & Waktu eksekusi \\
 \hline
@@ -98,9 +111,11 @@ Pembangunan basis pengetahuan pada penelitian ini dilakukan dengan mengumpulkan 
 Seluruh dokumen yang digunakan sebagai sumber pengetahuan (korpus) disimpan dalam format JSON (\textit{JavaScript Object Notation}). Setiap kontrol direpresentasikan sebagai satu entitas data yang terdiri dari atribut deskriptif, indikator audit, serta kata kunci dalam dua bahasa (Bahasa Inggris dan Bahasa Indonesia). Struktur ini dirancang untuk meningkatkan kualitas pencarian semantik serta mendukung variasi \textit{query} pengguna. Struktur data JSON yang digunakan ditunjukkan pada Tabel berikut.
 
 
+
+
 \begin{table}[H]
 \centering
-\small
+\footnotesize
 \caption{Struktur Data JSON Basis Pengetahuan}
 \label{tab:json_struktur}
 \begin{tabular}{|p{3.2cm}|p{4.8cm}|p{4.8cm}|}
@@ -281,7 +296,7 @@ Gambar~\ref{fig:alur_penelitian} menunjukkan diagram alur penelitian secara kese
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.76\textwidth,height=0.48\textheight,keepaspectratio]{Gambar/3.8AlurPenelitian.png}
+	\includegraphics[width=0.95\textwidth,height=0.78\textheight,keepaspectratio]{Gambar/3.8AlurPenelitian.png}
 	\caption{Alur penelitian}
 	\label{fig:alur_penelitian}
 \end{figure}
@@ -355,5 +370,7 @@ Melalui analisis tersebut, diharapkan dapat terlihat pola performa akurasi dari 
 \subsection{Penulisan Laporan}
 
 Setelah seluruh tahapan penelitian selesai dilaksanakan, dilakukan proses penyusunan laporan sebagai bentuk dokumentasi akhir penelitian. Laporan ini memuat uraian lengkap mengenai tahapan penelitian yang telah dilakukan, implementasi metode yang digunakan, hasil eksperimen dan pengujian yang diperoleh, proses evaluasi dan interpretasi hasil, serta rangkuman temuan penelitian.
+
+
 
 

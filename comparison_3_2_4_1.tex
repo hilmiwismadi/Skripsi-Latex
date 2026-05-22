@@ -1,0 +1,218 @@
+
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{times}
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{hyperref}
+\onehalfspacing
+\setlength{\parindent}{1.25cm}
+\setlength{\parskip}{6pt}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\begin{document}
+
+\begin{center}
+\textbf{Perbandingan Subbab 3.2.4.1: Versi Saat Ini dan Versi Usulan}\par
+\vspace{6pt}
+Fokus perbandingan: struktur penjelasan, alur narasi, dan pemetaan seluruh inti Subbab 4.1.3 ke rancangan Subbab 3.2.4.1.
+\end{center}
+
+\section*{A. Versi 3.2.4.1 Saat Ini}
+
+\textbf{Perancangan Komponen \textit{Retrieval} pada Sistem}
+
+Perancangan komponen \textit{retrieval} pada sistem dilakukan dengan mengimplementasikan pendekatan \textit{hybrid} yang menggabungkan metode berbasis representasi semantik (\textit{dense}) dan pencocokan kata kunci (\textit{sparse}). Komponen pertama adalah transformasi dokumen yang mencakup pengolahan data kontrol standar ISO dari sumber basis pengetahuan menjadi representasi teks yang terstruktur dan siap digunakan dalam proses \textit{retrieval}. Komponen kedua adalah transformasi \textit{query} yaitu proses merepresentasikan \textit{query} ke dalam bentuk yang dapat diproses oleh sistem, baik melalui pendekatan semantik (\textit{dense}) maupun berbasis kata kunci (\textit{sparse}). Komponen ketiga adalah \textit{scoring}, yaitu mekanisme pengolahan dan penggabungan skor dari kedua pendekatan untuk menghasilkan nilai akhir yang digunakan dalam menentukan relevansi dan peringkat dokumen hasil pencarian.
+
+Berdasarkan alur yang ditunjukkan pada gambar komponen \textit{hybrid retrieval}, proses \textit{retrieval} dapat diuraikan ke dalam tiga komponen utama sebagai berikut.
+
+\begin{enumerate}[leftmargin=1.1cm]
+\item \textbf{Transformasi Dokumen}
+
+Pada tahap ini, dokumen direpresentasikan dalam dua pendekatan yang berbeda untuk mendukung proses \textit{retrieval}. Pada jalur \textit{dense}, setiap dokumen diubah menjadi representasi numerik berupa vektor melalui proses \textit{embedding}, sehingga memungkinkan perhitungan kesamaan berbasis makna. Sementara itu, pada jalur \textit{sparse}, dokumen diubah menjadi representasi leksikal melalui proses tokenisasi. Kedua representasi ini selanjutnya digunakan dalam proses perhitungan relevansi.
+
+\item \textbf{Transformasi \textit{Query}}
+
+\textit{Query} yang diberikan pengguna diproses dengan pendekatan serupa, yaitu diubah menjadi representasi vektor melalui \textit{embedding} pada jalur \textit{dense} dan menjadi representasi token pada jalur \textit{sparse}. Representasi \textit{query} ini kemudian dibandingkan dengan dokumen yang telah diproses sebelumnya. Pada jalur \textit{dense}, perbandingan dilakukan menggunakan \textit{dot product}, sedangkan pada jalur \textit{sparse} menggunakan BM25. Hasil dari proses ini adalah skor relevansi terhadap seluruh dokumen, yang dalam penelitian ini berjumlah 93 skor untuk masing-masing kontrol.
+
+\item \textbf{\textit{Scoring} dan Pemilihan Kandidat}
+
+Skor yang dihasilkan dari kedua pendekatan selanjutnya dinormalisasi untuk memastikan kesetaraan skala dari perhitungan tiap metode. Setelah itu, skor digabungkan menggunakan mekanisme \textit{hybrid scoring} untuk menghasilkan nilai akhir yang merepresentasikan tingkat relevansi dokumen. Berdasarkan skor tersebut, dokumen diurutkan dan dipilih sejumlah kandidat teratas, yaitu top@3. Metadata dari dokumen terpilih kemudian diekstraksi dan digunakan sebagai \textit{input} pada tahap selanjutnya, yaitu proses generasi menggunakan LLM pada \textit{pipeline Retrieval-Augmented Generation}.
+\end{enumerate}
+
+\section*{B. Versi Usulan dengan Narasi dan Subpoin Teknis (Grup: Knowledge Base, Query Processing, Hybrid Scoring)}
+
+\textbf{Perancangan Komponen \textit{Retrieval} pada Sistem}
+
+Perancangan komponen \textit{retrieval} pada sistem dilakukan menggunakan pendekatan \textit{hybrid retrieval} yang menggabungkan jalur \textit{dense retrieval} dan \textit{sparse retrieval}. Jalur \textit{dense} digunakan untuk menangkap kemiripan semantik antara \textit{query} dan dokumen melalui representasi \textit{embedding}, sedangkan jalur \textit{sparse} digunakan untuk menangkap kecocokan leksikal berbasis kata kunci menggunakan BM25. Kedua jalur tersebut kemudian digabungkan melalui proses normalisasi dan pembobotan skor untuk menghasilkan kandidat dokumen yang paling relevan.
+
+Berdasarkan rancangan tersebut, komponen \textit{retrieval} dibagi ke dalam tiga bagian utama, yaitu \textit{knowledge base} sebagai tahap inisialisasi indeks dokumen, \textit{query processing} sebagai tahap pemrosesan \textit{query} dan perhitungan skor, serta \textit{hybrid scoring} sebagai tahap penggabungan skor dan pemilihan kandidat.
+
+\begin{enumerate}[leftmargin=1.1cm]
+\item \textbf{\textit{Knowledge Base} --- Fase Inisialisasi}
+
+Tahap \textit{knowledge base} merupakan fase inisialisasi yang dijalankan sekali saat sistem dimulai. Pada tahap ini, data kontrol ISO berbentuk JSON dimuat dan dikonversi menjadi representasi teks terstruktur. Representasi tersebut kemudian diproses pada dua jalur secara paralel: jalur \textit{dense} membentuk \textit{embedding} dokumen, sedangkan jalur \textit{sparse} membangun indeks BM25. Kedua indeks yang dihasilkan disimpan dalam memori dan digunakan ulang pada setiap pemrosesan \textit{query}.
+
+\begin{enumerate}[label=\alph*., leftmargin=1.1cm]
+\item \textbf{Representasi Teks}: Menggunakan \textit{function} \texttt{control\_to\_text(control: dict) -> str} untuk menggabungkan field JSON menjadi satu teks utuh. Representasi ini menjadi masukan utama bagi proses \textit{embedding} dan tokenisasi agar konteks dokumen dapat diproses secara konsisten.
+
+\item \textbf{Inisiasi Model dan Dimensi \textit{Embedding}}: Menggunakan \textit{function} \texttt{get\_model() -> SentenceTransformer} untuk memuat model \textit{paraphrase-multilingual-MiniLM-L12-v2} dengan mekanisme \textit{lazy loading}. Selanjutnya, \texttt{get\_embedding\_dim() -> int} digunakan untuk memperoleh dimensi \textit{embedding} sebesar 384 dimensi.
+
+\item \textbf{Pembentukan \textit{Embedding} Dokumen}: Menggunakan \textit{function} \texttt{encode\_texts(texts: list[str]) -> np.ndarray} untuk mengubah seluruh teks kontrol ISO menjadi vektor \textit{embedding}. Hasilnya berupa \textit{array} NumPy berdimensi $(93, 384)$ dengan tipe data \texttt{float32}.
+
+\item \textbf{Normalisasi \textit{Embedding} Dokumen}: Menggunakan \textit{function} \texttt{normalize(vectors: np.ndarray) -> np.ndarray} untuk melakukan normalisasi L2 pada vektor \textit{embedding}. Normalisasi ini membuat perhitungan \textit{dot product} setara dengan \textit{cosine similarity} dan menjaga stabilitas ketika terdapat vektor bernilai nol.
+
+\item \textbf{Penyimpanan \textit{Embedding} Dokumen}: \textit{Embedding} dokumen disimpan pada atribut \texttt{HybridRetriever.doc\_embeddings} secara \textit{in-memory}. Penyimpanan dilakukan dalam bentuk \textit{array} NumPy dan dibangun ulang setiap kali sistem dijalankan.
+
+\item \textbf{\textit{Preprocessing} Teks untuk BM25}: Menggunakan \textit{function} \texttt{tokenize(text: str) -> list[str]} untuk mengubah teks dokumen menjadi daftar \textit{token}. Proses ini dilakukan dengan \textit{lowercase} dan pengambilan karakter alfanumerik menggunakan \textit{regex} \texttt{[A-Za-z0-9]+}.
+
+\item \textbf{Pembangunan Indeks BM25}: Pada saat \texttt{BM25Retriever} diinisialisasi, seluruh representasi teks kontrol ISO diproses menggunakan \texttt{tokenize()}, kemudian sistem menghitung panjang dokumen (\texttt{doc\_lens}), \textit{document frequency} (\texttt{\_compute\_doc\_freq()}), dan \textit{inverse document frequency} menggunakan formula Okapi BM25, yaitu $\log(1 + (N - df + 0.5) / (df + 0.5))$. Indeks yang dihasilkan disimpan dalam memori dan siap digunakan pada tahap \textit{query processing}.
+\end{enumerate}
+
+\item \textbf{\textit{Query Processing} --- Pemrosesan \textit{Query} dan Perhitungan Skor}
+
+Tahap \textit{query processing} dijalankan setiap kali pengguna memberikan \textit{query}. Pada tahap ini, \textit{query} diproses secara paralel pada dua jalur: jalur \textit{dense} mengubah \textit{query} menjadi vektor \textit{embedding} dan menghitung kemiripan semantik terhadap seluruh dokumen, sedangkan jalur \textit{sparse} menokenisasi \textit{query} dan menghitung skor BM25. Hasil dari kedua jalur adalah masing-masing 93 skor relevansi yang akan digunakan pada tahap \textit{hybrid scoring}.
+
+\begin{enumerate}[label=\alph*., leftmargin=1.1cm]
+\item \textbf{Pembentukan \textit{Embedding Query}}: Menggunakan \textit{function} \texttt{encode\_texts([query])} untuk mengubah \textit{query} menjadi vektor \textit{embedding} berdimensi 384. Karena fungsi yang sama digunakan untuk dokumen dan \textit{query}, keduanya direpresentasikan dalam ruang vektor yang sama.
+
+\item \textbf{Perhitungan \textit{Dense Score}}: Menggunakan \textit{function} \texttt{\_dense\_scores(query: str) -> np.ndarray} untuk menghitung \textit{dot product} antara vektor \textit{query} dan \textit{embedding} seluruh dokumen yang telah disimpan pada fase inisialisasi. Karena kedua vektor telah dinormalisasi, nilai \textit{dot product} ini setara dengan \textit{cosine similarity}.
+
+\item \textbf{Tokenisasi \textit{Query}}: Pada jalur \textit{sparse}, \textit{query} diproses menggunakan \texttt{tokenize()} yang sama dengan dokumen. Konsistensi tokenisasi ini memastikan bahwa proses pencocokan \textit{term} pada BM25 berjalan dengan aturan yang sama.
+
+\item \textbf{Perhitungan \textit{Sparse Score}}: Menggunakan \textit{function} \texttt{score\_query(query: str) -> list[float]} untuk menghitung skor BM25 \textit{query} terhadap seluruh dokumen berdasarkan kombinasi \textit{term frequency}, IDF, dan normalisasi panjang dokumen.
+\end{enumerate}
+
+\item \textbf{\textit{Hybrid Scoring} --- Penggabungan Skor dan Pemilihan Kandidat}
+
+Tahap \textit{hybrid scoring} menggabungkan skor dari jalur \textit{dense} dan \textit{sparse} menjadi satu nilai akhir yang merepresentasikan relevansi dokumen. Skor dari kedua jalur terlebih dahulu dinormalisasi agar memiliki skala yang sama, kemudian digabungkan menggunakan \textit{weighted sum}. Berdasarkan skor hasil penggabungan, sistem mengurutkan dokumen dan memilih kandidat teratas yang digunakan sebagai konteks untuk tahap generasi.
+
+\begin{enumerate}[label=\alph*., leftmargin=1.1cm]
+\item \textbf{Normalisasi Skor}: Menggunakan \textit{function} \texttt{\_minmax(scores: list[float]) -> np.ndarray} untuk menormalisasi skor \textit{dense} dan \textit{sparse} ke rentang 0 sampai 1. Normalisasi dilakukan secara terpisah karena kedua skor memiliki skala yang berbeda.
+
+\item \textbf{\textit{Fusion Score}}: Menggunakan metode \textit{weighted sum} untuk menggabungkan skor \textit{dense} dan \textit{sparse} yang telah dinormalisasi. Formula yang digunakan adalah $\textit{hybrid\_score} = w_{\textit{dense}} \times \textit{dense\_norm} + w_{\textit{sparse}} \times \textit{sparse\_norm}$, dengan bobot bawaan $w_{\textit{dense}} = 0{,}6$ dan $w_{\textit{sparse}} = 0{,}4$.
+
+\item \textbf{\textit{Final Ranking}}: Setelah \textit{hybrid score} diperoleh, sistem mengurutkan seluruh dokumen secara \textit{descending} menggunakan \texttt{np.argsort} dan memilih 3 dokumen dengan skor tertinggi.
+
+\item \textbf{Pembentukan Hasil}: Menggunakan \textit{function} \texttt{\_build\_result(idx)} untuk mengambil metadata kontrol terpilih, yaitu \texttt{control\_id}, \texttt{title}, \texttt{objective}, dan \texttt{description}, serta skor \textit{dense}, \textit{sparse}, dan \textit{hybrid}. Hasil ini dikirimkan sebagai konteks ke LLM pada tahap generasi.
+\end{enumerate}
+\end{enumerate}
+
+\section*{C. Checklist Pemetaan Inti 4.1.3}
+
+\begin{longtable}{|P{0.22\textwidth}|P{0.50\textwidth}|P{0.18\textwidth}|}
+\hline
+\textbf{Sumber} & \textbf{Poin inti} & \textbf{Masuk ke versi usulan} \\
+\hline
+4.1.3.1 Dense & Representasi teks; inisiasi model; dimensi \textit{embedding}; pembentukan \textit{embedding}; normalisasi; penyimpanan \textit{embedding} dokumen. & Ya, bagian \textit{Knowledge Base} (a--e) dan \textit{Query Processing} (a--b). \\
+\hline
+4.1.3.2 Sparse & \textit{Preprocessing}; tokenisasi dokumen; panjang dokumen; \textit{document frequency}; IDF; skor BM25. & Ya, bagian \textit{Knowledge Base} (f--g) dan \textit{Query Processing} (c--d). \\
+\hline
+4.1.3.3 Hybrid & Inisialisasi \textit{HybridRetriever}; \textit{dense score}; \textit{sparse score}; \texttt{method\_order}; \textit{candidate merging}; normalisasi; \textit{fusion score}; \textit{final ranking}. & Ya, bagian \textit{Hybrid Scoring} (a--d). \\
+\hline
+\end{longtable}
+
+\section*{D. Rekomendasi}
+
+Versi usulan lebih direkomendasikan untuk menggantikan isi 3.2.4.1 karena struktur ketiga grup (\textit{Knowledge Base}, \textit{Query Processing}, \textit{Hybrid Scoring}) selaras dengan diagram hybrid retrieval yang memperlihatkan ketiga bagian tersebut secara paralel dan sekuensial. Seluruh inti implementasi dari 4.1.3.1, 4.1.3.2, dan 4.1.3.3 tetap terwakili. Format narasi singkat diikuti subpoin teknis juga membuat pembahasan lebih mudah dibaca dibanding memindahkan seluruh daftar 4.1.3 secara mentah.
+
+
+
+\newpage
+\section*{E. Perbandingan Subbab 3.2.4.2 dengan Pengembangan dari 4.1.4}
+
+\subsection*{E.1 Versi 3.2.4.2 Saat Ini}
+
+\textbf{Perancangan Komponen \textit{Rerank} pada Sistem}
+
+Pengembangan sistem \textit{Retrieval-Augmented Generation} dengan menambahkan tahapan \textit{reranking} berbasis \textit{cross-encoder} dilakukan untuk meningkatkan kualitas hasil \textit{retrieval}. Secara umum, \textit{pipeline} ini terdiri dari dua tahap utama, yaitu melanjutkan hasil dari komponen \textit{hybrid retrieval} sebelumnya dan memproses kandidat tersebut lebih lanjut untuk memperoleh urutan dokumen berdasarkan relevansi yang lebih mendalam.
+
+Berdasarkan rancangan saat ini, komponen \textit{rerank} diuraikan menjadi dua tahap utama sebagai berikut.
+
+\begin{enumerate}[leftmargin=1.1cm]
+\item \textbf{Tahap \textit{Hybrid Retrieval}}
+
+Tahap ini menggunakan hasil dari proses \textit{hybrid retrieval} sebagai sumber kandidat awal. Skor \textit{dense} dan \textit{sparse} digabungkan menggunakan skema pembobotan tertentu untuk menghasilkan skor \textit{hybrid}. Berdasarkan skor tersebut, sejumlah kandidat dokumen dengan peringkat tertinggi dipilih sebagai \textit{candidate pool} untuk tahap \textit{reranking}.
+
+\item \textbf{\textit{Cross-Encoder Reranking}}
+
+Tahap \textit{reranking} mengambil \textit{candidate pool} dari hasil \textit{hybrid retrieval}. Setiap pasangan \textit{query} dan dokumen diproses secara bersamaan oleh model \textit{cross-encoder} BAAI/bge-reranker-v2-m3 untuk menghasilkan skor relevansi baru. Skor tersebut kemudian dinormalisasi dan dikombinasikan dengan skor \textit{hybrid} menggunakan skema pembobotan sehingga diperoleh skor akhir yang lebih representatif. Berdasarkan skor ini, dipilih dokumen terbaik, yaitu top@3, sebagai konteks untuk tahap generasi jawaban.
+\end{enumerate}
+
+
+\subsection*{E.2 Versi Usulan Berdasarkan Pemecahan Inti Subbab 4.1.4}
+
+\textbf{Perancangan Komponen \textit{Rerank} pada Sistem}
+
+Perancangan komponen \textit{rerank} dilakukan untuk meningkatkan kualitas peringkat dokumen yang telah diperoleh dari tahap \textit{hybrid retrieval}. Agar tetap selaras dengan struktur 3.2.4.2 yang sudah ada, rancangan ini sebaiknya tetap dibagi menjadi dua bagian utama, yaitu tahap \textit{hybrid retrieval} dan tahap \textit{cross-encoder reranking}. Detail dari 4.1.4.1 hingga 4.1.4.4 tidak perlu dijadikan empat bagian utama, melainkan dimasukkan sebagai subpoin teknis di bawah dua bagian tersebut.
+
+\begin{enumerate}[leftmargin=1.1cm]
+\item \textbf{Tahap \textit{Hybrid Retrieval}}
+
+Tahap \textit{hybrid retrieval} berfungsi sebagai tahap awal untuk menghasilkan daftar kandidat dokumen yang akan dievaluasi ulang oleh \textit{reranker}. Pada tahap ini, sistem menggunakan kembali komponen \textit{hybrid retrieval} dari RAG V1, memuat korpus kontrol ISO yang telah diperkaya, mengatur jumlah kandidat awal, serta membentuk \textit{candidate pool} berdasarkan skor \textit{hybrid}. Dengan demikian, kandidat yang masuk ke tahap \textit{reranking} telah mempertimbangkan sinyal relevansi semantik dan leksikal.
+
+\begin{enumerate}[label=\alph*., leftmargin=1.1cm]
+\item \textbf{Inisialisasi \textit{Pipeline}}: Menggunakan \textit{class} \texttt{RAGPipelineV3} untuk mengatur alur kerja mulai dari \textit{retrieval}, \textit{reranking}, hingga pembentukan konteks untuk generasi. Komponen ini menggunakan kembali \texttt{HybridRetriever} dari RAG V1 agar tahap \textit{retrieval} tetap konsisten dengan rancangan \textit{dense}, \textit{sparse}, dan \textit{hybrid retrieval} sebelumnya.
+
+\item \textbf{Penggunaan Korpus yang Diperkaya}: Sistem menggunakan berkas \texttt{iso\_controls\_enriched.json} sebagai sumber data kontrol ISO. Korpus ini memuat atribut dasar dan atribut tambahan seperti \texttt{keywords\_en}, \texttt{keywords\_id}, \texttt{audit\_indicators\_en}, dan \texttt{audit\_indicators\_id} untuk memperkaya sinyal semantik pada tahap \textit{retrieval} dan \textit{reranking}.
+
+\item \textbf{Konfigurasi Jumlah Kandidat}: Sistem menggunakan \texttt{CANDIDATE\_POOL\_SIZE} bernilai 10 sebagai jumlah kandidat awal dari \textit{hybrid retrieval} dan \texttt{DEFAULT\_TOP\_K} bernilai 3 sebagai jumlah dokumen akhir setelah \textit{reranking}. Konfigurasi ini memberi ruang kandidat yang cukup sebelum dilakukan evaluasi ulang.
+
+\item \textbf{Pemanggilan \textit{Hybrid Retrieval}}: Menggunakan \texttt{retrieve()} pada \texttt{HybridRetriever} dengan \texttt{method\_order=[``hybrid'']} untuk mengambil hasil \textit{hybrid} sebagai kandidat awal. Perhitungan skor \textit{dense} dan \textit{sparse} tetap dilakukan secara internal.
+
+\item \textbf{Pengaturan Bobot \textit{Dense} dan \textit{Sparse}}: Parameter \texttt{alpha\_dense} dan \texttt{alpha\_sparse} digunakan untuk mengatur kontribusi skor \textit{dense} dan \textit{sparse} dalam pembentukan \texttt{hybrid\_score}. Skor ini menjadi dasar pengurutan kandidat tahap pertama.
+
+\item \textbf{Penyimpanan Informasi Kandidat}: Setiap kandidat menyimpan informasi kontrol ISO seperti \texttt{control\_id}, \texttt{title}, \texttt{objective}, dan \texttt{description}, serta skor \textit{dense}, \textit{sparse}, dan \textit{hybrid}. Informasi ini dipertahankan karena digunakan kembali pada tahap penggabungan skor setelah proses \textit{reranking}.
+\end{enumerate}
+
+\item \textbf{\textit{Cross-Encoder Reranking}}
+
+Tahap \textit{cross-encoder reranking} berfungsi untuk mengevaluasi ulang kandidat dokumen dari tahap \textit{hybrid retrieval}. Pada tahap ini, setiap pasangan \textit{query} dan dokumen diproses secara bersamaan oleh model \textit{cross-encoder} untuk menghasilkan skor relevansi baru. Skor tersebut kemudian dinormalisasi, digabungkan dengan skor \textit{hybrid}, dan digunakan untuk menentukan urutan akhir dokumen.
+
+\begin{enumerate}[label=\alph*., leftmargin=1.1cm]
+\item \textbf{Inisialisasi Model \textit{Cross-Encoder}}: Menggunakan \textit{function} \texttt{get\_model() -> CrossEncoder} untuk memuat model \textit{BAAI/bge-reranker-v2-m3} dengan mekanisme \textit{lazy loading}. Model ini digunakan karena mendukung banyak bahasa, termasuk Bahasa Indonesia.
+
+\item \textbf{Alternatif Model Pembanding}: Sistem menyediakan \texttt{get\_model\_minilm() -> CrossEncoder} untuk memuat model \textit{cross-encoder/ms-marco-MiniLM-L-6-v2}. Jalur ini dapat digunakan untuk evaluasi atau perbandingan model \textit{reranker}.
+
+\item \textbf{Representasi Teks Dokumen}: Menggunakan \texttt{\_doc\_to\_rerank\_text(doc: dict) -> str} untuk membentuk teks dokumen yang mencakup \texttt{title}, \texttt{objective}, \texttt{description}, \texttt{keywords\_en}, \texttt{keywords\_id}, dan \texttt{audit\_indicators}. Label eksplisit seperti \texttt{Keywords EN}, \texttt{Kata kunci ID}, dan \texttt{Audit indicators} digunakan untuk memperjelas konteks.
+
+\item \textbf{Pembentukan Pasangan \textit{Query}-Dokumen}: Sistem membentuk pasangan \texttt{(query, document\_text)} untuk seluruh kandidat dalam \textit{candidate pool}. Setiap pasangan diproses menggunakan \texttt{model.predict()} untuk menghasilkan skor mentah \textit{cross-encoder}.
+
+\item \textbf{Normalisasi Skor \textit{Reranking}}: Menggunakan \texttt{\_normalize(arr: np.ndarray) -> np.ndarray} untuk mengubah skor \textit{cross-encoder} ke rentang 0 sampai 1 menggunakan metode \textit{min-max}. Jika seluruh skor sama, sistem mengembalikan vektor nol agar proses penggabungan tetap stabil.
+
+\item \textbf{Normalisasi Skor \textit{Hybrid}}: Skor \textit{hybrid} dari setiap kandidat diambil dari atribut \texttt{hybrid\_score}, kemudian dinormalisasi menggunakan metode \textit{min-max} dan disimpan sebagai \texttt{hybrid\_score\_norm}. Normalisasi ini dilakukan terpisah karena skala skor \textit{hybrid} dan skor \textit{reranking} berbeda.
+
+\item \textbf{Perhitungan \textit{Combined Score}}: Sistem menghitung skor akhir menggunakan formula $\textit{combined\_score} = \alpha \times \textit{ce\_norm} + (1 - \alpha) \times \textit{hybrid\_norm}$. Nilai \texttt{ALPHA} bawaan adalah 0.8, sehingga skor \textit{reranking} memiliki kontribusi lebih besar dibanding skor \textit{hybrid}.
+
+\item \textbf{Penambahan Atribut Hasil \textit{Reranking}}: Setiap kandidat diperkaya dengan atribut \texttt{rerank\_score}, \texttt{rerank\_score\_norm}, \texttt{hybrid\_score\_norm}, dan \texttt{combined\_score} untuk mendukung transparansi hasil.
+
+\item \textbf{Pengurutan Akhir Dokumen}: Kandidat diurutkan secara \textit{descending} berdasarkan \texttt{combined\_score}. Dokumen dengan skor tertinggi ditempatkan pada peringkat teratas.
+
+\item \textbf{Keluaran \textit{Reranker}}: Hasil akhir berupa daftar kontrol ISO terbaik, yaitu top@3, yang mempertahankan informasi dari tahap \textit{retrieval} dan menambahkan informasi skor \textit{reranking}. Dokumen ini kemudian digunakan sebagai konteks untuk tahap generasi jawaban.
+\end{enumerate}
+\end{enumerate}
+
+\subsection*{E.3 Checklist Pemetaan Inti 4.1.4 ke 3.2.4.2}
+
+\begin{longtable}{|P{0.22\textwidth}|P{0.50\textwidth}|P{0.18\textwidth}|}
+\hline
+\textbf{Sumber} & \textbf{Poin inti} & \textbf{Masuk ke versi usulan} \\
+\hline
+4.1.4.1 Inisialisasi \textit{Pipeline Reranking} & Inisialisasi \texttt{RAGPipelineV3}; penggunaan korpus yang diperkaya; konfigurasi \textit{candidate pool} dan top-k. & Ya, bagian Inisialisasi \textit{Pipeline Reranking}. \\
+\hline
+4.1.4.2 Pembentukan \textit{Candidate Pool} & Pemanggilan \textit{hybrid retrieval}; pengaturan bobot \textit{dense}/\textit{sparse}; penyimpanan metadata dan skor kandidat. & Ya, bagian Pembentukan \textit{Candidate Pool}. \\
+\hline
+4.1.4.3 \textit{Cross-Encoder Reranking} & Inisialisasi model utama; model alternatif; representasi teks dokumen; pasangan \textit{query}-dokumen; normalisasi skor \textit{reranking}. & Ya, bagian \textit{Cross-Encoder Reranking}. \\
+\hline
+4.1.4.4 Penggabungan Skor dan \textit{Final Ranking} & Normalisasi skor \textit{hybrid}; perhitungan \textit{combined score}; penambahan atribut hasil; pengurutan akhir; keluaran top@3. & Ya, bagian Penggabungan Skor dan \textit{Final Ranking}. \\
+\hline
+\end{longtable}
+
+\subsection*{E.4 Rekomendasi untuk 3.2.4.2}
+
+Jika 3.2.4.2 ingin diselaraskan dengan implementasi 4.1.4, struktur dua poin saat ini sebaiknya diperluas menjadi empat bagian: inisialisasi \textit{pipeline reranking}, pembentukan \textit{candidate pool}, \textit{cross-encoder reranking}, serta penggabungan skor dan \textit{final ranking}. Namun, tingkat detailnya tetap sebaiknya lebih ringkas dibanding Bab 4. Format yang paling konsisten adalah narasi singkat pada setiap bagian, kemudian diikuti subpoin teknis ringkas agar seluruh inti 4.1.4 tetap terwakili tanpa membuat Bab 3 terlalu implementatif.
+
+\end{document}
