@@ -492,6 +492,40 @@ Arsitektur ini terdiri dari beberapa komponen utama yang bekerja secara terinteg
 	\item \textbf{\textit{Softmax}} digunakan untuk mengubah \textit{output} model menjadi distribusi probabilitas atas seluruh kosakata, sehingga memungkinkan pemilihan token berikutnya secara probabilistik.
 \end{enumerate}
 
+\subsection{\textit{Sentence Embedding}}
+
+\textit{Sentence embedding} merupakan teknik representasi teks di mana sebuah kalimat, paragraf, atau dokumen diproyeksikan ke dalam ruang vektor berdimensi tetap (fixed-size vector space), sehingga kemiripan semantik antar teks dapat diukur secara matematis \cite{jurafsky2026slp}. Konsep ini dilandasi oleh prinsip \textit{distributional semantics}, yang menyatakan bahwa makna suatu kata atau kalimat dapat ditangkap melalui konteks penggunaannya dalam korpus bahasa. Prinsip ini dirumuskan oleh Firth (1957) dengan pernyataan ``\textit{you shall know a word by the company it keeps}'', yang menjadi fondasi filosofis bagi pendekatan representasi berbasis vektor. Dalam konteks modern, prinsip tersebut diwujudkan dalam bentuk vektor padat (\textit{dense vector}) berdimensi rendah yang dihasilkan oleh model jaringan saraf berbasis arsitektur \textit{Transformer}, di mana setiap dimensi vektor menyandikan informasi semantik yang dipelajari secara implisit dari data pelatihan \cite{jurafsky2026slp}.
+
+Berbeda dengan representasi kata berbasis \textit{sparse vector} seperti \textit{one-hot encoding} atau matriks ko-okurrens yang berdimensi sangat tinggi dan sebagian besar bernilai nol, \textit{dense embedding} memiliki dimensi jauh lebih kecil (umumnya antara 50 hingga 1000) namun setiap elemennya menyimpan informasi semantik secara lebih kompak dan kaya \cite{jurafsky2026slp}. Terdapat dua kelompok utama model \textit{embedding}: (1) model \textit{static embedding} seperti Word2Vec dan FastText yang menghasilkan satu vektor tetap per kata tanpa mempertimbangkan konteks kalimat, dan (2) model \textit{contextualized embedding} berbasis \textit{Transformer} seperti BERT dan variannya yang menghasilkan representasi dinamis sesuai konteks kalimat secara keseluruhan \cite{jurafsky2026slp}. Dalam tugas \textit{information retrieval} dan \textit{semantic similarity}, model \textit{sentence embedding} dari keluarga \textit{Sentence-BERT} (SBERT) lebih diutamakan karena menghasilkan representasi tingkat kalimat yang efisien untuk perbandingan antar teks dalam skala besar.
+
+\subsection{Cosine Similarity dan Dot Product}
+
+Setelah teks direpresentasikan sebagai vektor, kemiripan semantik antar dua teks dapat diukur menggunakan metrik \textit{cosine similarity}. Secara geometris, \textit{cosine similarity} mengukur kosinus sudut ($\theta$) antara dua vektor dalam ruang berdimensi-$N$, sehingga berfokus pada arah vektor, bukan besaran magnitudonya \cite{jurafsky2026slp}. Hal ini menguntungkan dalam konteks pemrosesan teks karena kemiripan makna lebih tepat dicerminkan oleh keselarasan arah vektor dibanding panjang vektor yang dapat dipengaruhi oleh frekuensi kata. Rumus \textit{cosine similarity} antara dua vektor $\mathbf{v}$ dan $\mathbf{w}$ dinyatakan sebagai:
+
+\begin{equation}
+	\text{cosine}(\mathbf{v}, \mathbf{w}) = \frac{\mathbf{v} \cdot \mathbf{w}}{|\mathbf{v}||\mathbf{w}|} = \frac{\displaystyle\sum_{i=1}^{N} v_i w_i}{\sqrt{\displaystyle\sum_{i=1}^{N} v_i^2} \cdot \sqrt{\displaystyle\sum_{i=1}^{N} w_i^2}}
+	\label{eq:cosine}
+\end{equation}
+
+dengan $\mathbf{v} \cdot \mathbf{w}$ adalah \textit{dot product} antara kedua vektor, $|\mathbf{v}|$ dan $|\mathbf{w}|$ adalah panjang (norma L2) masing-masing vektor, dan $N$ adalah jumlah dimensi. Nilai \textit{cosine similarity} berada pada rentang $[-1, 1]$; nilai mendekati 1 menunjukkan dua teks yang sangat mirip secara semantik, nilai 0 menunjukkan tidak adanya kemiripan, dan nilai mendekati $-1$ menunjukkan makna yang berlawanan \cite{jurafsky2026slp}.
+
+Apabila kedua vektor telah dinormalisasi terlebih dahulu menjadi vektor satuan (\textit{unit vector}) melalui normalisasi L2, maka \textit{cosine similarity} setara dengan operasi \textit{dot product} biasa \cite{jurafsky2026slp}. Normalisasi L2 dilakukan dengan membagi setiap vektor dengan norma L2-nya:
+
+\begin{equation}
+	\hat{\mathbf{v}} = \frac{\mathbf{v}}{|\mathbf{v}|} = \frac{\mathbf{v}}{\sqrt{\displaystyle\sum_{i=1}^{N} v_i^2}}
+	\label{eq:l2norm}
+\end{equation}
+
+Setelah normalisasi, $|\hat{\mathbf{v}}| = |\hat{\mathbf{w}}| = 1$, sehingga penyebut pada Persamaan \ref{eq:cosine} bernilai 1 dan \textit{cosine similarity} menjadi:
+
+\begin{equation}
+	\text{cosine}(\hat{\mathbf{v}}, \hat{\mathbf{w}}) = \hat{\mathbf{v}} \cdot \hat{\mathbf{w}} = \sum_{i=1}^{N} \hat{v}_i \hat{w}_i
+	\label{eq:dot_normalized}
+\end{equation}
+
+Penyetaraan ini memiliki implikasi penting dari sisi efisiensi komputasi: \textit{dot product} jauh lebih cepat dihitung dibanding \textit{cosine similarity} yang memerlukan operasi pembagian, sehingga pada sistem \textit{retrieval} berskala besar, normalisasi vektor dilakukan sekali di awal dan selanjutnya hanya \textit{dot product} yang digunakan saat pencarian.
+
+
 \subsection{\textit{Large Language Model}}
 
 \textit{Large Language Models} (LLM) merupakan model \textit{machine learning} dalam bidang \textit{natural language processing} yang dirancang untuk memahami dan menghasilkan teks dengan mempelajari pola statistik dari data berskala besar. Secara umum, model bahasa bekerja dengan memprediksi kata berikutnya dalam suatu urutan serta menghasilkan distribusi probabilitas atas kemungkinan kata yang dapat muncul. Pendekatan ini memungkinkan model untuk mempelajari struktur linguistik, makna, serta hubungan kontekstual antar kata dari data pelatihan. Perkembangan LLM modern yang berbasis arsitektur \textit{transformer} mampu menangkap konteks secara lebih luas dan kompleks \cite{jurafsky2026slp}.
@@ -614,11 +648,33 @@ Evaluasi performa sistem \textit{Retrieval-Augmented Generation} (RAG) memerluka
 	\end{itemize}
 \end{enumerate}
 
+\subsection{Uji Signifikansi Statistik}
+
+Evaluasi performa sistem \textit{Information Retrieval} tidak hanya memerlukan perbandingan nilai metrik secara deskriptif, tetapi juga memerlukan pembuktian statistik untuk menentukan apakah perbedaan performa antar konfigurasi bersifat signifikan atau hanya terjadi karena variasi acak \cite{pereira2015overview}. Pada penelitian ini, digunakan uji non-parametrik Friedman karena data evaluasi tidak memenuhi asumsi normalitas dan terdiri dari beberapa kelompok perlakuan yang diukur pada subjek atau \textit{query} yang sama. Uji Friedman merupakan metode statistik non-parametrik untuk data berpasangan yang melibatkan lebih dari dua kelompok, sehingga cocok digunakan pada skenario di mana satu set \textit{query} yang identik dievaluasi pada beberapa konfigurasi sistem.
+
+Penggunaan uji signifikansi dalam evaluasi \textit{retrieval} sangat penting karena perbedaan metrik yang terlihat secara deskriptif tidak selalu mengindikasikan adanya perbedaan yang bermakna secara statistik. Tanpa uji signifikansi, kesimpulan yang diambil hanya bersifat observasional dan rentan terhadap bias sampling. Selain itu, uji Friedman memungkinkan penentuan apakah konfigurasi tertentu secara konsisten mengungguli konfigurasi lain pada mayoritas \textit{query}, bukan hanya unggul pada beberapa \textit{query} tertentu. Jika hasil uji Friedman menunjukkan signifikansi, maka dapat disimpulkan bahwa minimal terdapat satu konfigurasi yang berbeda secara signifikan dari konfigurasi lainnya.
+
+Uji Friedman dihitung berdasarkan peringkat (\textit{ranking}) nilai metrik dari setiap \textit{query} pada masing-masing kelompok perlakuan, dengan rumus sebagai berikut:
+
+\begin{equation}
+	\chi_F^2 = \frac{12N}{k(k+1)} \sum_{j=1}^{k} R_j^2 - 3N(k+1)
+\end{equation}
+
+dengan:
+\begin{itemize}
+	\item $N$ = jumlah \textit{query} yang dievaluasi (jumlah \textit{block}/subjek)
+	\item $k$ = jumlah kelompok perlakuan atau konfigurasi yang dibandingkan
+	\item $R_j$ = jumlah peringkat (\textit{rank sum}) pada kelompok perlakuan ke-$j$
+	\item $\chi_F^2$ = statistik uji Friedman yang mendekati distribusi $\chi^2$ dengan derajat kebebasan $df = k - 1$
+\end{itemize}
+
+Statistik uji $\chi_F^2$ dibandingkan dengan nilai kritis distribusi $\chi^2$ pada tingkat signifikansi $\alpha = 0{,}05$. Jika nilai $\chi_F^2$ lebih besar dari nilai kritis, maka $p\text{-value} < 0{,}05$ dan hipotesis nol ($H_0$: tidak ada perbedaan signifikan antar kelompok) ditolak, sehingga disimpulkan bahwa minimal terdapat satu kelompok yang berbeda secara signifikan. Sebaliknya, jika $p\text{-value} \geq 0{,}05$, maka $H_0$ gagal ditolak dan tidak terdapat cukup bukti statistik untuk menyatakan adanya perbedaan antar kelompok.
+
 \section{Analisis Perbandingan Metode}
 
 Bagian ini menyajikan analisis komparatif antara komponen metode dalam \textit{Retrieval-Augmented Generation} (RAG), yaitu \textit{hybrid retrieval} dan \textit{reranking}, serta kombinasinya. Perbandingan lengkap disajikan dalam Tabel berikut:
 
-\begin{table}[!htbp]
+\begin{table}[H]
 \centering
 \caption{Perbandingan Komponen Metode RAG}
 \label{tab:komparasi_metode}
@@ -647,6 +703,17 @@ $\bullet$ Menambah latensi (2,76--3,12 detik pada \textit{reranker}) [Elkiran-Ra
 $\bullet$ Kurang efisien untuk jumlah kandidat besar karena keterbatasan skala pada \textit{cross-encoder} [Gupta et al., 2025].
 \\
 \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Perbandingan Komponen Metode RAG (lanjutan)}
+\label{tab:komparasi_metode_lanjutan}
+\begin{tabular}{|p{2.3cm}|p{5.8cm}|p{5.8cm}|}
+\hline
+\textbf{Metode} & \textbf{Kelebihan} & \textbf{Kekurangan} \\
+\hline
 Kombinasi (\textit{Hybrid} + \textit{Reranking}) &
 $\bullet$ Mengoptimalkan \textit{recall} dan \textit{precision} secara simultan (Precision@10 = 98,2\%) [Gupta et al., 2025]. \newline
 $\bullet$ Menunjukkan performa tinggi pada konfigurasi terbaik (\textit{combined score} 0,9441) [Ravishankar-Varalakshmi, 2025]. \newline
@@ -665,10 +732,34 @@ $\bullet$ Risiko penurunan efisiensi (\textit{diminishing return}) [Rustamov et 
 Berdasarkan analisis pada Tabel tersebut, pemilihan variasi metode dalam penelitian ini didasarkan pada pertimbangan terkait kontribusi masing-masing komponen dalam meningkatkan kualitas \textit{retrieval} serta dampaknya terhadap efisiensi sistem:
 
 \begin{enumerate}
-	\item \textit{Hybrid retrieval} dipilih sebagai \textit{baseline} karena mampu meningkatkan cakupan dokumen relevan melalui kombinasi pendekatan leksikal dan semantik, serta terbukti memberikan peningkatan \textit{recall} dibanding metode tunggal.
-	\item \textit{Reranking} berbasis \textit{cross-encoder} digunakan untuk meningkatkan presisi dan kualitas hasil pada peringkat teratas dengan menyaring kandidat yang kurang relevan.
-	\item Kombinasi dua komponen dianalisis untuk mengevaluasi potensi peningkatan performa secara menyeluruh sekaligus mengidentifikasi \textit{trade-off} terhadap kompleksitas dan latensi sistem.
+	\item \textit{Hybrid retrieval} dipilih sebagai \textit{baseline} karena mampu meningkatkan cakupan dokumen relevan melalui penggabungan pendekatan leksikal dan semantik. Namun, kontribusi relatif antara komponen \textit{dense} dan \textit{sparse} belum diketahui secara optimal untuk domain ISO/IEC 27001:2022. Oleh karena itu, penelitian ini memvariasikan proporsi pembobotan skor antara keduanya, yakni $\alpha_{\text{dense}} \in \{0{,}00;\ 0{,}25;\ 0{,}50;\ 0{,}75;\ 1{,}00\}$, untuk mengidentifikasi konfigurasi yang paling efektif.
+	\item \textit{Reranking} berbasis \textit{cross-encoder} digunakan untuk menyaring dan mengurutkan ulang kandidat dokumen sehingga dokumen yang paling relevan dapat berada pada posisi peringkat teratas. Karena efektivitas \textit{reranking} sangat bergantung pada jumlah kandidat yang dikirim ke \textit{reranker} (\textit{candidate pool}), penelitian ini mengevaluasi variasi ukuran \textit{candidate pool}, yakni 5, 10, 15, dan 20 dokumen, untuk mengidentifikasi konfigurasi yang memberikan keseimbangan terbaik antara kualitas peringkat dan efisiensi waktu.
+	\item Kombinasi \textit{hybrid retrieval} dan \textit{reranking} dianalisis untuk mengevaluasi apakah penggabungan kedua komponen dapat menghasilkan peningkatan performa secara sinergis atau justru menimbulkan \textit{trade-off} terhadap kompleksitas dan latensi. Pada tahap ini, proporsi pembobotan skor akhir antara skor \textit{hybrid retrieval} dan skor \textit{reranker} ($\alpha_{\text{hybrid}}$ dan $\alpha_{\text{reranker}}$) divariasikan untuk mengidentifikasi kombinasi yang paling optimal.
 \end{enumerate}
 
+\section{Hipotesis Penelitian}
+
+Berdasarkan tinjauan pustaka, analisis perbandingan metode, serta rumusan masalah yang telah ditetapkan, penelitian ini merumuskan hipotesis sebagai berikut. Setiap hipotesis mencakup hipotesis nol ($H_0$) dan hipotesis alternatif ($H_1$) yang akan diuji menggunakan uji statistik Friedman pada tingkat signifikansi $\alpha = 0{,}05$.
+
+\subsection*{Hipotesis 1: Proporsi Pembobotan \textit{Hybrid Retrieval}}
+
+\begin{description}[leftmargin=3.2em, labelwidth=3.0em, labelsep=0.2em, font=\normalfont]
+	\item[$H_0$:] Tidak terdapat perbedaan performa yang signifikan antar konfigurasi proporsi pembobotan skor \textit{dense} dan \textit{sparse} pada metode \textit{hybrid retrieval} dalam pemetaan kontrol SoA ISO/IEC 27001:2022.
+	\item[$H_1$:] Terdapat perbedaan performa yang signifikan antar konfigurasi proporsi pembobotan skor \textit{dense} dan \textit{sparse} pada metode \textit{hybrid retrieval}, dengan konfigurasi seimbang ($\alpha_{\text{dense}} = \alpha_{\text{sparse}} = 0{,}50$) menghasilkan performa terbaik berdasarkan metrik \textit{Recall}, MRR, NDCG, dan ARR.
+\end{description}
+
+\subsection*{Hipotesis 2: Ukuran \textit{Candidate Pool} pada \textit{Reranking}}
+
+\begin{description}[leftmargin=3.2em, labelwidth=3.0em, labelsep=0.2em, font=\normalfont]
+	\item[$H_0$:] Tidak terdapat perbedaan performa yang signifikan antar variasi ukuran \textit{candidate pool} pada proses \textit{reranking} untuk pemeringkatan kontrol SoA ISO/IEC 27001:2022.
+	\item[$H_1$:] Terdapat perbedaan performa yang signifikan antar variasi ukuran \textit{candidate pool}, dengan ukuran yang lebih kecil menghasilkan kualitas \textit{reranking} yang lebih baik karena \textit{reranker} memproses kandidat yang lebih terkurasi dari hasil \textit{hybrid retrieval}.
+\end{description}
+
+\subsection*{Hipotesis 3: Kombinasi Pembobotan \textit{Hybrid Retrieval} dan \textit{Reranker}}
+
+\begin{description}[leftmargin=3.2em, labelwidth=3.0em, labelsep=0.2em, font=\normalfont]
+	\item[$H_0$:] Tidak terdapat perbedaan performa yang signifikan antar konfigurasi proporsi pembobotan skor antara \textit{hybrid retrieval} dan \textit{reranker} dalam pemetaan kontrol SoA ISO/IEC 27001:2022.
+	\item[$H_1$:] Terdapat perbedaan performa yang signifikan antar konfigurasi proporsi pembobotan, dan terdapat konfigurasi tertentu yang secara konsisten mengungguli konfigurasi lainnya berdasarkan mayoritas metrik evaluasi.
+\end{description}
 
 
