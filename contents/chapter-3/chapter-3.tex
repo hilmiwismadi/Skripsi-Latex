@@ -14,7 +14,7 @@
 
 \chapter{Metode Penelitian}
 
-Bab ini menjelaskan metodologi penelitian yang digunakan dalam pengembangan dan evaluasi sistem \textit{information retrieval} berbasis \textit{hybrid retrieval} dan \textit{cross-encoder reranking}. Pendekatan \textit{hybrid retrieval} menggabungkan metode \textit{dense} dan \textit{sparse retrieval}, kemudian dikombinasikan dengan mekanisme \textit{reranking} menggunakan \textit{cross-encoder} melalui skema pembobotan (\textit{alpha}) untuk mengoptimalkan relevansi hasil pencarian. Pembahasan dalam bab ini mencakup perancangan basis pengetahuan berbasis dokumen ISO/IEC 27001:2022, penyusunan variasi \textit{query} dari dokumen asli DTI UGM dan \textit{query} sintetis untuk kebutuhan evaluasi, implementasi metode \textit{retrieval} dan \textit{reranking}, serta perancangan skenario pengujian berdasarkan variasi parameter penelitian.
+Bab ini menjelaskan metodologi penelitian yang digunakan dalam pengembangan dan evaluasi sistem \textit{information retrieval} berbasis \textit{hybrid retrieval} dan \textit{cross-encoder reranking}. Pendekatan \textit{hybrid retrieval} menggabungkan metode \textit{dense} dan \textit{sparse retrieval}, kemudian dikombinasikan dengan mekanisme \textit{reranking} menggunakan \textit{cross-encoder} melalui skema pembobotan (\textit{alpha}) untuk mengoptimalkan relevansi hasil pencarian. Pembahasan dalam bab ini mencakup perancangan basis pengetahuan berbasis dokumen ISO/IEC 27001:2022, penyusunan \textit{query} dari dokumen kebijakan Direktorat Teknologi Informasi (DTI) UGM untuk kebutuhan evaluasi, implementasi metode \textit{retrieval} dan \textit{reranking}, serta perancangan skenario pengujian berdasarkan variasi parameter penelitian.
 
 \section{Alat dan Bahan}
 
@@ -52,15 +52,14 @@ Dalam proses pengembangan dan evaluasi sistem \textit{Retrieval-Augmented Genera
 
 \begin{enumerate}
 	\item Dokumen standar ISO/IEC 27001:2022 ``INTERNATIONAL STANDARD ISO/IEC 27001 Third Edition 2022-10'' sebagai sumber utama pengetahuan yang digunakan dalam proses \textit{retrieval} dan pembentukan basis dokumen.
-	\item Dokumen kebijakan dari Direktorat Teknologi Informasi (DTI) UGM berbentuk surat edaran dan surat keputusan Rektor Universitas Gadjah Mada.
-	\item Dokumen \textit{query} sintetis yang disusun sebagai \textit{ground truth} yang digunakan sebagai acuan dalam proses evaluasi kinerja sistem, khususnya untuk mengukur tingkat relevansi hasil \textit{retrieval} dan \textit{reranking} terhadap kebutuhan informasi.
+	\item Dokumen kebijakan dari Direktorat Teknologi Informasi (DTI) UGM berbentuk surat edaran dan surat keputusan Rektor Universitas Gadjah Mada yang digunakan sebagai sumber penyusunan \textit{query} dan \textit{ground truth} untuk evaluasi sistem.
 \end{enumerate}
 
 \section{Metode yang Digunakan}
 
 \subsection{Desain Penelitian}
 
-Desain penelitian disusun dengan menentukan variabel independen, dependen, dan kontrol agar proses pengujian dapat dilakukan secara sistematis dan terukur. Variabel independen mencakup variasi jenis \textit{query}, metode \textit{retrieval}, serta kombinasi \textit{scoring} yang diterapkan pada sistem. Variabel dependen digunakan untuk mengukur performa sistem berdasarkan akurasi \textit{retrieval} dan waktu latensi. Sementara itu, variabel kontrol dijaga tetap konstan selama eksperimen untuk memastikan hasil pengujian lebih konsisten dan dapat dibandingkan secara objektif.
+Desain penelitian disusun dengan menentukan variabel independen, dependen, dan kontrol agar proses pengujian dapat dilakukan secara sistematis dan terukur. Variabel independen mencakup tiga parameter utama yang dievaluasi secara berurutan: proporsi bobot \textit{scoring} antara \textit{dense} dan \textit{sparse}, jumlah kandidat pada tahap \textit{reranker}, serta proporsi bobot \textit{scoring} antara \textit{hybrid} dan \textit{reranker}. Setiap parameter pada tahap berikutnya menggunakan konfigurasi optimal dari tahap sebelumnya sehingga pencarian parameter bersifat sekuensial, bukan kombinatorik. Variabel dependen digunakan untuk mengukur performa sistem berdasarkan akurasi \textit{retrieval} dan waktu latensi. Sementara itu, variabel kontrol dijaga tetap konstan selama eksperimen untuk memastikan hasil pengujian lebih konsisten dan dapat dibandingkan secara objektif.
 
 
 
@@ -73,9 +72,11 @@ Desain penelitian disusun dengan menentukan variabel independen, dependen, dan k
 \hline
 \textbf{Jenis} & \textbf{Nama Variabel} & \textbf{Deskripsi} & \textbf{Indikator / Parameter} \\
 \hline
-Independen & Jenis \textit{Query} & Variasi bentuk \textit{query} yang digunakan dalam pengujian sistem RAG & Eksplisit singkat, eksplisit panjang, implisit singkat, implisit panjang, dan dokumen DTI \\
+Independen & Proporsi bobot \textit{scoring} \textit{dense}:\textit{sparse} & Rasio pembobotan skor \textit{dense retrieval} dan \textit{sparse retrieval} pada \textit{hybrid retrieval} & \begin{tabular}[c]{@{}l@{}}$\alpha_{\textit{dense}} \in$\\$\{0{,}0;\ 0{,}25;$\\$0{,}5;\ 0{,}75;\ 1{,}0\}$\end{tabular} \\
 \hline
-Independen & Metode \textit{Retrieval} & Pendekatan \textit{retrieval} yang digunakan dalam \textit{pipeline} RAG & \textit{Hybrid retrieval}, \textit{reranking retrieval}, dan kombinasi pembobotan \textit{scoring} \\
+Independen & Jumlah kandidat & Banyaknya dokumen kandidat yang diproses oleh \textit{cross-encoder reranker} & $k \in \{5;\ 10;\ 15;\ 20\}$ \\
+\hline
+Independen & Proporsi bobot \textit{scoring} \textit{hybrid}:\textit{reranker} & Rasio pembobotan skor \textit{hybrid retrieval} dan skor \textit{reranker} pada skor akhir & \begin{tabular}[c]{@{}l@{}}$\alpha_{\textit{reranker}} \in$\\$\{0{,}0;\ 0{,}25;$\\$0{,}5;\ 0{,}75;\ 1{,}0\}$\end{tabular} \\
 \hline
 Dependen & Akurasi \textit{Retrieval} & Tingkat relevansi hasil \textit{retrieval} terhadap \textit{ground truth} & Hit@K, Recall@K, ARR, NDCG \\
 \hline
@@ -95,9 +96,7 @@ Dependen & Latensi Sistem & Waktu yang dibutuhkan sistem dalam memproses hingga 
 \hline
 Kontrol & Model \textit{Embedding} dan \textit{Reranker} & Model yang digunakan dijaga tetap sama untuk semua skenario & paraphrase-multilingual-MiniLM-L12-v2 dan BGE \textit{reranker} \\
 \hline
-Kontrol & \textit{Dataset Query} & \textit{Dataset query} yang digunakan tetap sama pada seluruh skenario pengujian & \textit{Query ground truth}, \textit{Query} Dokumen DTI UGM  \\
-\hline
-Kontrol & \textit{Dataset} Dokumen & Dokumen sumber yang digunakan dalam \textit{retrieval} tidak berubah & Dokumen ISO 27001:2022 \\
+Kontrol & \textit{Dataset} Penelitian & Kumpulan \textit{query} dan dokumen sumber yang digunakan pada seluruh skenario pengujian tetap sama; \textit{query} dibentuk dari dokumen DTI UGM & \textit{Query} DTI UGM beserta \textit{ground truth}, Dokumen ISO 27001:2022 \\
 \hline
 Kontrol & Lingkungan Sistem & Spesifikasi perangkat dan \textit{environment} eksekusi dijaga konstan & Laptop, OS, \textit{dependency} \\
 \hline
@@ -157,53 +156,7 @@ Seluruh dokumen yang digunakan sebagai sumber pengetahuan (korpus) disimpan dala
 
 \textit{Query} dan \textit{ground truth} disusun sebagai komponen utama dalam proses evaluasi \textit{retrieval} sistem \textit{Information Retrieval}. \textit{Query} berperan sebagai \textit{input} yang merepresentasikan kebutuhan informasi pengguna, sedangkan \textit{ground truth} digunakan sebagai acuan kebenaran untuk menilai relevansi hasil \textit{retrieval} yang dihasilkan sistem. Dengan demikian, kombinasi keduanya memungkinkan pengukuran performa sistem secara objektif melalui perbandingan antara hasil yang dihasilkan model dan referensi yang telah ditentukan.
 
-Dalam penelitian ini, penyusunan kumpulan \textit{query} dilakukan dalam dua kategori. Kategori pertama adalah \textit{query} sintetis yang dirancang secara khusus untuk kebutuhan evaluasi sistem dengan mempertimbangkan variasi karakteristik \textit{query}, meliputi \textit{query} panjang dan pendek serta \textit{query} jenis eksplisit dan implisit. Selain itu, \textit{query} sintetis disusun agar mencakup seluruh kontrol pada Annex A.5 hingga A.8 ISO/IEC 27001:2022 sehingga dapat merepresentasikan cakupan domain pengujian secara menyeluruh. Kategori kedua adalah \textit{query} asli yang disusun berdasarkan dokumen DTI UGM melalui proses pembacaan dan identifikasi pernyataan atau kebutuhan informasi pada dokumen, kemudian mentransformasikannya menjadi \textit{query} yang merepresentasikan penggunaan sistem pada konteks dokumen nyata.
-
-Penyusunan \textit{query} sintetis disusun dengan mengacu pada 93 kontrol dalam ISO/IEC 27001:2022 yang mencakup domain A.5 hingga A.8. Kontrol-kontrol tersebut didistribusikan ke dalam 250 \textit{query}, di mana setiap \textit{query} memiliki 1 hingga 3 \textit{ground truth} yang relevan. Distribusi dilakukan secara merata sehingga setiap kontrol muncul sekitar 5 hingga 6 kali dalam keseluruhan \textit{ground truth} sehingga terdapat total 250 variasi dari \textit{query} yang digunakan pada penelitian ini. Pendekatan ini bertujuan untuk menjaga keseimbangan representasi setiap kontrol sekaligus memastikan cakupan evaluasi yang komprehensif terhadap domain audit yang diuji.
-
-Lalu untuk menguji sensitivitas sistem terhadap variasi \textit{input}, \textit{query} dirancang berdasarkan kombinasi dua variabel, yaitu variasi panjang antara pendek dan panjang serta variasi level eksplisitasi yaitu antara eksplisit atau implisit. Kombinasi kedua variabel ini menghasilkan empat jenis variasi \textit{query}.
-
-\begin{table}[H]
-\centering
-\footnotesize
-\caption{Jenis Variasi \textit{Query}}
-\label{tab:jenis_query}
-\begin{tabular}{|P{2.2cm}|P{4.4cm}|P{5.8cm}|}
-\hline
-\textbf{Jenis \textit{Query}} & \textbf{Deskripsi} & \textbf{Contoh} \\
-\hline
-Pendek Eksplisit &
-\textit{Query} singkat (1--2 kalimat) yang secara langsung menyebutkan istilah kontrol keamanan informasi seperti dokumentasi, persetujuan, atau aktivitas pemantauan. Memiliki tingkat ambiguitas rendah dan mudah dipetakan ke kontrol ISO 27001 melalui pencocokan kata kunci. &
-``Sistem belum memiliki perlindungan terhadap \textbf{malware} yang memadai. Selain itu, tidak terdapat \textbf{aktivitas pemantauan} yang konsisten untuk mendeteksi ancaman.'' \\
-\hline
-Panjang Eksplisit &
-\textit{Query} berbentuk paragraf (3--5 kalimat) dengan gaya bahasa formal dan deskriptif seperti dokumen organisasi. Tetap menyebutkan istilah kontrol secara eksplisit, namun mengandung tambahan konteks atau \textit{noise} sehingga menyerupai teks nyata dalam dokumen profesional. &
-``Untuk mendukung keberlangsungan operasional sistem informasi yang aman, organisasi perlu menyelenggarakan perlindungan terhadap \textbf{malware} secara konsisten dan berkesinambungan. Mekanisme tersebut mencakup memastikan informasi dan fasilitas pemrosesan informasi dilindungi dari malware serta pengendalian terhadap potensi risiko yang dapat mengganggu operasional. Dalam hubungannya dengan hal tersebut, pelaksanaan \textbf{aktivitas pemantauan} menjadi esensial dalam menjamin efektivitas pengendalian keamanan informasi. Pengendalian tersebut perlu didukung oleh komitmen seluruh unit kerja serta didokumentasikan dalam bentuk prosedur yang dapat ditinjau secara berkala.'' \\
-\hline
-Pendek Implisit &
-\textit{Query} singkat (1--2 kalimat) yang tidak menyebutkan istilah kontrol secara langsung, melainkan menggambarkan gejala atau dampak dari ketidakhadiran kontrol. Memiliki ambiguitas lebih tinggi dan membutuhkan pemahaman semantik. &
-``DTI UGM mendeteksi beberapa komputer di fakultas yang \textbf{terinfeksi} setelah staf mengunduh lampiran \textbf{email mencurigakan}, namun tim keamanan tidak memiliki \textbf{log aktivitas jaringan} untuk melacak sejauh mana penyebarannya ke sistem lain di universitas.'' \\
-\hline
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\footnotesize
-\caption{Jenis Variasi \textit{Query} (lanjutan)}
-\label{tab:jenis_query_lanjutan}
-\begin{tabular}{|P{2.2cm}|P{4.4cm}|P{5.8cm}|}
-\hline
-\textbf{Jenis \textit{Query}} & \textbf{Deskripsi} & \textbf{Contoh} \\
-\hline
-Panjang Implisit &
-\textit{Query} berbentuk paragraf (3--6 kalimat) dengan gaya bahasa formal dan netral seperti peraturan atau dokumen administratif. Tidak mengandung istilah kontrol secara eksplisit, tetapi menggambarkan kondisi organisasi, ketidakkonsistenan, atau kebutuhan akan keselarasan dalam operasional. &
-``Tim keamanan DTI mendeteksi lonjakan aktivitas jaringan yang mencurigakan di server pusat saat jam operasional pelayanan akademik berlangsung, namun belum memiliki \textbf{mekanisme pemantauan real-time} untuk mengidentifikasi sumber anomali tersebut secara akurat. Dua unit kerja di fakultas melaporkan bahwa perangkat laptop staf sering mengalami kinerja lambat dan \textbf{muncul iklan pop-up} yang tidak diinginkan, mengindikasikan kemungkinan \textbf{infeksi perangkat lunak} berbahaya melalui unduhan yang tidak aman. Pengelola portal layanan akademik menyatakan belum memiliki sistem deteksi otomatis yang dapat memberikan peringatan dini ketika terdapat upaya akses yang tidak wajar terhadap basis data rekam mahasiswa.'' \\
-\hline
-\end{tabular}
-\end{table}
-
-Selanjutnya, \textit{query} asli disusun menggunakan dokumen kebijakan dan prosedur milik Direktorat Teknologi Informasi (DTI) UGM yang berkaitan dengan implementasi tata kelola dan teknologi informasi terkini. Dokumen-dokumen tersebut digunakan untuk merepresentasikan kondisi dan kebijakan terbaru organisasi sehingga dapat menjadi acuan dalam menggambarkan status implementasi keamanan informasi UGM saat ini. Berikut merupakan dokumen-dokumen yang digunakan dalam penyusunan \textit{query} asli pada penelitian ini.
+\textit{Query} yang digunakan dalam penelitian ini disusun berdasarkan dokumen kebijakan dan prosedur milik Direktorat Teknologi Informasi (DTI) UGM yang berkaitan dengan implementasi tata kelola dan teknologi informasi terkini. Dokumen-dokumen tersebut merepresentasikan kondisi dan kebijakan terbaru organisasi sehingga dapat menjadi acuan dalam menggambarkan status implementasi keamanan informasi UGM saat ini. Proses pembentukan \textit{query} dilakukan melalui pembacaan manual terhadap isi dokumen untuk mengidentifikasi pernyataan, kebijakan, atau deskripsi kondisi organisasi yang berkaitan dengan kontrol pada Annex A.5 hingga A.8. Pernyataan-pernyataan tersebut kemudian dicatat menjadi \textit{query} yang merepresentasikan kebutuhan pencarian informasi dalam konteks audit dan evaluasi kepatuhan keamanan informasi, beserta \textit{ground truth} yang menunjukkan kontrol ISO/IEC 27001:2022 yang relevan. Pendekatan ini dilakukan agar \textit{query} yang dihasilkan dapat merefleksikan penggunaan sistem pada kondisi dokumen organisasi yang nyata. Berikut merupakan dokumen-dokumen yang digunakan dalam penyusunan \textit{query} pada penelitian ini.
 
 \begin{table}[!htbp]
 \centering
@@ -227,8 +180,6 @@ Penggunaan Perangkat Lunak di Lingkungan Universitas Gadjah Mada \\
 \hline
 \end{tabular}
 \end{table}
-
-Proses pembentukan \textit{query} dilakukan melalui pembacaan manual terhadap isi dokumen untuk mengidentifikasi pernyataan, kebijakan, atau deskripsi kondisi organisasi yang berkaitan dengan kontrol pada Annex A.5 hingga A.8. Pernyataan-pernyataan tersebut kemudian dicatat menjadi \textit{query} yang merepresentasikan kebutuhan pencarian informasi dalam konteks audit dan evaluasi kepatuhan keamanan informasi (selanjutnya ditentukan \textit{ground truth}-nya). Pendekatan ini dilakukan agar \textit{query} yang dihasilkan dapat merefleksikan penggunaan sistem pada kondisi dokumen organisasi yang nyata.
 
 % Catatan: Subbab berikut diberi label 3.2.2 pada dokumen sumber PDF (duplikat).
 % LaTeX menomorinya secara otomatis sebagai 3.2.4.
@@ -280,7 +231,7 @@ Pemilihan BM25 sebagai komponen \textit{sparse retrieval} didasarkan pada bukti 
 \vspace{1.5em}
 \noindent\textbf{Pemilihan Model \textit{Dense Embedding}}
 
-Untuk komponen \textit{dense retrieval}, terdapat beberapa alternatif model \textit{sentence embedding} yang dapat digunakan, antara lain paraphrase-multilingual-MiniLM-L12-v2, paraphrase-multilingual-mpnet-base-v2, all-MiniLM-L6-v2, BGE-M3, Jina Embeddings v2, serta IndoBERT. Perbandingan antara model-model tersebut disajikan pada Tabel~\ref{tab:perbandingan_dense}.
+Untuk komponen \textit{dense retrieval}, terdapat beberapa alternatif model \textit{sentence embedding} yang dapat digunakan, antara lain paraphrase-multilingual-MiniLM-L12-v2, paraphrase-multilingual-mpnet-base-v2, all-MiniLM-L6-v2, BGE-M3, Jina Embeddings v2, serta IndoBERT. Perbandingan antara model-model tersebut disajikan pada Tabel~\ref{tab:perbandingan_dense}, Tabel~\ref{tab:perbandingan_dense_lanjutan}, dan Tabel~\ref{tab:perbandingan_dense_lanjutan_2}.
 
 \begin{table}[H]
 \centering
@@ -319,6 +270,18 @@ BGE-M3 \newline Dim: 1024, Bahasa: 100+ &
 Model \textit{state-of-the-art} multilingual yang mendukung tiga fungsionalitas \textit{retrieval} sekaligus, yaitu \textit{dense}, \textit{sparse}, dan \textit{multi-vector retrieval} dalam satu arsitektur~\cite{chen2024bge}; mendukung lebih dari 100 bahasa dan dokumen hingga 8.192 \textit{token} &
 Dimensi sangat besar (1024) sehingga biaya komputasi tinggi; kemampuan \textit{multi-functionality} merupakan kelebihan yang tidak sepenuhnya dibutuhkan pada tahap \textit{retrieval} pertama; lebih cocok digunakan sebagai \textit{reranker}~\cite{elkiran2026empirical} \\
 \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Perbandingan Model \textit{Dense Embedding} (lanjutan)}
+\label{tab:perbandingan_dense_lanjutan_2}
+\begin{tabular}{|p{3.2cm}|p{5.6cm}|p{5.6cm}|}
+\hline
+\textbf{Model} & \textbf{Kelebihan} & \textbf{Kekurangan} \\
+\hline
 Jina Embeddings v2 \newline Dim: 768, Bahasa: Multi &
 Digunakan dalam kombinasi dengan MS-MiniLM pada studi \textit{ablation} pada domain tanya jawab keuangan dan menghasilkan performa yang baik~\cite{ravishankar2025hybrid} &
 Model yang relatif lebih baru sehingga bukti empiris pada domain regulasi berbahasa Indonesia masih terbatas; representasi 768-dim menambah beban komputasi dibanding MiniLM-L12-v2 \\
@@ -330,7 +293,7 @@ Pada studi \textit{retrieval} berbahasa Indonesia, IndoBERT justru menghasilkan 
 \end{tabular}
 \end{table}
 
-Pemilihan paraphrase-multilingual-MiniLM-L12-v2 sebagai komponen \textit{dense embedding} didasarkan pada bukti empiris perbandingan terhadap kelima alternatif pada Tabel~\ref{tab:perbandingan_dense}. Ravishankar dan Varalakshmi~\cite{ravishankar2025hybrid} mengonfirmasi bahwa model MiniLM dalam arsitektur \textit{hybrid retrieval} secara konsisten meningkatkan kualitas \textit{dense retrieval} pada domain tanya jawab berbasis dokumen keuangan. Model paraphrase-multilingual-mpnet-base-v2 memang menghasilkan representasi semantik yang lebih kaya dan terbukti mengungguli MiniLM-L12-v2 pada studi \textit{retrieval} data medis berbahasa Indonesia~\cite{maryamah2024mpnet}, namun dimensi yang dua kali lebih besar (768 vs 384) berdampak pada peningkatan latensi secara signifikan sehingga kurang efisien untuk tahap \textit{retrieval} pertama. Model all-MiniLM-L6-v2 tidak dipilih karena bersifat monolingual Bahasa Inggris~\cite{reimers2019sbert} dan tidak dapat memproses \textit{query} berbahasa Indonesia. BGE-M3 menawarkan kemampuan \textit{multi-functionality} yang canggih~\cite{chen2024bge}, namun dimensi yang sangat besar (1024) menjadikannya kurang efisien untuk tahap \textit{retrieval} pertama dan lebih cocok sebagai \textit{reranker}~\cite{elkiran2026empirical}. Jina Embeddings v2 menunjukkan performa yang baik pada studi \textit{ablation}~\cite{ravishankar2025hybrid}, namun bukti empirisnya pada domain regulasi berbahasa Indonesia masih terbatas. IndoBERT yang dirancang khusus untuk Bahasa Indonesia justru menghasilkan performa di bawah MiniLM-L12-v2 dan MPNet~\cite{maryamah2024mpnet}. Dengan mempertimbangkan keseimbangan antara kualitas representasi semantik, dukungan multilingual untuk \textit{query} berbahasa Indonesia, dan efisiensi komputasi, paraphrase-multilingual-MiniLM-L12-v2 merupakan pilihan yang paling pragmatis dan sesuai untuk penelitian ini.
+Pemilihan paraphrase-multilingual-MiniLM-L12-v2 sebagai komponen \textit{dense embedding} didasarkan pada bukti empiris perbandingan terhadap kelima alternatif pada Tabel~\ref{tab:perbandingan_dense}, Tabel~\ref{tab:perbandingan_dense_lanjutan}, dan Tabel~\ref{tab:perbandingan_dense_lanjutan_2}. Ravishankar dan Varalakshmi~\cite{ravishankar2025hybrid} mengonfirmasi bahwa model MiniLM dalam arsitektur \textit{hybrid retrieval} secara konsisten meningkatkan kualitas \textit{dense retrieval} pada domain tanya jawab berbasis dokumen keuangan. Model paraphrase-multilingual-mpnet-base-v2 memang menghasilkan representasi semantik yang lebih kaya dan terbukti mengungguli MiniLM-L12-v2 pada studi \textit{retrieval} data medis berbahasa Indonesia~\cite{maryamah2024mpnet}, namun dimensi yang dua kali lebih besar (768 vs 384) berdampak pada peningkatan latensi secara signifikan sehingga kurang efisien untuk tahap \textit{retrieval} pertama. Model all-MiniLM-L6-v2 tidak dipilih karena bersifat monolingual Bahasa Inggris~\cite{reimers2019sbert} dan tidak dapat memproses \textit{query} berbahasa Indonesia. BGE-M3 menawarkan kemampuan \textit{multi-functionality} yang canggih~\cite{chen2024bge}, namun dimensi yang sangat besar (1024) menjadikannya kurang efisien untuk tahap \textit{retrieval} pertama dan lebih cocok sebagai \textit{reranker}~\cite{elkiran2026empirical}. Jina Embeddings v2 menunjukkan performa yang baik pada studi \textit{ablation}~\cite{ravishankar2025hybrid}, namun bukti empirisnya pada domain regulasi berbahasa Indonesia masih terbatas. IndoBERT yang dirancang khusus untuk Bahasa Indonesia justru menghasilkan performa di bawah MiniLM-L12-v2 dan MPNet~\cite{maryamah2024mpnet}. Dengan mempertimbangkan keseimbangan antara kualitas representasi semantik, dukungan multilingual untuk \textit{query} berbahasa Indonesia, dan efisiensi komputasi, paraphrase-multilingual-MiniLM-L12-v2 merupakan pilihan yang paling pragmatis dan sesuai untuk penelitian ini.
 
 Komponen \textit{hybrid retrieval} dibangun untuk menggabungkan pencarian semantik berbasis \textit{embedding} dan pencarian leksikal berbasis BM25. Dalam rancangan Bab 3, proses ini dapat dijelaskan melalui tiga grup utama yang sesuai dengan diagram, yaitu Basis Pengetahuan, Pemrosesan \textit{Query}, dan Pemrosesan \textit{Scoring}. Ketiga grup tersebut menunjukkan alur dari pembentukan representasi dokumen, pemrosesan masukan pengguna, hingga penggabungan skor untuk memilih dokumen paling relevan.
 
@@ -408,7 +371,46 @@ Grup Pemrosesan \textit{Scoring} berfungsi untuk menggabungkan \textit{dense sco
 
 \subsubsection{Perancangan Komponen \textit{Rerank} pada Sistem}
 
-Komponen \textit{reranking} pada penelitian ini menggunakan model BAAI/bge-reranker-v2-m3 yang dipilih berdasarkan dua pertimbangan utama: efektivitas yang terbukti pada domain regulasi serta dukungan multibahasa. Rustamov et al. (2025) secara eksplisit menerapkan \textit{cross-encoder reranking} menggunakan model BGE \textit{reranker-base} dan menemukan peningkatan signifikan pada skor NDCG dari 0,39 menjadi 0,44. Elkiran dan Rasheed (2026) lebih lanjut menjelaskan bahwa model BGE sebagai \textit{cross-encoder} berbeda secara mendasar dari pendekatan \textit{embedding}: model ini menerima pasangan \textit{query}--dokumen secara langsung sebagai masukan dan menghasilkan skor kemiripan tanpa melalui representasi vektor perantara, sehingga menghasilkan penilaian relevansi yang lebih akurat meskipun dengan biaya komputasi yang lebih tinggi. Model bge-reranker-v2-m3 yang digunakan pada penelitian ini merupakan pengembangan dari bge-reranker-base dengan tambahan kemampuan multibahasa yang esensial untuk menangani \textit{query} berbahasa Indonesia. Alternatif seperti \textit{cross-encoder/ms-marco-MiniLM} tidak dipertimbangkan karena keterbatasannya pada Bahasa Inggris, sementara Jina Reranker v2 dan ColBERT v2 belum memiliki bukti empiris yang memadai pada domain regulasi berbahasa Indonesia.
+Komponen \textit{reranking} pada penelitian ini menggunakan model \textit{cross-encoder} yang dipilih berdasarkan bukti empiris dari literatur terkait.
+
+\vspace{1.5em}
+\noindent\textbf{Pemilihan Model \textit{Reranker}}
+
+Untuk komponen \textit{reranking}, terdapat beberapa alternatif model yang dapat digunakan, antara lain BAAI/bge-reranker-v2-m3, BAAI/bge-reranker-base, cross-encoder/ms-marco-MiniLM-L-6-v2, Jina Reranker v2, serta ColBERT v2. Perbandingan antara model-model tersebut disajikan pada Tabel~\ref{tab:perbandingan_reranker}.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Perbandingan Model \textit{Reranker}}
+\label{tab:perbandingan_reranker}
+\begin{tabular}{|p{3.2cm}|p{5.6cm}|p{5.6cm}|}
+\hline
+\textbf{Model} & \textbf{Kelebihan} & \textbf{Kekurangan} \\
+\hline
+\textbf{BAAI/bge-reranker-v2-m3} \newline Tipe: \textit{Cross-encoder} multilingual \newline \textit{(dipilih)} &
+Model \textit{cross-encoder} multilingual yang mendukung lebih dari 100 bahasa; versi m3 merupakan pengembangan dari bge-reranker-base dengan tambahan kemampuan multibahasa; pada domain regulasi hukum pajak, model BGE reranker terbukti meningkatkan skor NDCG dari 0,39 menjadi 0,44~\cite{rustamov2025tax} &
+Paling berat di antara reranker alternatif; biaya komputasi dan latensi lebih tinggi dibanding model reranker yang lebih ringan \\
+\hline
+BAAI/bge-reranker-base \newline Tipe: \textit{Cross-encoder} &
+Digunakan secara eksplisit pada studi hukum perpajakan dan terbukti meningkatkan NDCG secara signifikan~\cite{rustamov2025tax}; lebih ringan dibanding v2-m3; bukti empiris kuat pada domain regulasi &
+Dukungan bahasa terbatas atau monolingual sehingga tidak optimal untuk \textit{query} berbahasa Indonesia \\
+\hline
+cross-encoder/ \newline ms-marco-MiniLM-L-6-v2 \newline Tipe: \textit{Cross-encoder} &
+Sangat ringan dengan latensi rendah; cocok untuk deployment \textit{production}; arsitektur MiniLM yang efisien~\cite{reimers2019sbert} &
+Monolingual Bahasa Inggris sehingga tidak dapat menangani \textit{query} berbahasa Indonesia; performa lebih rendah dibanding seri BGE reranker \\
+\hline
+Jina Reranker v2 \newline Tipe: \textit{Cross-encoder} multilingual &
+Multilingual dengan \textit{context window} lebih panjang; performa kompetitif dengan BGE pada beberapa \textit{benchmark} &
+Model yang relatif lebih baru sehingga dokumentasi dan bukti empiris pada domain regulasi berbahasa Indonesia masih terbatas \\
+\hline
+ColBERT v2 \newline Tipe: \textit{Late interaction} &
+Arsitektur \textit{late interaction} yang lebih efisien untuk skala besar dibanding \textit{cross-encoder} murni; kecepatan pemrosesan \textit{query} lebih tinggi~\cite{khattab2020colbert} &
+Implementasi lebih kompleks dan membutuhkan setup indeks khusus; bukan pendekatan \textit{plug-and-play} seperti \textit{cross-encoder}; bukti empiris pada domain regulasi berbahasa Indonesia belum tersedia \\
+\hline
+\end{tabular}
+\end{table}
+
+Pemilihan BAAI/bge-reranker-v2-m3 sebagai model \textit{reranker} didasarkan pada bukti empiris perbandingan terhadap keempat alternatif pada Tabel~\ref{tab:perbandingan_reranker}. Rustamov et al.~\cite{rustamov2025tax} secara eksplisit menerapkan \textit{cross-encoder reranking} menggunakan model BGE reranker-base pada domain hukum perpajakan dan menemukan peningkatan signifikan pada skor NDCG dari 0,39 menjadi 0,44. Elkiran dan Rasheed~\cite{elkiran2026empirical} menjelaskan bahwa model BGE sebagai \textit{cross-encoder} menerima pasangan \textit{query}--dokumen secara langsung sebagai masukan dan menghasilkan skor kemiripan tanpa melalui representasi vektor perantara, sehingga menghasilkan penilaian relevansi yang lebih akurat meskipun dengan biaya komputasi yang lebih tinggi. Model bge-reranker-base memang telah terbukti efektif pada domain regulasi, namun dukungan bahasanya terbatas sehingga tidak optimal untuk \textit{query} berbahasa Indonesia. Model bge-reranker-v2-m3 yang digunakan pada penelitian ini merupakan pengembangan dari bge-reranker-base dengan tambahan kemampuan multibahasa yang esensial untuk menangani \textit{query} berbahasa Indonesia. Model cross-encoder/ms-marco-MiniLM-L-6-v2 tidak dipilih karena bersifat monolingual Bahasa Inggris sehingga tidak dapat memproses \textit{query} berbahasa Indonesia. Jina Reranker v2 menawarkan dukungan multilingual dengan \textit{context window} yang lebih panjang, namun sebagai model yang relatif baru, bukti empirisnya pada domain regulasi berbahasa Indonesia masih terbatas. ColBERT v2 menggunakan arsitektur \textit{late interaction} yang lebih efisien untuk skala besar~\cite{khattab2020colbert}, namun implementasinya lebih kompleks dan membutuhkan setup indeks khusus yang tidak sesuai dengan kebutuhan \textit{plug-and-play} pada penelitian ini. Dengan mempertimbangkan bukti empiris pada domain regulasi, dukungan multilingual, dan kemudahan implementasi, BAAI/bge-reranker-v2-m3 merupakan pilihan yang paling tepat untuk penelitian ini.
 
 Perancangan komponen \textit{rerank} pada sistem dilakukan untuk meningkatkan kualitas urutan dokumen yang telah diperoleh dari tahap \textit{hybrid retrieval}. Pada rancangan ini, sistem tidak langsung menggunakan hasil \textit{hybrid retrieval} sebagai keluaran akhir, tetapi terlebih dahulu membentuk \textit{candidate pool} dan mengevaluasi ulang kandidat tersebut menggunakan model \textit{cross-encoder}. Dengan demikian, hasil akhir tidak hanya mempertimbangkan skor gabungan \textit{dense} dan \textit{sparse}, tetapi juga mempertimbangkan interaksi langsung antara \textit{query} dan dokumen kandidat.
 
