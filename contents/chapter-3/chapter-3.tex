@@ -80,18 +80,6 @@ Independen & Proporsi bobot \textit{scoring} \textit{hybrid}:\textit{reranker} &
 \hline
 Dependen & Akurasi \textit{Retrieval} & Tingkat relevansi hasil \textit{retrieval} terhadap \textit{ground truth} & Hit@K, Recall@K, ARR, NDCG \\
 \hline
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\small
-\caption{Variabel Penelitian (lanjutan)}
-\label{tab:variabel_penelitian_lanjutan}
-\begin{tabular}{|p{1.8cm}|p{3.0cm}|p{4.6cm}|p{3.4cm}|}
-\hline
-\textbf{Jenis} & \textbf{Nama Variabel} & \textbf{Deskripsi} & \textbf{Indikator / Parameter} \\
-\hline
 Dependen & Latensi Sistem & Waktu yang dibutuhkan sistem dalam memproses hingga menghasilkan \textit{output} & Waktu eksekusi \\
 \hline
 Kontrol & Model \textit{Embedding} dan \textit{Reranker} & Model yang digunakan dijaga tetap sama untuk semua skenario & paraphrase-multilingual-MiniLM-L12-v2 dan BGE \textit{reranker} \\
@@ -115,8 +103,8 @@ Seluruh dokumen yang digunakan sebagai sumber pengetahuan (korpus) disimpan dala
 \begin{table}[H]
 \centering
 \footnotesize
-\caption{Struktur Data JSON Basis Pengetahuan}
-\label{tab:json_struktur}
+\caption{Struktur Data JSON Basis Pengetahuan (Atribut Deskriptif)}
+\label{tab:json_struktur_deskriptif}
 \begin{tabular}{|p{3.2cm}|p{4.8cm}|p{4.8cm}|}
 \hline
 \textbf{Nama Atribut} & \textbf{Penjelasan} & \textbf{Contoh Isian} \\
@@ -130,6 +118,18 @@ Seluruh dokumen yang digunakan sebagai sumber pengetahuan (korpus) disimpan dala
 \texttt{description} & Deskripsi lengkap mengenai kontrol dan implementasinya & Perubahan sistem informasi harus tunduk pada prosedur manajemen perubahan \\
 \hline
 \texttt{implementation}\newline\texttt{\_guidance} & Panduan implementasi kontrol secara ringkas & Proses manajemen perubahan formal dengan penilaian dampak keamanan \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\footnotesize
+\caption{Struktur Data JSON Basis Pengetahuan (Atribut Pendukung \textit{Retrieval})}
+\label{tab:json_struktur_retrieval}
+\begin{tabular}{|p{3.2cm}|p{4.8cm}|p{4.8cm}|}
+\hline
+\textbf{Nama Atribut} & \textbf{Penjelasan} & \textbf{Contoh Isian} \\
 \hline
 \texttt{keywords\_en} & Kata kunci dalam Bahasa Inggris untuk mendukung \textit{retrieval} & ``change management'', ``change control'' \\
 \hline
@@ -158,7 +158,7 @@ Seluruh dokumen yang digunakan sebagai sumber pengetahuan (korpus) disimpan dala
 
 \textit{Query} yang digunakan dalam penelitian ini disusun berdasarkan dokumen kebijakan dan prosedur milik Direktorat Teknologi Informasi (DTI) UGM yang berkaitan dengan implementasi tata kelola dan teknologi informasi terkini. Dokumen-dokumen tersebut merepresentasikan kondisi dan kebijakan terbaru organisasi sehingga dapat menjadi acuan dalam menggambarkan status implementasi keamanan informasi UGM saat ini. Proses pembentukan \textit{query} dilakukan melalui pembacaan manual terhadap isi dokumen untuk mengidentifikasi pernyataan, kebijakan, atau deskripsi kondisi organisasi yang berkaitan dengan kontrol pada Annex A.5 hingga A.8. Pernyataan-pernyataan tersebut kemudian dicatat menjadi \textit{query} yang merepresentasikan kebutuhan pencarian informasi dalam konteks audit dan evaluasi kepatuhan keamanan informasi, beserta \textit{ground truth} yang menunjukkan kontrol ISO/IEC 27001:2022 yang relevan. Pendekatan ini dilakukan agar \textit{query} yang dihasilkan dapat merefleksikan penggunaan sistem pada kondisi dokumen organisasi yang nyata. Berikut merupakan dokumen-dokumen yang digunakan dalam penyusunan \textit{query} pada penelitian ini.
 
-\begin{table}[!htbp]
+\begin{table}[H]
 \centering
 \caption{Dokumen DTI UGM yang Digunakan sebagai Sumber \textit{Query} Asli}
 \label{tab:dti_dokumen}
@@ -231,7 +231,7 @@ Pemilihan BM25 sebagai komponen \textit{sparse retrieval} didasarkan pada bukti 
 \vspace{1.5em}
 \noindent\textbf{Pemilihan Model \textit{Dense Embedding}}
 
-Untuk komponen \textit{dense retrieval}, terdapat beberapa alternatif model \textit{sentence embedding} yang dapat digunakan, antara lain paraphrase-multilingual-MiniLM-L12-v2, paraphrase-multilingual-mpnet-base-v2, all-MiniLM-L6-v2, BGE-M3, Jina Embeddings v2, serta IndoBERT. Perbandingan antara model-model tersebut disajikan pada Tabel~\ref{tab:perbandingan_dense}, Tabel~\ref{tab:perbandingan_dense_lanjutan}, dan Tabel~\ref{tab:perbandingan_dense_lanjutan_2}.
+Untuk komponen \textit{dense retrieval}, terdapat beberapa alternatif model \textit{sentence embedding} yang dapat digunakan, antara lain paraphrase-multilingual-MiniLM-L12-v2, paraphrase-multilingual-mpnet-base-v2, all-MiniLM-L6-v2, BGE-M3, Jina Embeddings v2, serta IndoBERT. Perbandingan antara model-model tersebut disajikan pada Tabel~\ref{tab:perbandingan_dense} dan Tabel~\ref{tab:perbandingan_dense_lanjutan}.
 
 \begin{table}[H]
 \centering
@@ -270,18 +270,6 @@ BGE-M3 \newline Dim: 1024, Bahasa: 100+ &
 Model \textit{state-of-the-art} multilingual yang mendukung tiga fungsionalitas \textit{retrieval} sekaligus, yaitu \textit{dense}, \textit{sparse}, dan \textit{multi-vector retrieval} dalam satu arsitektur~\cite{chen2024bge}; mendukung lebih dari 100 bahasa dan dokumen hingga 8.192 \textit{token} &
 Dimensi sangat besar (1024) sehingga biaya komputasi tinggi; kemampuan \textit{multi-functionality} merupakan kelebihan yang tidak sepenuhnya dibutuhkan pada tahap \textit{retrieval} pertama; lebih cocok digunakan sebagai \textit{reranker}~\cite{elkiran2026empirical} \\
 \hline
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\small
-\caption{Perbandingan Model \textit{Dense Embedding} (lanjutan)}
-\label{tab:perbandingan_dense_lanjutan_2}
-\begin{tabular}{|p{3.2cm}|p{5.6cm}|p{5.6cm}|}
-\hline
-\textbf{Model} & \textbf{Kelebihan} & \textbf{Kekurangan} \\
-\hline
 Jina Embeddings v2 \newline Dim: 768, Bahasa: Multi &
 Digunakan dalam kombinasi dengan MS-MiniLM pada studi \textit{ablation} pada domain tanya jawab keuangan dan menghasilkan performa yang baik~\cite{ravishankar2025hybrid} &
 Model yang relatif lebih baru sehingga bukti empiris pada domain regulasi berbahasa Indonesia masih terbatas; representasi 768-dim menambah beban komputasi dibanding MiniLM-L12-v2 \\
@@ -293,9 +281,9 @@ Pada studi \textit{retrieval} berbahasa Indonesia, IndoBERT justru menghasilkan 
 \end{tabular}
 \end{table}
 
-Pemilihan paraphrase-multilingual-MiniLM-L12-v2 sebagai komponen \textit{dense embedding} didasarkan pada bukti empiris perbandingan terhadap kelima alternatif pada Tabel~\ref{tab:perbandingan_dense}, Tabel~\ref{tab:perbandingan_dense_lanjutan}, dan Tabel~\ref{tab:perbandingan_dense_lanjutan_2}. Ravishankar dan Varalakshmi~\cite{ravishankar2025hybrid} mengonfirmasi bahwa model MiniLM dalam arsitektur \textit{hybrid retrieval} secara konsisten meningkatkan kualitas \textit{dense retrieval} pada domain tanya jawab berbasis dokumen keuangan. Model paraphrase-multilingual-mpnet-base-v2 memang menghasilkan representasi semantik yang lebih kaya dan terbukti mengungguli MiniLM-L12-v2 pada studi \textit{retrieval} data medis berbahasa Indonesia~\cite{maryamah2024mpnet}, namun dimensi yang dua kali lebih besar (768 vs 384) berdampak pada peningkatan latensi secara signifikan sehingga kurang efisien untuk tahap \textit{retrieval} pertama. Model all-MiniLM-L6-v2 tidak dipilih karena bersifat monolingual Bahasa Inggris~\cite{reimers2019sbert} dan tidak dapat memproses \textit{query} berbahasa Indonesia. BGE-M3 menawarkan kemampuan \textit{multi-functionality} yang canggih~\cite{chen2024bge}, namun dimensi yang sangat besar (1024) menjadikannya kurang efisien untuk tahap \textit{retrieval} pertama dan lebih cocok sebagai \textit{reranker}~\cite{elkiran2026empirical}. Jina Embeddings v2 menunjukkan performa yang baik pada studi \textit{ablation}~\cite{ravishankar2025hybrid}, namun bukti empirisnya pada domain regulasi berbahasa Indonesia masih terbatas. IndoBERT yang dirancang khusus untuk Bahasa Indonesia justru menghasilkan performa di bawah MiniLM-L12-v2 dan MPNet~\cite{maryamah2024mpnet}. Dengan mempertimbangkan keseimbangan antara kualitas representasi semantik, dukungan multilingual untuk \textit{query} berbahasa Indonesia, dan efisiensi komputasi, paraphrase-multilingual-MiniLM-L12-v2 merupakan pilihan yang paling pragmatis dan sesuai untuk penelitian ini.
+Pemilihan paraphrase-multilingual-MiniLM-L12-v2 sebagai komponen \textit{dense embedding} didasarkan pada bukti empiris perbandingan terhadap kelima alternatif pada Tabel~\ref{tab:perbandingan_dense} dan Tabel~\ref{tab:perbandingan_dense_lanjutan}. Ravishankar dan Varalakshmi~\cite{ravishankar2025hybrid} mengonfirmasi bahwa model MiniLM dalam arsitektur \textit{hybrid retrieval} secara konsisten meningkatkan kualitas \textit{dense retrieval} pada domain tanya jawab berbasis dokumen keuangan. Model paraphrase-multilingual-mpnet-base-v2 memang menghasilkan representasi semantik yang lebih kaya dan terbukti mengungguli MiniLM-L12-v2 pada studi \textit{retrieval} data medis berbahasa Indonesia~\cite{maryamah2024mpnet}, namun dimensi yang dua kali lebih besar (768 vs 384) berdampak pada peningkatan latensi secara signifikan sehingga kurang efisien untuk tahap \textit{retrieval} pertama. Model all-MiniLM-L6-v2 tidak dipilih karena bersifat monolingual Bahasa Inggris~\cite{reimers2019sbert} dan tidak dapat memproses \textit{query} berbahasa Indonesia. BGE-M3 menawarkan kemampuan \textit{multi-functionality} yang canggih~\cite{chen2024bge}, namun dimensi yang sangat besar (1024) menjadikannya kurang efisien untuk tahap \textit{retrieval} pertama dan lebih cocok sebagai \textit{reranker}~\cite{elkiran2026empirical}. Jina Embeddings v2 menunjukkan performa yang baik pada studi \textit{ablation}~\cite{ravishankar2025hybrid}, namun bukti empirisnya pada domain regulasi berbahasa Indonesia masih terbatas. IndoBERT yang dirancang khusus untuk Bahasa Indonesia justru menghasilkan performa di bawah MiniLM-L12-v2 dan MPNet~\cite{maryamah2024mpnet}. Dengan mempertimbangkan keseimbangan antara kualitas representasi semantik, dukungan multilingual untuk \textit{query} berbahasa Indonesia, dan efisiensi komputasi, paraphrase-multilingual-MiniLM-L12-v2 merupakan pilihan yang paling pragmatis dan sesuai untuk penelitian ini.
 
-Komponen \textit{hybrid retrieval} dibangun untuk menggabungkan pencarian semantik berbasis \textit{embedding} dan pencarian leksikal berbasis BM25. Dalam rancangan Bab 3, proses ini dapat dijelaskan melalui tiga grup utama yang sesuai dengan diagram, yaitu Basis Pengetahuan, Pemrosesan \textit{Query}, dan Pemrosesan \textit{Scoring}. Ketiga grup tersebut menunjukkan alur dari pembentukan representasi dokumen, pemrosesan masukan pengguna, hingga penggabungan skor untuk memilih dokumen paling relevan.
+Komponen \textit{hybrid retrieval} dibangun untuk menggabungkan pencarian semantik berbasis \textit{embedding} dan pencarian leksikal berbasis BM25. Dalam rancangan Bab 3, proses ini dapat dijelaskan melalui tiga tahap utama yang sesuai dengan diagram, yaitu Basis Pengetahuan, Pemrosesan \textit{Query}, dan Pemrosesan \textit{Scoring}. Ketiga tahap tersebut menunjukkan alur dari pembentukan representasi dokumen, pemrosesan masukan pengguna, hingga penggabungan skor untuk memilih dokumen paling relevan.
 
 
 \begin{figure}[H]
@@ -305,12 +293,12 @@ Komponen \textit{hybrid retrieval} dibangun untuk menggabungkan pencarian semant
 	\label{fig:retrieval_komponen}
 \end{figure}
 
-Berdasarkan alur yang ditunjukkan pada Gambar~\ref{fig:retrieval_komponen}, proses \textit{retrieval} dapat diuraikan ke dalam tiga grup utama sebagai berikut.
+Berdasarkan alur yang ditunjukkan pada Gambar~\ref{fig:retrieval_komponen}, proses \textit{retrieval} dapat diuraikan ke dalam tiga tahap utama sebagai berikut.
 
 \begin{enumerate}
 \item \textbf{Basis Pengetahuan}
 
-Grup Basis Pengetahuan merupakan fase inisialisasi yang dijalankan saat sistem dimulai untuk menyiapkan seluruh representasi dokumen kontrol ISO. Pada tahap ini, data kontrol ISO dimuat dari berkas JSON, dikonversi menjadi representasi teks, kemudian diproses melalui jalur \textit{dense} untuk membentuk \textit{embedding} dokumen dan jalur \textit{sparse} untuk membangun indeks BM25. Hasil dari fase ini disimpan dalam memori agar dapat digunakan kembali ketika \textit{query} pengguna diproses.
+Tahap Basis Pengetahuan merupakan fase inisialisasi yang dijalankan saat sistem dimulai untuk menyiapkan seluruh representasi dokumen kontrol ISO. Pada tahap ini, data kontrol ISO dimuat dari berkas JSON, dikonversi menjadi representasi teks, kemudian diproses melalui jalur \textit{dense} untuk membentuk \textit{embedding} dokumen dan jalur \textit{sparse} untuk membangun indeks BM25. Hasil dari fase ini disimpan dalam memori agar dapat digunakan kembali ketika \textit{query} pengguna diproses.
 
 \begin{enumerate}[label=\alph*., leftmargin=1.1cm]
 \item \textbf{\texttt{\_load\_controls(controls\_path)}}: Proses ini memuat data basis pengetahuan dari berkas JSON yang berisi 93 kontrol ISO. Hasil pemuatan data menjadi daftar kontrol yang akan digunakan sebagai korpus dokumen pada proses \textit{retrieval}.
@@ -336,7 +324,7 @@ Grup Basis Pengetahuan merupakan fase inisialisasi yang dijalankan saat sistem d
 
 \item \textbf{Pemrosesan \textit{Query}}
 
-Grup Pemrosesan \textit{Query} dijalankan setiap kali pengguna memasukkan pertanyaan atau kebutuhan informasi. Pada tahap ini, \textit{query} diproses melalui dua jalur yang sama dengan dokumen, yaitu jalur \textit{dense} untuk menghasilkan skor kemiripan semantik dan jalur \textit{sparse} untuk menghasilkan skor kecocokan kata kunci. Hasil dari tahap ini berupa \textit{dense score} dan \textit{sparse score} untuk seluruh kontrol ISO.
+Tahap Pemrosesan \textit{Query} dijalankan setiap kali pengguna memasukkan pertanyaan atau kebutuhan informasi. Pada tahap ini, \textit{query} diproses melalui dua jalur yang sama dengan dokumen, yaitu jalur \textit{dense} untuk menghasilkan skor kemiripan semantik dan jalur \textit{sparse} untuk menghasilkan skor kecocokan kata kunci. Hasil dari tahap ini berupa \textit{dense score} dan \textit{sparse score} untuk seluruh kontrol ISO.
 
 \begin{enumerate}[label=\alph*., leftmargin=1.1cm]
 \item \textbf{\texttt{encode\_texts(texts=[query])}}: Proses ini mengubah \textit{query} pengguna menjadi vektor \textit{embedding}. Karena fungsi yang sama digunakan pada dokumen dan \textit{query}, keduanya berada pada ruang representasi semantik yang sama.
@@ -352,7 +340,7 @@ Grup Pemrosesan \textit{Query} dijalankan setiap kali pengguna memasukkan pertan
 
 \item \textbf{Pemrosesan \textit{Scoring}}
 
-Grup Pemrosesan \textit{Scoring} berfungsi untuk menggabungkan \textit{dense score} dan \textit{sparse score} menjadi satu skor akhir. Kedua jenis skor terlebih dahulu dinormalisasi karena memiliki skala yang berbeda. Setelah itu, skor digabungkan menggunakan \textit{weighted sum}, diurutkan, dan digunakan untuk memilih dokumen teratas sebagai hasil \textit{retrieval}.
+Tahap Pemrosesan \textit{Scoring} berfungsi untuk menggabungkan \textit{dense score} dan \textit{sparse score} menjadi satu skor akhir. Kedua jenis skor terlebih dahulu dinormalisasi karena memiliki skala yang berbeda. Setelah itu, skor digabungkan menggunakan \textit{weighted sum}, diurutkan, dan digunakan untuk memilih dokumen teratas sebagai hasil \textit{retrieval}.
 
 \begin{enumerate}[label=\alph*., leftmargin=1.1cm]
 \item \textbf{\texttt{\_minmax(scores=dense\_scores)}}: Proses ini menormalisasi \textit{dense score} ke rentang 0 sampai 1. Normalisasi ini diperlukan agar skor semantik memiliki skala yang sebanding dengan skor BM25.
@@ -421,7 +409,7 @@ Perancangan komponen \textit{rerank} pada sistem dilakukan untuk meningkatkan ku
 	\label{fig:reranking_komponen}
 \end{figure}
 
-Berdasarkan alur yang ditunjukkan pada Gambar~\ref{fig:reranking_komponen}, proses \textit{rerank} dapat diuraikan ke dalam dua grup utama, yaitu tahap \textit{hybrid retrieval} dan tahap \textit{cross-encoder reranking}.
+Berdasarkan alur yang ditunjukkan pada Gambar~\ref{fig:reranking_komponen}, proses \textit{rerank} dapat diuraikan ke dalam dua tahap utama, yaitu tahap \textit{hybrid retrieval} dan tahap \textit{cross-encoder reranking}.
 
 \begin{enumerate}
 \item \textbf{Tahap \textit{Hybrid Retrieval}}
@@ -441,7 +429,7 @@ Tahap \textit{hybrid retrieval} berfungsi sebagai tahap awal untuk menghasilkan 
 
 \item \textbf{\texttt{weighted\_sum(dense\_norm, sparse\_norm)}}: Proses ini menggabungkan skor \textit{dense} dan \textit{sparse} yang telah dinormalisasi. Hasil penggabungan membentuk \textit{hybrid score} yang digunakan untuk menentukan kandidat awal.
 
-\item \textbf{\texttt{np.argsort(a=-hybrid\_scores)[:10]}}: Proses ini mengurutkan dokumen berdasarkan \textit{hybrid score} secara menurun dan memilih kandidat dengan skor tertinggi. Kandidat terpilih menjadi \textit{candidate pool} untuk tahap \textit{reranking}.
+\item \textbf{\texttt{np.argsort(a=-hybrid\_scores)[:k]}}: Proses ini mengurutkan dokumen berdasarkan \textit{hybrid score} secara menurun dan memilih kandidat dengan skor tertinggi. Kandidat terpilih menjadi \textit{candidate pool} untuk tahap \textit{reranking}.
 
 \item \textbf{\texttt{hybrid\_results}}: Proses ini menyimpan daftar kandidat awal hasil \textit{hybrid retrieval}. Setiap kandidat mempertahankan metadata dokumen dan skor \textit{dense}, \textit{sparse}, serta \textit{hybrid} untuk digunakan pada tahap berikutnya.
 \end{enumerate}
@@ -481,7 +469,7 @@ Gambar~\ref{fig:alur_penelitian} menunjukkan diagram alur penelitian secara kese
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.95\textwidth,height=0.78\textheight,keepaspectratio]{Gambar/3.8AlurPenelitian.png}
+	\includegraphics[width=0.7125\textwidth,height=0.585\textheight,keepaspectratio]{Gambar/3.8AlurPenelitian.png}
 	\caption{Alur penelitian}
 	\label{fig:alur_penelitian}
 \end{figure}
@@ -508,15 +496,9 @@ Seluruh informasi yang telah dikumpulkan kemudian direpresentasikan dalam format
 
 \subsection{Persiapan \textit{Dataset} Variasi \textit{Query}}
 
-Tahap persiapan \textit{dataset query} dilakukan untuk menghasilkan kumpulan \textit{query} evaluasi yang merepresentasikan berbagai kondisi audit keamanan informasi pada domain ISO/IEC 27001:2022 Annex A.5 hingga A.8. Pada penelitian ini, \textit{dataset} disusun dengan bantuan \textit{script} untuk memastikan distribusi \textit{ground truth} antar \textit{annex control} tersebar secara merata. Total \textit{dataset} yang digunakan berjumlah 250 \textit{query}, dengan setiap \textit{query} memiliki keterkaitan terhadap 1 hingga 3 \textit{annex control} sebagai \textit{ground truth}. Distribusi jumlah \textit{ground truth} dirancang terdiri dari 30\% \textit{query} dengan 1 \textit{ground truth}, 50\% \textit{query} dengan 2 \textit{ground truth}, dan 20\% \textit{query} dengan 3 \textit{ground truth}. Selain itu, persebaran \textit{annex control} juga diatur agar kontrol pada domain A.5 hingga A.8 muncul secara proporsional dalam keseluruhan \textit{dataset} pengujian.
+Tahap persiapan \textit{dataset query} dilakukan dengan menyusun \textit{query} yang dibentuk dari dokumen asli milik Direktorat Teknologi Informasi Universitas Gadjah Mada (DTI UGM). Proses penyusunan \textit{query} dilakukan melalui pembacaan dan penelaahan manual terhadap dokumen kebijakan, prosedur, standar operasional, tata kelola, serta regulasi internal yang berkaitan dengan keamanan informasi dan pengelolaan teknologi informasi. Dari hasil pembacaan tersebut, kemudian diidentifikasi potongan informasi, kebutuhan audit, maupun pernyataan kebijakan yang berpotensi merepresentasikan kebutuhan pencarian informasi pada proses audit ISO/IEC 27001:2022. Berdasarkan konteks tersebut, \textit{query} kemudian dirumuskan secara manual dengan mempertahankan istilah, struktur bahasa, dan gaya penyampaian yang mendekati kondisi nyata pada lingkungan organisasi DTI UGM.
 
-Proses pembuatan \textit{query} dimulai dari penyusunan \textit{query} tipe eksplisit dan pendek, yaitu \textit{query} singkat yang secara eksplisit menggambarkan kondisi audit berdasarkan konteks \textit{ground truth} yang telah ditentukan. Pembuatan \textit{query} dilakukan menggunakan bantuan \textit{Generative AI} dan \textit{script} otomatis yang terlebih dahulu membaca data \textit{ground truth}, kemudian menghasilkan \textit{query} yang sesuai dengan konteks kontrol keamanan terkait. Setelah seluruh \textit{query} eksplisit pendek berhasil dibuat, dilakukan proses validasi manual untuk memastikan kesesuaian makna \textit{query} terhadap \textit{annex control} yang menjadi \textit{ground truth}.
-
-Selanjutnya, \textit{query} jenis eksplisit pendek yang telah tervalidasi dikembangkan menjadi beberapa variasi \textit{query} lain, yaitu eksplisit panjang, implisit pendek, dan implisit panjang. Proses transformasi dilakukan menggunakan bantuan \textit{script} dan \textit{Generative AI} untuk menghasilkan variasi bentuk bahasa, tingkat detail, serta gaya penyampaian \textit{query} yang berbeda. Pada tahap akhir, seluruh hasil \textit{query} kembali diperiksa secara manual untuk memastikan tidak terdapat ketidaksesuaian konteks, informasi yang bersifat halusinasi maupun perubahan makna yang dapat memengaruhi validitas proses evaluasi \textit{retrieval}.
-
-Selain \textit{dataset query} sintetis, penelitian ini juga menggunakan \textit{query} yang dibentuk dari dokumen asli milik Direktorat Teknologi Informasi Universitas Gadjah Mada (DTI UGM). Proses penyusunan \textit{query} dilakukan melalui pembacaan dan penelaahan manual terhadap dokumen kebijakan, prosedur, standar operasional, tata kelola, serta regulasi internal yang berkaitan dengan keamanan informasi dan pengelolaan teknologi informasi. Dari hasil pembacaan tersebut, kemudian diidentifikasi potongan informasi, kebutuhan audit, maupun pernyataan kebijakan yang berpotensi merepresentasikan kebutuhan pencarian informasi pada proses audit ISO/IEC 27001:2022. Berdasarkan konteks tersebut, \textit{query} kemudian dirumuskan secara manual dengan mempertahankan istilah, struktur bahasa, dan gaya penyampaian yang mendekati kondisi nyata pada lingkungan organisasi DTI UGM.
-
-Setelah \textit{query} berhasil dibentuk, dilakukan proses penelaahan untuk menentukan \textit{ground truth annex control} yang sesuai terhadap masing-masing \textit{query}. Penentuan \textit{ground truth} dilakukan dengan mencocokkan konteks \textit{query} terhadap kontrol ISO/IEC 27001:2022 Annex A.5 hingga A.8 berdasarkan relevansi isi, tujuan pengendalian, serta cakupan keamanan informasi yang dibahas dalam dokumen sumber. Setiap \textit{query} dapat memiliki keterkaitan dengan satu atau lebih kontrol \textit{annex} sesuai kompleksitas konteks yang ditemukan. Selanjutnya, seluruh \textit{query} juga diklasifikasikan berdasarkan karakteristik bentuk \textit{query}, yaitu kategori panjang dan pendek serta tingkat eksplisitas berupa \textit{query} eksplisit dan implisit. Klasifikasi ini dilakukan untuk memastikan \textit{dataset} evaluasi mampu merepresentasikan variasi pola pencarian informasi yang realistis pada skenario audit keamanan informasi di lingkungan institusi pendidikan.
+Setelah \textit{query} berhasil dibentuk, dilakukan proses penelaahan untuk menentukan \textit{ground truth annex control} yang sesuai terhadap masing-masing \textit{query}. Penentuan \textit{ground truth} dilakukan dengan mencocokkan konteks \textit{query} terhadap kontrol ISO/IEC 27001:2022 Annex A.5 hingga A.8 berdasarkan relevansi isi, tujuan pengendalian, serta cakupan keamanan informasi yang dibahas dalam dokumen sumber. Setiap \textit{query} dapat memiliki keterkaitan dengan satu atau lebih kontrol \textit{annex} sesuai kompleksitas konteks yang ditemukan.
 
 \subsection{Perancangan \textit{Hybrid Retrieval} dan Pemilihan Parameter Optimal}
 
@@ -526,7 +508,7 @@ Pada penelitian ini dipilih model \textit{multilingual} karena kumpulan \textit{
 
 Setelah metode \textit{hybrid retrieval} dirancang, tahap selanjutnya adalah melakukan pencarian parameter bobot \textit{score fusion} yang optimal melalui penyesuaian nilai $\alpha$ (\textit{alpha scoring}). Parameter $\alpha$ digunakan untuk mengatur proporsi kontribusi skor antara \textit{sparse retrieval} dan \textit{dense retrieval} pada proses penggabungan skor akhir. Pengujian dilakukan terhadap seluruh variasi \textit{query} yang digunakan dalam penelitian untuk menentukan kombinasi bobot yang mampu memberikan performa \textit{retrieval} terbaik sebelum integrasi metode \textit{reranking}. Hasil pencarian parameter ini kemudian digunakan sebagai konfigurasi dasar pada tahap eksperimen berikutnya agar proses \textit{score fusion} antara \textit{hybrid retrieval} dan \textit{cross-encoder reranking} dapat dilakukan secara konsisten dan terukur.
 
-\subsection{Perancangan \textit{Reranking}}
+\subsection{Perancangan \textit{Reranking} dan Pemilihan Parameter Optimal}
 
 Tahap perancangan \textit{reranking} dilakukan sebagai pengembangan dari rancangan \textit{hybrid retrieval} yang telah dibangun pada tahap sebelumnya. Pada proses ini, hasil \textit{retrieval} awal dari metode \textit{hybrid retrieval} digunakan sebagai \textit{candidate pool} yang akan diproses kembali untuk meningkatkan kualitas peringkat dokumen. Dengan pendekatan ini, sistem tidak melakukan proses \textit{reranking} terhadap seluruh dokumen pada korpus, melainkan hanya pada sejumlah dokumen dengan skor \textit{retrieval} tertinggi hasil dari proses \textit{hybrid retrieval}. Pendekatan tersebut dipilih untuk menjaga efisiensi komputasi sekaligus mempertahankan kualitas relevansi hasil pencarian.
 
@@ -534,23 +516,17 @@ Metode \textit{reranking} yang digunakan pada penelitian ini adalah pendekatan \
 
 Berdasarkan pertimbangan tersebut, penelitian ini menggunakan varian BAAI/bge-reranker-v2-m3 karena memiliki kemampuan \textit{multilingual} dan kapasitas pemahaman konteks yang lebih sesuai dengan karakteristik dokumen kebijakan serta \textit{query} audit pada lingkungan institusi pendidikan di Indonesia. Setelah rancangan \textit{reranking} dibangun, dilakukan pengujian terhadap beberapa variasi jumlah \textit{candidate pool} yang diambil dari hasil \textit{hybrid retrieval} untuk menentukan nilai top-$n$ yang paling optimal untuk proses \textit{reranking} dilakukan. Pengujian ini bertujuan memperoleh keseimbangan antara kualitas relevansi dan efisiensi komputasi, sehingga proses \textit{score fusion} antara \textit{hybrid retrieval} dan \textit{cross-encoder reranking} dapat menghasilkan performa \textit{retrieval} yang optimal.
 
-\subsection{Pengujian Independen antara \textit{Hybrid Retrieval} dan \textit{Reranking}}
-
-Setelah perancangan metode \textit{hybrid retrieval} dan \textit{cross-encoder reranking} selesai dilakukan, tahap selanjutnya adalah melakukan pengujian secara independen terhadap masing-masing metode \textit{Information Retrieval} tanpa menerapkan kombinasi bobot \textit{score fusion} antar keduanya. Pada tahap ini, \textit{hybrid retrieval} diuji menggunakan parameter bobot $\alpha$ (\textit{alpha scoring}) paling optimal antara komponen \textit{dense retrieval} dan \textit{sparse retrieval}, sedangkan metode \textit{reranking} diuji menggunakan jumlah \textit{candidate pool} terbaik yang diperoleh dari tahap sebelumnya.
-
-Pengujian independen ini bertujuan untuk mengevaluasi kualitas performa masing-masing pendekatan secara terpisah, sehingga dapat diketahui kontribusi dan karakteristik tiap metode terhadap hasil \textit{retrieval}. Selain itu, tahap ini juga digunakan untuk menganalisis perbedaan performa antara pendekatan \textit{hybrid retrieval} dan \textit{cross-encoder reranking} berdasarkan metrik evaluasi seperti Hit@K, ARR, dan NDCG, sebelum dilakukan pengujian kombinasi kedua metode pada tahap berikutnya.
-
 \subsection{Pengujian Kombinasi dan Pemilihan \textit{Scoring} Optimal}
 
-Tahap ini dilakukan dengan mengkombinasikan metode \textit{hybrid retrieval} dan \textit{cross-encoder reranking} melalui mekanisme pembobotan \textit{score fusion}. Pengujian dilakukan menggunakan beberapa variasi parameter $\alpha$ (\textit{alpha scoring}) untuk menentukan proporsi skor yang paling optimal antara hasil \textit{hybrid retrieval} dan skor dari \textit{reranking}. Proses eksperimen dilakukan pada seluruh variasi \textit{query} yang telah disusun pada penelitian ini, meliputi eksplisit pendek, eksplisit panjang, implisit pendek, implisit panjang, dan \textit{query} dari dokumen DTI UGM, sehingga penelitian dapat menganalisis pengaruh karakteristik \textit{query} terhadap performa kombinasi \textit{retrieval}, khususnya dalam menangani perbedaan tingkat kejelasan konteks, panjang \textit{query}, dan kompleksitas informasi yang disampaikan ada pada tiap \textit{query}.
+Setelah perancangan metode \textit{hybrid retrieval} dan \textit{cross-encoder reranking} selesai dilakukan, tahap selanjutnya adalah melakukan pengujian kombinasi kedua metode melalui mekanisme pembobotan \textit{score fusion}. Pada tahap ini, pengujian dilakukan secara komprehensif dengan memvariasikan parameter $\alpha$ (\textit{alpha scoring}) untuk menentukan proporsi skor yang paling optimal antara hasil \textit{hybrid retrieval} dan skor dari \textit{reranking}, dengan urutan pembobotan \textit{hybrid}:\textit{cross-encoder}. Dalam kerangka ini, pengujian \textit{hybrid retrieval} secara independen direpresentasikan oleh parameter pembobotan 1:0, pengujian \textit{reranker} secara independen direpresentasikan oleh parameter pembobotan 0:1, sedangkan konfigurasi dengan pembobotan lainnya merepresentasikan kombinasi kedua metode.
 
-Pada tahap ini, setiap kombinasi parameter dievaluasi menggunakan metrik \textit{Information Retrieval} seperti Hit@K, Recall@K, MRR, dan NDCG untuk mengidentifikasi konfigurasi bobot \textit{score fusion} yang memberikan performa paling optimal. Hasil pengujian ini kemudian digunakan untuk menentukan pendekatan kombinasi \textit{retrieval} yang paling efektif dalam meningkatkan relevansi hasil pencarian pada proses pemetaan \textit{annex control} ISO/IEC 27001:2022.
+Pada tahap ini, \textit{hybrid retrieval} menggunakan parameter bobot $\alpha$ paling optimal antara komponen \textit{dense retrieval} dan \textit{sparse retrieval} yang diperoleh dari tahap sebelumnya, sedangkan \textit{reranking} menggunakan jumlah \textit{candidate pool} terbaik. Proses eksperimen dilakukan pada seluruh \textit{query} yang dibentuk dari dokumen kebijakan Direktorat Teknologi Informasi (DTI) UGM. Setiap kombinasi parameter dievaluasi menggunakan metrik \textit{Information Retrieval} seperti Hit@K, Recall@K, ARR, dan NDCG untuk mengidentifikasi konfigurasi bobot \textit{score fusion} yang memberikan performa paling optimal. Pengujian ini bertujuan untuk mengevaluasi kualitas performa masing-masing pendekatan baik secara independen maupun dalam bentuk kombinasi, sehingga dapat diketahui kontribusi dan karakteristik tiap metode terhadap hasil \textit{retrieval} sekaligus ditentukan pendekatan kombinasi yang paling efektif dalam meningkatkan relevansi hasil pencarian pada proses pemetaan \textit{annex control} ISO/IEC 27001:2022.
 
 \subsection{Analisis Evaluasi Hasil}
 
 Tahap analisis evaluasi hasil dilakukan setelah seluruh proses pengujian terhadap metode \textit{hybrid retrieval}, \textit{cross-encoder reranking}, dan kombinasi bobot \textit{score fusion} selesai dilaksanakan. Pada tahap ini, hasil evaluasi dibandingkan untuk menganalisis performa masing-masing pendekatan, baik secara independen maupun dalam bentuk kombinasi. Analisis dilakukan menggunakan beberapa metrik \textit{Information Retrieval} seperti Hit@K, Recall@K, Precision@K, ARR, dan NDCG untuk melihat tingkat relevansi dan kualitas peringkat dokumen yang dihasilkan oleh setiap metode. Selain itu, tahap ini juga digunakan untuk mengamati pengaruh perubahan parameter terhadap performa \textit{retrieval}, seperti nilai $\alpha$ pada \textit{hybrid retrieval}, ukuran \textit{candidate pool}, serta proporsi \textit{score fusion} antara \textit{retrieval} dan \textit{reranking}.
 
-Melalui analisis tersebut, diharapkan dapat terlihat pola performa akurasi dari tiap metode terhadap empat variasi \textit{query} yang digunakan, yaitu meliputi eksplisit pendek, eksplisit panjang, implisit pendek, implisit panjang, dan \textit{query} dari dokumen DTI UGM. Dengan adanya variasi karakteristik \textit{query} tersebut, penelitian dapat mengidentifikasi kecenderungan metode tertentu dalam menangani jenis \textit{query} tertentu. Hasil analisis ini diharapkan dapat memberikan rekomendasi konfigurasi \textit{retrieval} yang paling sesuai untuk implementasi sistem \textit{Information Retrieval} pada domain audit keamanan informasi berbasis ISO/IEC 27001:2022.
+Melalui analisis tersebut, diharapkan dapat terlihat pola performa akurasi dari tiap metode terhadap \textit{query} yang dibentuk dari dokumen kebijakan DTI UGM. Hasil analisis ini diharapkan dapat memberikan rekomendasi konfigurasi \textit{retrieval} yang paling sesuai untuk implementasi sistem \textit{Information Retrieval} pada domain audit keamanan informasi berbasis ISO/IEC 27001:2022.
 
 \subsection{Penulisan Laporan}
 
