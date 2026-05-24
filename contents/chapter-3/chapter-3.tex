@@ -72,11 +72,11 @@ Desain penelitian disusun dengan menentukan variabel independen, dependen, dan k
 \hline
 \textbf{Jenis} & \textbf{Nama Variabel} & \textbf{Deskripsi} & \textbf{Indikator / Parameter} \\
 \hline
-Independen & Proporsi bobot \textit{scoring} \textit{dense}:\textit{sparse} & Rasio pembobotan skor \textit{dense retrieval} dan \textit{sparse retrieval} pada \textit{hybrid retrieval} & \begin{tabular}[c]{@{}l@{}}$\alpha_{\textit{dense}} \in$\\$\{0{,}0;\ 0{,}25;$\\$0{,}5;\ 0{,}75;\ 1{,}0\}$\end{tabular} \\
+Independen & Proporsi bobot \textit{scoring} \textit{dense}:\textit{sparse} & Rasio pembobotan skor \textit{dense retrieval} dan \textit{sparse retrieval} pada \textit{hybrid retrieval} & \begin{tabular}[t]{@{}l@{}}alpha\_dense $\in$\\$\{0{,}0;\ 0{,}25;$\\$0{,}5;\ 0{,}75;\ 1{,}0\}$\end{tabular} \\
 \hline
 Independen & Jumlah kandidat & Banyaknya dokumen kandidat yang diproses oleh \textit{cross-encoder reranker} & $k \in \{5;\ 10;\ 15;\ 20\}$ \\
 \hline
-Independen & Proporsi bobot \textit{scoring} \textit{hybrid}:\textit{reranker} & Rasio pembobotan skor \textit{hybrid retrieval} dan skor \textit{reranker} pada skor akhir & \begin{tabular}[c]{@{}l@{}}$\alpha_{\textit{reranker}} \in$\\$\{0{,}0;\ 0{,}25;$\\$0{,}5;\ 0{,}75;\ 1{,}0\}$\end{tabular} \\
+Independen & Proporsi bobot \textit{scoring} \textit{hybrid}:\textit{reranker} & Rasio pembobotan skor \textit{hybrid retrieval} dan skor \textit{reranker} pada skor akhir & \begin{tabular}[t]{@{}l@{}}alpha\_reranker $\in$\\$\{0{,}0;\ 0{,}25;$\\$0{,}5;\ 0{,}75;\ 1{,}0\}$\end{tabular} \\
 \hline
 Dependen & Akurasi \textit{Retrieval} & Tingkat relevansi hasil \textit{retrieval} terhadap \textit{ground truth} & Hit@K, Recall@K, ARR, NDCG \\
 \hline
@@ -416,7 +416,7 @@ Perancangan komponen \textit{rerank} pada sistem dilakukan untuk meningkatkan ku
 
 \begin{figure}[H]
 	\centering
-	\includegraphics[width=0.68\textwidth,height=0.42\textheight,keepaspectratio]{Gambar/3.7RerankerComponent.png}
+	\includegraphics[width=\textwidth]{Gambar/3.7RerankerComponentNew.png}
 	\caption{Komponen cross-encoder reranking pada sistem}
 	\label{fig:reranking_komponen}
 \end{figure}
