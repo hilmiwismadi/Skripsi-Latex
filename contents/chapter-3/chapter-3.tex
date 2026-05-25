@@ -66,7 +66,7 @@ Desain penelitian disusun dengan menentukan variabel independen, dependen, dan k
 \begin{table}[H]
 \centering
 \small
-\caption{Variabel Penelitian}
+\caption{Variabel Penelitian (Independen)}
 \label{tab:variabel_penelitian}
 \begin{tabular}{|p{1.8cm}|p{3.0cm}|p{4.6cm}|p{3.4cm}|}
 \hline
@@ -77,6 +77,18 @@ Independen & Proporsi bobot \textit{scoring} \textit{dense}:\textit{sparse} & Ra
 Independen & Jumlah kandidat & Banyaknya dokumen kandidat yang diproses oleh \textit{cross-encoder reranker} & $k \in \{5;\ 10;\ 15;\ 20\}$ \\
 \hline
 Independen & Proporsi bobot \textit{scoring} \textit{hybrid}:\textit{reranker} & Rasio pembobotan skor \textit{hybrid retrieval} dan skor \textit{reranker} pada skor akhir & \begin{tabular}[t]{@{}l@{}}alpha\_reranker $\in$\\$\{0{,}0;\ 0{,}25;$\\$0{,}5;\ 0{,}75;\ 1{,}0\}$\end{tabular} \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\small
+\caption{Variabel Penelitian (Dependen dan Kontrol)}
+\label{tab:variabel_penelitian_lanjutan}
+\begin{tabular}{|p{1.8cm}|p{3.0cm}|p{4.6cm}|p{3.4cm}|}
+\hline
+\textbf{Jenis} & \textbf{Nama Variabel} & \textbf{Deskripsi} & \textbf{Indikator / Parameter} \\
 \hline
 Dependen & Akurasi \textit{Retrieval} & Tingkat relevansi hasil \textit{retrieval} terhadap \textit{ground truth} & Hit@K, Recall@K, ARR, NDCG \\
 \hline
@@ -103,7 +115,7 @@ Seluruh dokumen yang digunakan sebagai sumber pengetahuan (korpus) disimpan dala
 \begin{table}[H]
 \centering
 \footnotesize
-\caption{Struktur Data JSON Basis Pengetahuan (Atribut Deskriptif)}
+\caption{Struktur Data JSON Basis Pengetahuan}
 \label{tab:json_struktur_deskriptif}
 \begin{tabular}{|p{3.2cm}|p{4.8cm}|p{4.8cm}|}
 \hline
@@ -118,18 +130,6 @@ Seluruh dokumen yang digunakan sebagai sumber pengetahuan (korpus) disimpan dala
 \texttt{description} & Deskripsi lengkap mengenai kontrol dan implementasinya & Perubahan sistem informasi harus tunduk pada prosedur manajemen perubahan \\
 \hline
 \texttt{implementation}\newline\texttt{\_guidance} & Panduan implementasi kontrol secara ringkas & Proses manajemen perubahan formal dengan penilaian dampak keamanan \\
-\hline
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\footnotesize
-\caption{Struktur Data JSON Basis Pengetahuan (Atribut Pendukung \textit{Retrieval})}
-\label{tab:json_struktur_retrieval}
-\begin{tabular}{|p{3.2cm}|p{4.8cm}|p{4.8cm}|}
-\hline
-\textbf{Nama Atribut} & \textbf{Penjelasan} & \textbf{Contoh Isian} \\
 \hline
 \texttt{keywords\_en} & Kata kunci dalam Bahasa Inggris untuk mendukung \textit{retrieval} & ``change management'', ``change control'' \\
 \hline
@@ -191,97 +191,17 @@ Untuk meningkatkan akurasi dan kualitas peringkat hasil \textit{retrieval}, digu
 
 \subsubsection{Perancangan Komponen \textit{Retrieval} pada Sistem}
 
-Komponen \textit{hybrid retrieval} pada penelitian ini menggunakan dua metode yang dipilih berdasarkan bukti empiris dari literatur terkait.
+Komponen \textit{hybrid retrieval} pada penelitian ini menggunakan dua metode yang dipilih berdasarkan analisis perbandingan pada Subbab~2.3.2 dan Subbab~2.3.3.
 
 \vspace{0.5em}
 \noindent\textbf{Pemilihan Metode \textit{Sparse Retrieval}}
 
-Untuk komponen \textit{sparse retrieval}, terdapat beberapa alternatif metode yang dapat digunakan, antara lain BM25, SPLADE, TF-IDF, serta varian BM25 seperti BM25L dan BM25+. Perbandingan antara metode-metode tersebut disajikan pada Tabel~\ref{tab:perbandingan_sparse}.
-
-\begin{table}[H]
-\centering
-\small
-\caption{Perbandingan Metode \textit{Sparse Retrieval}}
-\label{tab:perbandingan_sparse}
-\begin{tabular}{|p{2.4cm}|p{5.3cm}|p{5.3cm}|}
-\hline
-\textbf{Metode} & \textbf{Kelebihan} & \textbf{Kekurangan} \\
-\hline
-\textbf{BM25} \newline \textit{(dipilih)} &
-Model leksikal yang kuat untuk pencocokan istilah eksplisit dan menjadi dasar umum dalam \textit{ad-hoc retrieval} \cite{robertson2009probabilistic}; pada studi hukum pajak, BM25 dipilih karena mengungguli SPLADE \cite{rustamov2025tax}; pada studi RAG klinis, BM25 Retriever mengungguli Dense Passage Retriever pada seluruh metrik evaluasi \cite{hiremath2025ragclin} &
-Tidak menangkap hubungan semantik secara langsung karena berbasis pencocokan istilah; sensitif terhadap variasi kata, sinonim, dan parafrasa \\
-\hline
-SPLADE &
-Menghasilkan representasi \textit{sparse} berbasis Transformer dan ekspansi kosakata sehingga dapat menangkap sinyal leksikal yang lebih kaya dibanding pencocokan kata kunci murni \cite{formal2021splade} &
-Lebih kompleks secara komputasi dibanding BM25 karena membutuhkan model neural untuk menghasilkan representasi \textit{sparse}; pada studi hukum pajak, SPLADE tidak mengungguli BM25 \cite{rustamov2025tax} \\
-\hline
-TF-IDF &
-Metode pembobotan leksikal klasik yang sederhana, ringan, dan banyak digunakan sebagai dasar pemeringkatan dokumen \cite{salton1988term} &
-Tidak memiliki normalisasi panjang dokumen dan formulasi probabilistik seperti BM25, sehingga umumnya digunakan sebagai \textit{baseline} yang lebih sederhana dibanding BM25 \cite{robertson2009probabilistic} \\
-\hline
-BM25L / BM25+ &
-Varian BM25 yang dirancang untuk memperbaiki normalisasi frekuensi istilah dan mengurangi bias terhadap panjang dokumen \cite{lv2011lowerbound} &
-Lebih jarang digunakan sebagai konfigurasi standar dibanding BM25 dan membutuhkan penyesuaian tambahan terhadap parameter normalisasi \cite{lv2011lowerbound} \\
-\hline
-\end{tabular}
-\end{table}
-
-Pemilihan BM25 sebagai komponen \textit{sparse retrieval} didasarkan pada bukti empiris perbandingan terhadap keempat alternatif pada Tabel~\ref{tab:perbandingan_sparse}. Pada studi sistem tanya jawab hukum perpajakan, Rustamov et al.~\cite{rustamov2025tax} secara eksplisit menunjukkan bahwa BM25 mengungguli SPLADE sehingga dipilih sebagai komponen \textit{sparse} dalam strategi \textit{hybrid retrieval}. Hiremath et al.~\cite{hiremath2025ragclin} mengonfirmasi superioritas BM25 dalam sistem RAG klinis. Meskipun demikian, SPLADE tetap menjadi alternatif yang menarik karena kemampuannya menangkap sinyal leksikal yang lebih kaya melalui ekspansi kosakata berbasis \textit{Transformer}~\cite{formal2021splade}, namun kompleksitas komputasinya lebih tinggi dan tidak terbukti mengungguli BM25 pada domain regulasi~\cite{rustamov2025tax}. TF-IDF tidak dipilih karena tidak memiliki normalisasi panjang dokumen dan formulasi probabilistik seperti BM25, sehingga umumnya hanya digunakan sebagai \textit{baseline} yang lebih sederhana~\cite{salton1988term,robertson2009probabilistic}. Varian BM25L dan BM25+ memang menawarkan normalisasi frekuensi istilah yang lebih baik untuk dokumen dengan variasi panjang~\cite{lv2011lowerbound}, namun keduanya lebih jarang digunakan sebagai konfigurasi standar dibanding BM25 dan membutuhkan penyesuaian tambahan terhadap parameter normalisasi. Keunggulan BM25 pada domain regulasi dapat dijelaskan oleh karakteristik terminologi yang eksplisit dan konsisten pada kontrol ISO/IEC 27001:2022, misalnya \textit{access control}, \textit{incident management}, dan \textit{logging}. Karakteristik tersebut memungkinkan pencocokan leksikal bekerja secara efektif, sehingga ketersediaan implementasi BM25 yang luas dan stabilitasnya pada berbagai \textit{benchmark} menjadikannya pilihan yang paling tepat untuk penelitian ini.
+Berdasarkan analisis perbandingan metode \textit{sparse retrieval} pada Subbab~2.3.2, BM25 dipilih sebagai komponen \textit{sparse retrieval}. BM25 mengungguli alternatif lainnya karena memiliki model probabilistik yang kuat untuk pencocokan istilah eksplisit, normalisasi panjang dokumen bawaan, serta bukti empiris yang menunjukkan superioritasnya pada domain regulasi. Karakteristik terminologi yang eksplisit dan konsisten pada kontrol ISO/IEC 27001:2022, misalnya \textit{access control}, \textit{incident management}, dan \textit{logging}, memungkinkan pencocokan leksikal bekerja secara efektif.
 
 \vspace{1.5em}
 \noindent\textbf{Pemilihan Model \textit{Dense Embedding}}
 
-Untuk komponen \textit{dense retrieval}, terdapat beberapa alternatif model \textit{sentence embedding} yang dapat digunakan, antara lain paraphrase-multilingual-MiniLM-L12-v2, paraphrase-multilingual-mpnet-base-v2, all-MiniLM-L6-v2, BGE-M3, Jina Embeddings v2, serta IndoBERT. Perbandingan antara model-model tersebut disajikan pada Tabel~\ref{tab:perbandingan_dense} dan Tabel~\ref{tab:perbandingan_dense_lanjutan}.
-
-\begin{table}[H]
-\centering
-\small
-\caption{Perbandingan Model \textit{Dense Embedding}}
-\label{tab:perbandingan_dense}
-\begin{tabular}{|p{3.2cm}|p{5.6cm}|p{5.6cm}|}
-\hline
-\textbf{Model} & \textbf{Kelebihan} & \textbf{Kekurangan} \\
-\hline
-\textbf{paraphrase-multilingual-MiniLM-L12-v2} \newline Dim: 384, Bahasa: 50+ \newline \textit{(dipilih)} &
-Model multilingual ringan yang cocok untuk \textit{query} berbahasa Indonesia; arsitektur MiniLM terbukti menghasilkan representasi semantik yang efektif untuk tugas \textit{information retrieval}~\cite{wang2022minilm}; pada arsitektur \textit{hybrid retrieval}, model MiniLM secara konsisten meningkatkan kualitas \textit{dense retrieval}~\cite{ravishankar2025hybrid} &
-Dimensi representasi lebih kecil dibanding MPNet (384 vs 768), sehingga kapasitas representasi lebih terbatas; pada domain berbahasa Indonesia, performa semantiknya sedikit di bawah mpnet-base-v2~\cite{maryamah2024mpnet} \\
-\hline
-paraphrase-multilingual-mpnet-base-v2 \newline Dim: 768, Bahasa: 50+ &
-Menghasilkan representasi semantik yang lebih kaya dengan dimensi 768; pada studi \textit{retrieval} berbahasa Indonesia untuk data medis, MPNet mengungguli MiniLM-L12-v2, IndoBERT, dan multilingual BERT~\cite{maryamah2024mpnet} &
-Dimensi dua kali lebih besar dari MiniLM-L12-v2 sehingga meningkatkan latensi dan kebutuhan memori secara signifikan; kurang efisien untuk tahap \textit{retrieval} pada skenario dengan keterbatasan komputasi \\
-\hline
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\small
-\caption{Perbandingan Model \textit{Dense Embedding} (lanjutan)}
-\label{tab:perbandingan_dense_lanjutan}
-\begin{tabular}{|p{3.2cm}|p{5.6cm}|p{5.6cm}|}
-\hline
-\textbf{Model} & \textbf{Kelebihan} & \textbf{Kekurangan} \\
-\hline
-all-MiniLM-L6-v2 \newline Dim: 384, Bahasa: Inggris &
-Arsitektur MiniLM yang lebih ringan dengan 6 lapisan \textit{transformer}; menghasilkan performa yang efektif pada tugas pencarian semantik~\cite{reimers2019sbert}; lebih cepat dibanding MiniLM-L12-v2 &
-Monolingual (Bahasa Inggris) sehingga tidak dapat memproses \textit{query} berbahasa Indonesia yang merupakan bahasa utama pada dokumen kontrol ISO dalam penelitian ini \\
-\hline
-BGE-M3 \newline Dim: 1024, Bahasa: 100+ &
-Model \textit{state-of-the-art} multilingual yang mendukung tiga fungsionalitas \textit{retrieval} sekaligus, yaitu \textit{dense}, \textit{sparse}, dan \textit{multi-vector retrieval} dalam satu arsitektur~\cite{chen2024bge}; mendukung lebih dari 100 bahasa dan dokumen hingga 8.192 \textit{token} &
-Dimensi sangat besar (1024) sehingga biaya komputasi tinggi; kemampuan \textit{multi-functionality} merupakan kelebihan yang tidak sepenuhnya dibutuhkan pada tahap \textit{retrieval} pertama; lebih cocok digunakan sebagai \textit{reranker}~\cite{elkiran2026empirical} \\
-\hline
-Jina Embeddings v2 \newline Dim: 768, Bahasa: Multi &
-Digunakan dalam kombinasi dengan MS-MiniLM pada studi \textit{ablation} pada domain tanya jawab keuangan dan menghasilkan performa yang baik~\cite{ravishankar2025hybrid} &
-Model yang relatif lebih baru sehingga bukti empiris pada domain regulasi berbahasa Indonesia masih terbatas; representasi 768-dim menambah beban komputasi dibanding MiniLM-L12-v2 \\
-\hline
-IndoBERT \newline Dim: 768, Bahasa: Indonesia &
-Dirancang khusus untuk Bahasa Indonesia sehingga secara teori paling sesuai untuk dokumen kontrol ISO dalam Bahasa Indonesia &
-Pada studi \textit{retrieval} berbahasa Indonesia, IndoBERT justru menghasilkan performa di bawah MiniLM-L12-v2 dan MPNet~\cite{maryamah2024mpnet}; tidak mendukung multilingual untuk potensi penggunaan internasional \\
-\hline
-\end{tabular}
-\end{table}
-
-Pemilihan paraphrase-multilingual-MiniLM-L12-v2 sebagai komponen \textit{dense embedding} didasarkan pada bukti empiris perbandingan terhadap kelima alternatif pada Tabel~\ref{tab:perbandingan_dense} dan Tabel~\ref{tab:perbandingan_dense_lanjutan}. Ravishankar dan Varalakshmi~\cite{ravishankar2025hybrid} mengonfirmasi bahwa model MiniLM dalam arsitektur \textit{hybrid retrieval} secara konsisten meningkatkan kualitas \textit{dense retrieval} pada domain tanya jawab berbasis dokumen keuangan. Model paraphrase-multilingual-mpnet-base-v2 memang menghasilkan representasi semantik yang lebih kaya dan terbukti mengungguli MiniLM-L12-v2 pada studi \textit{retrieval} data medis berbahasa Indonesia~\cite{maryamah2024mpnet}, namun dimensi yang dua kali lebih besar (768 vs 384) berdampak pada peningkatan latensi secara signifikan sehingga kurang efisien untuk tahap \textit{retrieval} pertama. Model all-MiniLM-L6-v2 tidak dipilih karena bersifat monolingual Bahasa Inggris~\cite{reimers2019sbert} dan tidak dapat memproses \textit{query} berbahasa Indonesia. BGE-M3 menawarkan kemampuan \textit{multi-functionality} yang canggih~\cite{chen2024bge}, namun dimensi yang sangat besar (1024) menjadikannya kurang efisien untuk tahap \textit{retrieval} pertama dan lebih cocok sebagai \textit{reranker}~\cite{elkiran2026empirical}. Jina Embeddings v2 menunjukkan performa yang baik pada studi \textit{ablation}~\cite{ravishankar2025hybrid}, namun bukti empirisnya pada domain regulasi berbahasa Indonesia masih terbatas. IndoBERT yang dirancang khusus untuk Bahasa Indonesia justru menghasilkan performa di bawah MiniLM-L12-v2 dan MPNet~\cite{maryamah2024mpnet}. Dengan mempertimbangkan keseimbangan antara kualitas representasi semantik, dukungan multilingual untuk \textit{query} berbahasa Indonesia, dan efisiensi komputasi, paraphrase-multilingual-MiniLM-L12-v2 merupakan pilihan yang paling pragmatis dan sesuai untuk penelitian ini.
+Berdasarkan analisis perbandingan model \textit{dense embedding} pada Subbab~2.3.3, paraphrase-multilingual-MiniLM-L12-v2 dipilih sebagai komponen \textit{dense embedding}. Model ini dipilih karena menawarkan keseimbangan optimal antara kualitas representasi semantik, dukungan multilingual untuk \textit{query} berbahasa Indonesia (50+ bahasa), efisiensi komputasi dengan dimensi 384, serta bukti empiris yang menunjukkan konsistensi peningkatan kualitas \textit{dense retrieval} pada arsitektur \textit{hybrid retrieval}.
 
 Komponen \textit{hybrid retrieval} dibangun untuk menggabungkan pencarian semantik berbasis \textit{embedding} dan pencarian leksikal berbasis BM25. Dalam rancangan Bab 3, proses ini dapat dijelaskan melalui tiga tahap utama yang sesuai dengan diagram, yaitu Basis Pengetahuan, Pemrosesan \textit{Query}, dan Pemrosesan \textit{Scoring}. Ketiga tahap tersebut menunjukkan alur dari pembentukan representasi dokumen, pemrosesan masukan pengguna, hingga penggabungan skor untuk memilih dokumen paling relevan.
 
@@ -359,46 +279,12 @@ Tahap Pemrosesan \textit{Scoring} berfungsi untuk menggabungkan \textit{dense sc
 
 \subsubsection{Perancangan Komponen \textit{Rerank} pada Sistem}
 
-Komponen \textit{reranking} pada penelitian ini menggunakan model \textit{cross-encoder} yang dipilih berdasarkan bukti empiris dari literatur terkait.
+Komponen \textit{reranking} pada penelitian ini menggunakan model \textit{cross-encoder} yang dipilih berdasarkan analisis perbandingan pada Subbab~2.3.4.
 
 \vspace{1.5em}
 \noindent\textbf{Pemilihan Model \textit{Reranker}}
 
-Untuk komponen \textit{reranking}, terdapat beberapa alternatif model yang dapat digunakan, antara lain BAAI/bge-reranker-v2-m3, BAAI/bge-reranker-base, cross-encoder/ms-marco-MiniLM-L-6-v2, Jina Reranker v2, serta ColBERT v2. Perbandingan antara model-model tersebut disajikan pada Tabel~\ref{tab:perbandingan_reranker}.
-
-\begin{table}[H]
-\centering
-\small
-\caption{Perbandingan Model \textit{Reranker}}
-\label{tab:perbandingan_reranker}
-\begin{tabular}{|p{3.2cm}|p{5.6cm}|p{5.6cm}|}
-\hline
-\textbf{Model} & \textbf{Kelebihan} & \textbf{Kekurangan} \\
-\hline
-\textbf{BAAI/bge-reranker-v2-m3} \newline Tipe: \textit{Cross-encoder} multilingual \newline \textit{(dipilih)} &
-Model \textit{cross-encoder} multilingual yang mendukung lebih dari 100 bahasa; versi m3 merupakan pengembangan dari bge-reranker-base dengan tambahan kemampuan multibahasa; pada domain regulasi hukum pajak, model BGE reranker terbukti meningkatkan skor NDCG dari 0,39 menjadi 0,44~\cite{rustamov2025tax} &
-Paling berat di antara reranker alternatif; biaya komputasi dan latensi lebih tinggi dibanding model reranker yang lebih ringan \\
-\hline
-BAAI/bge-reranker-base \newline Tipe: \textit{Cross-encoder} &
-Digunakan secara eksplisit pada studi hukum perpajakan dan terbukti meningkatkan NDCG secara signifikan~\cite{rustamov2025tax}; lebih ringan dibanding v2-m3; bukti empiris kuat pada domain regulasi &
-Dukungan bahasa terbatas atau monolingual sehingga tidak optimal untuk \textit{query} berbahasa Indonesia \\
-\hline
-cross-encoder/ \newline ms-marco-MiniLM-L-6-v2 \newline Tipe: \textit{Cross-encoder} &
-Sangat ringan dengan latensi rendah; cocok untuk deployment \textit{production}; arsitektur MiniLM yang efisien~\cite{reimers2019sbert} &
-Monolingual Bahasa Inggris sehingga tidak dapat menangani \textit{query} berbahasa Indonesia; performa lebih rendah dibanding seri BGE reranker \\
-\hline
-Jina Reranker v2 \newline Tipe: \textit{Cross-encoder} multilingual &
-Multilingual dengan \textit{context window} lebih panjang; performa kompetitif dengan BGE pada beberapa \textit{benchmark} &
-Model yang relatif lebih baru sehingga dokumentasi dan bukti empiris pada domain regulasi berbahasa Indonesia masih terbatas \\
-\hline
-ColBERT v2 \newline Tipe: \textit{Late interaction} &
-Arsitektur \textit{late interaction} yang lebih efisien untuk skala besar dibanding \textit{cross-encoder} murni; kecepatan pemrosesan \textit{query} lebih tinggi~\cite{khattab2020colbert} &
-Implementasi lebih kompleks dan membutuhkan setup indeks khusus; bukan pendekatan \textit{plug-and-play} seperti \textit{cross-encoder}; bukti empiris pada domain regulasi berbahasa Indonesia belum tersedia \\
-\hline
-\end{tabular}
-\end{table}
-
-Pemilihan BAAI/bge-reranker-v2-m3 sebagai model \textit{reranker} didasarkan pada bukti empiris perbandingan terhadap keempat alternatif pada Tabel~\ref{tab:perbandingan_reranker}. Rustamov et al.~\cite{rustamov2025tax} secara eksplisit menerapkan \textit{cross-encoder reranking} menggunakan model BGE reranker-base pada domain hukum perpajakan dan menemukan peningkatan signifikan pada skor NDCG dari 0,39 menjadi 0,44. Elkiran dan Rasheed~\cite{elkiran2026empirical} menjelaskan bahwa model BGE sebagai \textit{cross-encoder} menerima pasangan \textit{query}--dokumen secara langsung sebagai masukan dan menghasilkan skor kemiripan tanpa melalui representasi vektor perantara, sehingga menghasilkan penilaian relevansi yang lebih akurat meskipun dengan biaya komputasi yang lebih tinggi. Model bge-reranker-base memang telah terbukti efektif pada domain regulasi, namun dukungan bahasanya terbatas sehingga tidak optimal untuk \textit{query} berbahasa Indonesia. Model bge-reranker-v2-m3 yang digunakan pada penelitian ini merupakan pengembangan dari bge-reranker-base dengan tambahan kemampuan multibahasa yang esensial untuk menangani \textit{query} berbahasa Indonesia. Model cross-encoder/ms-marco-MiniLM-L-6-v2 tidak dipilih karena bersifat monolingual Bahasa Inggris sehingga tidak dapat memproses \textit{query} berbahasa Indonesia. Jina Reranker v2 menawarkan dukungan multilingual dengan \textit{context window} yang lebih panjang, namun sebagai model yang relatif baru, bukti empirisnya pada domain regulasi berbahasa Indonesia masih terbatas. ColBERT v2 menggunakan arsitektur \textit{late interaction} yang lebih efisien untuk skala besar~\cite{khattab2020colbert}, namun implementasinya lebih kompleks dan membutuhkan setup indeks khusus yang tidak sesuai dengan kebutuhan \textit{plug-and-play} pada penelitian ini. Dengan mempertimbangkan bukti empiris pada domain regulasi, dukungan multilingual, dan kemudahan implementasi, BAAI/bge-reranker-v2-m3 merupakan pilihan yang paling tepat untuk penelitian ini.
+Berdasarkan analisis perbandingan model \textit{reranker} pada Subbab~2.3.4, BAAI/bge-reranker-v2-m3 dipilih sebagai model \textit{reranker}. Model ini dipilih karena menggabungkan bukti empiris pada domain regulasi yang menunjukkan peningkatan signifikan pada kualitas peringkat, dukungan multilingual untuk lebih dari 100 bahasa yang esensial untuk \textit{query} berbahasa Indonesia, serta kemudahan implementasi sebagai model \textit{cross-encoder} yang bersifat \textit{plug-and-play}.
 
 Perancangan komponen \textit{rerank} pada sistem dilakukan untuk meningkatkan kualitas urutan dokumen yang telah diperoleh dari tahap \textit{hybrid retrieval}. Pada rancangan ini, sistem tidak langsung menggunakan hasil \textit{hybrid retrieval} sebagai keluaran akhir, tetapi terlebih dahulu membentuk \textit{candidate pool} dan mengevaluasi ulang kandidat tersebut menggunakan model \textit{cross-encoder}. Dengan demikian, hasil akhir tidak hanya mempertimbangkan skor gabungan \textit{dense} dan \textit{sparse}, tetapi juga mempertimbangkan interaksi langsung antara \textit{query} dan dokumen kandidat.
 
@@ -408,6 +294,8 @@ Perancangan komponen \textit{rerank} pada sistem dilakukan untuk meningkatkan ku
 	\caption{Komponen cross-encoder reranking pada sistem}
 	\label{fig:reranking_komponen}
 \end{figure}
+
+\newpage
 
 Berdasarkan alur yang ditunjukkan pada Gambar~\ref{fig:reranking_komponen}, proses \textit{rerank} dapat diuraikan ke dalam dua tahap utama, yaitu tahap \textit{hybrid retrieval} dan tahap \textit{cross-encoder reranking}.
 
