@@ -607,18 +607,19 @@ Evaluasi performa sistem \textit{Retrieval-Augmented Generation} (RAG) memerluka
 		\item Dokumen relevan dalam top-$k$: jumlah dokumen relevan yang berhasil ditemukan dalam $k$ teratas
 	\end{itemize}
 
-	\item \textbf{Average Reciprocal Rank (ARR)}
+	\item \textbf{Mean Average Precision (MAP@k)}
 
-	\textit{Average Reciprocal Rank} (ARR) digunakan untuk mengukur kualitas posisi seluruh dokumen relevan yang berhasil ditemukan sistem pada hasil \textit{retrieval}. Berbeda dengan \textit{Mean Reciprocal Rank} (MRR) yang hanya mempertimbangkan dokumen relevan pertama, ARR menghitung kontribusi \textit{ranking} dari seluruh \textit{ground truth} yang berhasil ditemukan pada top-$k$ hasil \textit{retrieval}. Metrik ini berfokus pada seberapa baik sistem menempatkan banyak dokumen relevan pada posisi atas hasil pencarian. Semakin tinggi nilai ARR, maka semakin baik kemampuan sistem dalam mengembalikan keseluruhan dokumen relevan pada \textit{ranking} yang lebih tinggi.
+	\textit{Mean Average Precision} (MAP@k) digunakan untuk mengukur kualitas peringkat dengan mempertimbangkan posisi seluruh dokumen relevan yang berhasil ditemukan dalam top-$k$ hasil \textit{retrieval}. MAP@k menghitung rata-rata \textit{precision} pada setiap posisi di mana dokumen relevan ditemukan, kemudian dinormalisasi terhadap jumlah total \textit{ground truth}. Metrik ini bersifat \textit{rank-sensitive} karena memberikan bobot lebih tinggi pada dokumen relevan yang ditemukan di posisi atas. Semakin tinggi nilai MAP@k, maka semakin baik kemampuan sistem dalam menempatkan dokumen relevan pada posisi peringkat yang lebih tinggi.
 
 	\begin{equation}
-		\text{ARR} = \frac{1}{|G|} \sum_{i=1}^{|G|} \frac{1}{\text{rank}_i}
+		\text{MAP@}k = \frac{1}{|G|} \sum_{i=1}^{k} P(i) \cdot \text{rel}(i)
 	\end{equation}
 
 	dengan:
 	\begin{itemize}
-		\item $|G|$ = jumlah total \textit{ground truth} unik
-		\item $\text{rank}_i$ = posisi dokumen relevan pertama untuk \textit{query} ke-$i$
+		\item $|G|$ = jumlah total dokumen relevan (\textit{ground truth})
+		\item $P(i)$ = \textit{precision} pada posisi ke-$i$, yaitu $\frac{\text{jumlah dokumen relevan dalam top-}i}{i}$
+		\item $\text{rel}(i)$ = 1 jika dokumen pada posisi ke-$i$ relevan, 0 jika tidak
 	\end{itemize}
 
 	\item \textbf{Normalized Discounted Cumulative Gain (NDCG)}
@@ -929,7 +930,7 @@ Berdasarkan tinjauan pustaka, analisis perbandingan metode, serta rumusan masala
 
 \begin{description}[leftmargin=3.2em, labelwidth=3.0em, labelsep=0.2em, font=\normalfont]
 	\item[$H_0$:] Tidak terdapat perbedaan performa yang signifikan antar konfigurasi proporsi pembobotan skor \textit{dense} dan \textit{sparse} pada metode \textit{hybrid retrieval} dalam pemetaan kontrol SoA ISO/IEC 27001:2022.
-	\item[$H_1$:] Terdapat perbedaan performa yang signifikan antar konfigurasi proporsi pembobotan skor \textit{dense} dan \textit{sparse} pada metode \textit{hybrid retrieval}, dengan konfigurasi seimbang ($\alpha_{\text{dense}} = \alpha_{\text{sparse}} = 0{,}50$) menghasilkan performa terbaik berdasarkan metrik \textit{Recall}, ARR, dan NDCG.
+	\item[$H_1$:] Terdapat perbedaan performa yang signifikan antar konfigurasi proporsi pembobotan skor \textit{dense} dan \textit{sparse} pada metode \textit{hybrid retrieval}, dengan konfigurasi seimbang ($\alpha_{\text{dense}} = \alpha_{\text{sparse}} = 0{,}50$) menghasilkan performa terbaik berdasarkan metrik \textit{Recall}, MAP@3, dan NDCG.
 \end{description}
 
 \subsection*{Hipotesis 2: Ukuran \textit{Candidate Pool} pada \textit{Reranking}}

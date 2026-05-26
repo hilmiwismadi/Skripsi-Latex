@@ -257,8 +257,8 @@ Five $\alpha$ values are tested: $\alpha \in \{0.00, 0.25, 0.50, 0.75,
 
 \subsection{Evaluation Metrics and Statistical Testing}
 
-Four metrics are used: Hit@3 and Recall@3 for coverage, and Average
-Reciprocal Rank (ARR) and NDCG@3 for ranking quality. The Friedman
+Four metrics are used: Hit@3 and Recall@3 for coverage, and Mean
+Average Precision (MAP@3) and NDCG@3 for ranking quality. The Friedman
 test~\cite{pereira2015overview} with $\alpha_{\text{sig}} = 0.05$ is
 applied to assess statistical significance across configurations, using
 77~queries as the blocking factor for repeated-measures comparison.
@@ -276,20 +276,20 @@ applied to assess statistical significance across configurations, using
 \small
 \begin{tabular}{lcccc}
 \toprule
-Configuration & Hit@3 & Recall@3 & ARR & NDCG@3 \\
+Configuration & Hit@3 & Recall@3 & MAP@3 & NDCG@3 \\
 \midrule
-Dense 0.00 : Sparse 1.00 & 0.961 & 0.485 & 0.335 & 0.525 \\
-Dense 0.25 : Sparse 0.75 & 0.948 & 0.506 & 0.350 & 0.549 \\
-\textbf{Dense 0.50 : Sparse 0.50} & \textbf{0.935} & \textbf{0.537} & \textbf{0.364} & \textbf{0.575} \\
-Dense 0.75 : Sparse 0.25 & 0.831 & 0.468 & 0.327 & 0.511 \\
-Dense 1.00 : Sparse 0.00 & 0.649 & 0.307 & 0.215 & 0.336 \\
+Dense 0.00 : Sparse 1.00 & 0.961 & 0.485 & 0.407 & 0.525 \\
+Dense 0.25 : Sparse 0.75 & 0.948 & 0.506 & 0.437 & 0.549 \\
+\textbf{Dense 0.50 : Sparse 0.50} & \textbf{0.935} & \textbf{0.537} & \textbf{0.467} & \textbf{0.575} \\
+Dense 0.75 : Sparse 0.25 & 0.831 & 0.468 & 0.417 & 0.511 \\
+Dense 1.00 : Sparse 0.00 & 0.649 & 0.307 & 0.256 & 0.336 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 Table~\ref{tab:hybrid} shows that the balanced configuration
 ($w_{\text{dense}}=0.50$) achieves the best performance on three of four
-metrics: Recall@3\,=\,0.537, ARR\,=\,0.364, and NDCG@3\,=\,0.575.
+metrics: Recall@3\,=\,0.537, MAP@3\,=\,0.467, and NDCG@3\,=\,0.575.
 Pure sparse retrieval ($w_{\text{dense}}=0.00$) yields the highest
 Hit@3\,=\,0.961 but lower rank-sensitive metrics. Pure dense retrieval
 performs substantially worse across all metrics. These results confirm that
@@ -309,8 +309,7 @@ Metric & $\chi^2$ & $p$-value \\
 Hit Rate & 52.205 & $< 0.000001$ \\
 Recall   & 53.542 & $< 0.000001$ \\
 NDCG     & 46.395 & $< 0.000001$ \\
-ARR      & 39.847 & $< 0.000001$ \\
-\bottomrule
+MAP@3    & 46.395 & $< 0.000001$ \\\bottomrule
 \end{tabular}
 \end{table}
 
@@ -327,12 +326,12 @@ for all metrics, rejecting the null hypothesis.
 \small
 \begin{tabular}{lcccc}
 \toprule
-Pool & Hit@3 & Recall@3 & ARR & NDCG@3 \\
+Pool & Hit@3 & Recall@3 & MAP@3 & NDCG@3 \\
 \midrule
-\textbf{5}  & \textbf{0.857} & \textbf{0.468} & \textbf{0.302} & \textbf{0.485} \\
-10 & 0.753 & 0.424 & 0.285 & 0.451 \\
-15 & 0.701 & 0.394 & 0.264 & 0.418 \\
-20 & 0.688 & 0.377 & 0.258 & 0.405 \\
+\textbf{5}  & \textbf{0.857} & \textbf{0.468} & \textbf{0.387} & \textbf{0.485} \\
+10 & 0.753 & 0.424 & 0.372 & 0.451 \\
+15 & 0.701 & 0.394 & 0.343 & 0.418 \\
+20 & 0.688 & 0.377 & 0.328 & 0.405 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -359,7 +358,7 @@ Metric & $\chi^2$ & $p$-value \\
 Hit Rate & 16.760 & 0.000792 \\
 Recall   & 14.095 & 0.002779 \\
 NDCG     & 25.776 & 0.000011 \\
-ARR      & 27.091 & 0.000006 \\
+MAP      & 25.776 & 0.000011 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -373,13 +372,13 @@ ARR      & 27.091 & 0.000006 \\
 \small
 \begin{tabular}{lcccc}
 \toprule
-Config (Hybrid:CE) & Hit@3 & Recall@3 & ARR & NDCG@3 \\
+Config (Hybrid:CE) & Hit@3 & Recall@3 & MAP@3 & NDCG@3 \\
 \midrule
-1.00 : 0.00 & 0.935 & 0.537 & 0.364 & 0.575 \\
-\textbf{0.75 : 0.25} & \textbf{0.935} & \textbf{0.541} & \textbf{0.367} & \textbf{0.579} \\
-0.50 : 0.50 & 0.896 & 0.528 & 0.346 & 0.553 \\
-0.25 : 0.75 & 0.883 & 0.502 & 0.323 & 0.519 \\
-0.00 : 1.00 & 0.855 & 0.469 & 0.302 & 0.485 \\
+1.00 : 0.00 & 0.935 & 0.537 & 0.467 & 0.575 \\
+\textbf{0.75 : 0.25} & \textbf{0.935} & \textbf{0.541} & \textbf{0.470} & \textbf{0.579} \\
+0.50 : 0.50 & 0.896 & 0.528 & 0.452 & 0.553 \\
+0.25 : 0.75 & 0.883 & 0.502 & 0.418 & 0.519 \\
+0.00 : 1.00 & 0.857 & 0.469 & 0.387 & 0.485 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -401,19 +400,18 @@ weight increases, confirms that hybrid retrieval should dominate.
 \toprule
 Metric & $\chi^2$ & $p$-value \\
 \midrule
-Hit Rate & 5.200  & 0.074 \\
-Recall   & 6.300  & \textbf{0.043} \\
-NDCG     & 12.786 & \textbf{0.002} \\
-ARR      & 13.421 & \textbf{0.001} \\
+Hit Rate & 10.462 & \textbf{0.033} \\
+Recall   & 21.245 & \textbf{$< 0.001$} \\
+NDCG     & 29.639 & \textbf{$< 0.001$} \\
+MAP      & 28.952 & \textbf{$< 0.001$} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Three of four metrics show significant differences
-(Table~\ref{tab:fusion_friedman}). The non-significance of Hit Rate
-($p = 0.074$) is expected given the uniformly high Hit@3 values
-(0.855--0.935), while rank-sensitive metrics (NDCG, ARR) confirm that
-score fusion composition meaningfully affects ranking quality.
+All four metrics show significant differences
+(Table~\ref{tab:fusion_friedman}), confirming that score fusion composition
+meaningfully affects both coverage and ranking quality. Rank-sensitive
+metrics (NDCG, MAP@3) show the strongest effect ($p < 0.001$).
 
 \subsection{Per-Query Analysis: Hybrid vs.\ Cross-Encoder}
 

@@ -1,7 +1,7 @@
 \chapter{Hasil dan Pembahasan}
 \setcounter{secnumdepth}{3}
 
-Bab ini menjelaskan hasil dan pembahasan penelitian yang dilakukan untuk mengevaluasi kinerja sistem \textit{information retrieval} berbasis \textit{hybrid retrieval} dan \textit{cross-encoder reranking} pada domain dokumen ISO/IEC 27001:2022. Evaluasi dilakukan menggunakan 77 \textit{query} yang diekstraksi dari dokumen kebijakan DTI UGM sebagai representasi kebutuhan informasi organisasi nyata. Metrik evaluasi yang digunakan mengacu pada Subbab~2.3.10, yang mencakup Hit@3 dan Recall@3 sebagai metrik \textit{coverage}, serta ARR dan NDCG@3 sebagai metrik \textit{rank-sensitive}.
+Bab ini menjelaskan hasil dan pembahasan penelitian yang dilakukan untuk mengevaluasi kinerja sistem \textit{information retrieval} berbasis \textit{hybrid retrieval} dan \textit{cross-encoder reranking} pada domain dokumen ISO/IEC 27001:2022. Evaluasi dilakukan menggunakan 77 \textit{query} yang diekstraksi dari dokumen kebijakan DTI UGM sebagai representasi kebutuhan informasi organisasi nyata. Metrik evaluasi yang digunakan mengacu pada Subbab~2.3.10, yang mencakup Hit@3 dan Recall@3 sebagai metrik \textit{coverage}, serta MAP@3 dan NDCG@3 sebagai metrik \textit{rank-sensitive}.
 
 Penelitian ini menguji tiga skenario utama secara bertahap. Skenario pertama menganalisis pengaruh komposisi pembobotan \textit{dense} dan \textit{sparse} pada \textit{hybrid retrieval} untuk menentukan konfigurasi paling optimal. Skenario kedua menganalisis pengaruh ukuran \textit{candidate pool} terhadap kualitas hasil \textit{reranking}. Skenario ketiga menganalisis komposisi pembobotan antara skor \textit{hybrid retrieval} dan skor \textit{cross-encoder} dalam proses \textit{score fusion}. Pada setiap skenario, validitas statistik perbedaan performa antar konfigurasi diuji menggunakan uji Friedman \cite{pereira2015overview} dengan tingkat signifikansi $\alpha = 0{,}05$, sebagaimana telah dijelaskan pada Subbab~2.2.15. Uji ini dipilih karena data evaluasi memiliki sifat \textit{repeated measures} di mana setiap \textit{query} dievaluasi pada seluruh konfigurasi yang dibandingkan.
 
@@ -160,7 +160,7 @@ Di sisi lain, cakupan dokumentasi DTI UGM terhadap domain \textbf{A.6 (\textit{P
 
 \subsection{Hasil Evaluasi Deskriptif}
 
-Analisis pada subbab ini dilakukan untuk mengevaluasi pengaruh komposisi pembobotan \textit{dense} dan \textit{sparse} terhadap kualitas hasil \textit{hybrid retrieval}. Lima konfigurasi yang diuji adalah \textit{dense}=0{,}00 (\textit{sparse} murni), \textit{dense}=0{,}25 (dominan \textit{sparse}), \textit{dense}=0{,}50 (seimbang), \textit{dense}=0{,}75 (dominan \textit{dense}), dan \textit{dense}=1{,}00 (\textit{dense} murni). Metrik evaluasi yang digunakan mencakup Hit@3, Recall@3, ARR, dan NDCG@3. Hasil evaluasi lengkap terhadap \textit{query} dokumen DTI ditunjukkan pada Gambar~\ref{fig:411_hybrid_dti} dan Tabel~\ref{tbl:411_hybrid_dti}.
+Analisis pada subbab ini dilakukan untuk mengevaluasi pengaruh komposisi pembobotan \textit{dense} dan \textit{sparse} terhadap kualitas hasil \textit{hybrid retrieval}. Lima konfigurasi yang diuji adalah \textit{dense}=0{,}00 (\textit{sparse} murni), \textit{dense}=0{,}25 (dominan \textit{sparse}), \textit{dense}=0{,}50 (seimbang), \textit{dense}=0{,}75 (dominan \textit{dense}), dan \textit{dense}=1{,}00 (\textit{dense} murni). Metrik evaluasi yang digunakan mencakup Hit@3, Recall@3, MAP@3, dan NDCG@3. Hasil evaluasi lengkap terhadap \textit{query} dokumen DTI ditunjukkan pada Gambar~\ref{fig:411_hybrid_dti} dan Tabel~\ref{tbl:411_hybrid_dti}.
 
 \begin{figure}[H]
 	\centering
@@ -176,24 +176,24 @@ Analisis pada subbab ini dilakukan untuk mengevaluasi pengaruh komposisi pembobo
 	\small
 	\begin{tabular}{lcccc}
 		\toprule
-		Konfigurasi & Hit@3 & Recall@3 & ARR & NDCG@3 \\
+		Konfigurasi & Hit@3 & Recall@3 & MAP@3 & NDCG@3 \\
 		\midrule
-		Dense 0{,}00 : Sparse 1{,}00 & 0{,}961 & 0{,}485 & 0{,}335 & 0{,}525 \\
-		Dense 0{,}25 : Sparse 0{,}75 & 0{,}948 & 0{,}506 & 0{,}350 & 0{,}549 \\
-		Dense 0{,}50 : Sparse 0{,}50 & \textbf{0{,}935} & \textbf{0{,}537} & \textbf{0{,}364} & \textbf{0{,}575} \\
-		Dense 0{,}75 : Sparse 0{,}25 & 0{,}831 & 0{,}468 & 0{,}327 & 0{,}511 \\
-		Dense 1{,}00 : Sparse 0{,}00 & 0{,}649 & 0{,}307 & 0{,}215 & 0{,}336 \\
+		Dense 0{,}00 : Sparse 1{,}00 & 0{,}961 & 0{,}485 & 0{,}407 & 0{,}525 \\
+		Dense 0{,}25 : Sparse 0{,}75 & 0{,}948 & 0{,}506 & 0{,}437 & 0{,}549 \\
+		Dense 0{,}50 : Sparse 0{,}50 & \textbf{0{,}935} & \textbf{0{,}537} & \textbf{0{,}467} & \textbf{0{,}575} \\
+		Dense 0{,}75 : Sparse 0{,}25 & 0{,}831 & 0{,}468 & 0{,}417 & 0{,}511 \\
+		Dense 1{,}00 : Sparse 0{,}00 & 0{,}649 & 0{,}307 & 0{,}256 & 0{,}336 \\
 		\bottomrule
 	\end{tabular}
 \end{table}
 
-Hasil evaluasi pada Gambar~\ref{fig:411_hybrid_dti} dan Tabel~\ref{tbl:411_hybrid_dti} menunjukkan bahwa konfigurasi seimbang \textit{dense}=0{,}50 menghasilkan performa terbaik pada tiga dari empat metrik evaluasi, yaitu Recall@3 sebesar 0{,}537, ARR sebesar 0{,}364, dan NDCG@3 sebesar 0{,}575. Sementara itu, konfigurasi \textit{sparse} murni (\textit{dense}=0{,}00) memperoleh nilai Hit@3 tertinggi sebesar 0{,}961, namun memiliki kualitas peringkat yang lebih rendah dibanding konfigurasi seimbang pada ARR (0{,}335 vs 0{,}364) dan NDCG@3 (0{,}525 vs 0{,}575). Konfigurasi \textit{sparse} murni lebih sering berhasil menemukan minimal satu dokumen relevan dalam tiga hasil teratas, tetapi konfigurasi seimbang lebih konsisten dalam menempatkan dokumen relevan pada posisi peringkat yang lebih tinggi.
+Hasil evaluasi pada Gambar~\ref{fig:411_hybrid_dti} dan Tabel~\ref{tbl:411_hybrid_dti} menunjukkan bahwa konfigurasi seimbang \textit{dense}=0{,}50 menghasilkan performa terbaik pada tiga dari empat metrik evaluasi, yaitu Recall@3 sebesar 0{,}537, MAP@3 sebesar 0{,}467, dan NDCG@3 sebesar 0{,}575. Sementara itu, konfigurasi \textit{sparse} murni (\textit{dense}=0{,}00) memperoleh nilai Hit@3 tertinggi sebesar 0{,}961, namun memiliki kualitas peringkat yang lebih rendah dibanding konfigurasi seimbang pada MAP@3 (0{,}407 vs 0{,}467) dan NDCG@3 (0{,}525 vs 0{,}575). Konfigurasi \textit{sparse} murni lebih sering berhasil menemukan minimal satu dokumen relevan dalam tiga hasil teratas, tetapi konfigurasi seimbang lebih konsisten dalam menempatkan dokumen relevan pada posisi peringkat yang lebih tinggi.
 
 Pola performa menunjukkan bahwa terdapat peningkatan signifikan ketika komponen \textit{sparse} ditambahkan ke dalam \textit{dense retrieval} murni. Konfigurasi \textit{dense}=0{,}75 yang masih mendominasi \textit{sparse} menghasilkan performa yang lebih baik dibanding \textit{dense} murni pada seluruh metrik, namun masih lebih rendah dibanding konfigurasi yang memberikan bobot lebih besar pada \textit{sparse}. Di sisi lain, konfigurasi \textit{sparse} murni menghasilkan Hit@3 tertinggi tetapi lebih rendah pada Recall@3 dan metrik \textit{rank-sensitive} dibanding konfigurasi seimbang. Temuan ini mengindikasikan bahwa dokumen ISO 27001 membutuhkan kombinasi antara pencocokan semantik untuk menangkap makna kontekstual dan pencocokan leksikal untuk mengenali terminologi spesifik domain keamanan informasi.
 
 \subsection{Validitas Statistik Perbedaan Performa antar Konfigurasi}
 
-Untuk membuktikan bahwa perbedaan performa antar kelima konfigurasi bersifat signifikan secara statistik, dilakukan uji Friedman terhadap empat metrik evaluasi, yaitu Hit Rate, Recall, NDCG, dan ARR, dengan 77 \textit{query} sebagai \textit{blocking factor}. Hasil uji Friedman ditunjukkan pada Tabel~\ref{tbl:412_friedman_hybrid}.
+Untuk membuktikan bahwa perbedaan performa antar kelima konfigurasi bersifat signifikan secara statistik, dilakukan uji Friedman terhadap empat metrik evaluasi, yaitu Hit Rate, Recall, NDCG, dan MAP@3, dengan 77 \textit{query} sebagai \textit{blocking factor}. Hasil uji Friedman ditunjukkan pada Tabel~\ref{tbl:412_friedman_hybrid}.
 
 \begin{table}[H]
 	\centering
@@ -207,8 +207,7 @@ Untuk membuktikan bahwa perbedaan performa antar kelima konfigurasi bersifat sig
 		Hit Rate  & 52{,}205 & $< 0{,}000001$ \\
 		Recall    & 53{,}542 & $< 0{,}000001$ \\
 		NDCG      & 46{,}395 & $< 0{,}000001$ \\
-		ARR       & 39{,}847 & $< 0{,}000001$ \\
-		\bottomrule
+		MAP       & 46{,}395 & $< 0{,}000001$ \\
 	\end{tabular}
 \end{table}
 
@@ -216,14 +215,14 @@ Seluruh metrik evaluasi menghasilkan $p$-\textit{value} yang jauh di bawah amban
 
 \subsection{Kesimpulan Komposisi \textit{Dense} dan \textit{Sparse}}
 
-Berdasarkan hasil evaluasi deskriptif dan uji Friedman, disimpulkan bahwa konfigurasi \textit{dense}=0{,}50 dan \textit{sparse}=0{,}50 merupakan komposisi paling optimal untuk \textit{hybrid retrieval} pada domain dokumen ISO 27001. Komposisi seimbang ini menghasilkan performa terbaik pada tiga dari empat metrik evaluasi (Recall, NDCG, dan ARR). Uji Friedman membuktikan bahwa perbedaan performa antar konfigurasi bersifat signifikan secara statistik ($p < 0{,}001$) pada seluruh metrik. Komposisi seimbang menunjukkan bahwa pencarian dokumen ISO 27001 membutuhkan kombinasi antara kemampuan \textit{dense retrieval} dalam menangkap kesamaan semantik dan kemampuan \textit{sparse retrieval} dalam mencocokkan istilah eksplisit serta terminologi spesifik standar keamanan informasi. Konfigurasi ini kemudian digunakan sebagai parameter tetap pada eksperimen selanjutnya.
+Berdasarkan hasil evaluasi deskriptif dan uji Friedman, disimpulkan bahwa konfigurasi \textit{dense}=0{,}50 dan \textit{sparse}=0{,}50 merupakan komposisi paling optimal untuk \textit{hybrid retrieval} pada domain dokumen ISO 27001. Komposisi seimbang ini menghasilkan performa terbaik pada tiga dari empat metrik evaluasi (Recall, NDCG, dan MAP@3). Uji Friedman membuktikan bahwa perbedaan performa antar konfigurasi bersifat signifikan secara statistik ($p < 0{,}001$) pada seluruh metrik. Komposisi seimbang menunjukkan bahwa pencarian dokumen ISO 27001 membutuhkan kombinasi antara kemampuan \textit{dense retrieval} dalam menangkap kesamaan semantik dan kemampuan \textit{sparse retrieval} dalam mencocokkan istilah eksplisit serta terminologi spesifik standar keamanan informasi. Konfigurasi ini kemudian digunakan sebagai parameter tetap pada eksperimen selanjutnya.
 
 
 \section{Analisis Komparatif Ukuran \textit{Candidate Pool} pada \textit{Reranking Retrieval}}
 
 \subsection{Hasil Evaluasi Deskriptif}
 
-Analisis pada subbab ini dilakukan untuk mengevaluasi pengaruh ukuran \textit{candidate pool} terhadap kualitas hasil \textit{reranking}. Empat ukuran \textit{pool} yang diuji adalah 5, 10, 15, dan 20 dokumen. Seluruh parameter \textit{hybrid retrieval} dijaga konstan pada konfigurasi optimal yang telah ditentukan sebelumnya, yaitu \textit{dense}=0{,}50 dan \textit{sparse}=0{,}50. Metrik evaluasi yang digunakan mencakup Hit@3, Recall@3, ARR, dan NDCG@3. Hasil evaluasi ditunjukkan pada Gambar~\ref{fig:421_pool_dti} dan Tabel~\ref{tbl:421_pool_dti}.
+Analisis pada subbab ini dilakukan untuk mengevaluasi pengaruh ukuran \textit{candidate pool} terhadap kualitas hasil \textit{reranking}. Empat ukuran \textit{pool} yang diuji adalah 5, 10, 15, dan 20 dokumen. Seluruh parameter \textit{hybrid retrieval} dijaga konstan pada konfigurasi optimal yang telah ditentukan sebelumnya, yaitu \textit{dense}=0{,}50 dan \textit{sparse}=0{,}50. Metrik evaluasi yang digunakan mencakup Hit@3, Recall@3, MAP@3, dan NDCG@3. Hasil evaluasi ditunjukkan pada Gambar~\ref{fig:421_pool_dti} dan Tabel~\ref{tbl:421_pool_dti}.
 
 \begin{figure}[H]
 	\centering
@@ -239,23 +238,23 @@ Analisis pada subbab ini dilakukan untuk mengevaluasi pengaruh ukuran \textit{ca
 	\small
 	\begin{tabular}{lcccccc}
 		\toprule
-		\textit{Pool} & Hit@3 & Recall@3 & ARR & NDCG@3 & \textit{Retrieval} (ms) & Total (s) \\
+		\textit{Pool} & Hit@3 & Recall@3 & MAP@3 & NDCG@3 & \textit{Retrieval} (ms) & Total (s) \\
 		\midrule
-		5  & \textbf{0{,}857} & \textbf{0{,}468} & \textbf{0{,}302} & \textbf{0{,}485} & 105{,}28 & 9{,}01 \\
-		10 & 0{,}753 & 0{,}424 & 0{,}285 & 0{,}451 & 112{,}72 & 13{,}28 \\
-		15 & 0{,}701 & 0{,}394 & 0{,}264 & 0{,}418 & 130{,}64 & 18{,}95 \\
-		20 & 0{,}688 & 0{,}377 & 0{,}258 & 0{,}405 & 140{,}15 & 25{,}61 \\
+		5  & \textbf{0{,}857} & \textbf{0{,}468} & \textbf{0{,}387} & \textbf{0{,}485} & 181{,}47 & 5{,}91 \\
+		10 & 0{,}753 & 0{,}424 & 0{,}372 & 0{,}451 & 164{,}07 & 11{,}80 \\
+		15 & 0{,}701 & 0{,}394 & 0{,}343 & 0{,}418 & 160{,}89 & 19{,}79 \\
+		20 & 0{,}688 & 0{,}377 & 0{,}328 & 0{,}405 & 136{,}26 & 24{,}37 \\
 		\bottomrule
 	\end{tabular}
 \end{table}
 
-Hasil evaluasi pada Gambar~\ref{fig:421_pool_dti} dan Tabel~\ref{tbl:421_pool_dti} menunjukkan bahwa \textit{candidate pool} berukuran 5 menghasilkan performa terbaik pada seluruh metrik. Konfigurasi ini memperoleh Hit@3 sebesar 0{,}857, Recall@3 sebesar 0{,}468, ARR sebesar 0{,}302, dan NDCG@3 sebesar 0{,}485. Terdapat tren penurunan performa yang konsisten seiring bertambahnya ukuran \textit{pool}. Ketika ukuran \textit{pool} ditingkatkan dari 5 ke 20, Hit@3 mengalami penurunan sebesar 0{,}169, Recall@3 turun 0{,}091, ARR turun 0{,}044, dan NDCG@3 turun 0{,}080.
+Hasil evaluasi pada Gambar~\ref{fig:421_pool_dti} dan Tabel~\ref{tbl:421_pool_dti} menunjukkan bahwa \textit{candidate pool} berukuran 5 menghasilkan performa terbaik pada seluruh metrik. Konfigurasi ini memperoleh Hit@3 sebesar 0{,}857, Recall@3 sebesar 0{,}468, MAP@3 sebesar 0{,}387, dan NDCG@3 sebesar 0{,}485. Terdapat tren penurunan performa yang konsisten seiring bertambahnya ukuran \textit{pool}. Ketika ukuran \textit{pool} ditingkatkan dari 5 ke 20, Hit@3 mengalami penurunan sebesar 0{,}169, Recall@3 turun 0{,}091, MAP@3 turun 0{,}059, dan NDCG@3 turun 0{,}080.
 
 Selain penurunan akurasi, penambahan ukuran \textit{pool} juga meningkatkan waktu proses secara signifikan. Waktu total meningkat dari 9{,}01 detik pada \textit{pool} 5 menjadi 25{,}61 detik pada \textit{pool} 20, yang menunjukkan peningkatan hampir tiga kali lipat. Pola penurunan monoton ini mengindikasikan bahwa penambahan kandidat tidak selalu meningkatkan kualitas hasil \textit{reranking}. Pada domain dokumen ISO 27001, semakin besar \textit{candidate pool}, semakin besar pula kemungkinan kandidat yang kurang relevan masuk ke tahap \textit{reranking}, sehingga meningkatkan \textit{noise} dan melemahkan kualitas pemeringkatan akhir.
 
 \subsection{Validitas Statistik Perbedaan Performa antar Konfigurasi}
 
-Untuk membuktikan bahwa perbedaan performa antar empat ukuran \textit{candidate pool} bersifat signifikan secara statistik, dilakukan uji Friedman terhadap empat metrik evaluasi, yaitu Hit Rate, Recall, NDCG, dan ARR, dengan 77 \textit{query} sebagai \textit{blocking factor}. Hasil uji Friedman ditunjukkan pada Tabel~\ref{tbl:422_friedman_pool}.
+Untuk membuktikan bahwa perbedaan performa antar empat ukuran \textit{candidate pool} bersifat signifikan secara statistik, dilakukan uji Friedman terhadap empat metrik evaluasi, yaitu Hit Rate, Recall, NDCG, dan MAP@3, dengan 77 \textit{query} sebagai \textit{blocking factor}. Hasil uji Friedman ditunjukkan pada Tabel~\ref{tbl:422_friedman_pool}.
 
 \begin{table}[H]
 	\centering
@@ -269,7 +268,7 @@ Untuk membuktikan bahwa perbedaan performa antar empat ukuran \textit{candidate 
 		Hit Rate    & 16{,}760 & $0{,}000792$ \\
 		Recall      & 14{,}095 & $0{,}002779$ \\
 		NDCG        & 25{,}776 & $0{,}000011$ \\
-		ARR         & 27{,}091 & $0{,}000006$ \\
+		MAP         & 25{,}776 & $0{,}000011$ \\
 		\bottomrule
 	\end{tabular}
 \end{table}
@@ -278,7 +277,7 @@ Seluruh metrik evaluasi menghasilkan $p$-\textit{value} di bawah ambang batas si
 
 \subsection{Kesimpulan Ukuran \textit{Candidate Pool}}
 
-Berdasarkan hasil evaluasi deskriptif dan uji Friedman, disimpulkan bahwa \textit{candidate pool} berukuran 5 merupakan konfigurasi paling optimal untuk \textit{reranking} pada domain dokumen ISO 27001. Konfigurasi ini unggul di seluruh empat metrik evaluasi (Hit Rate, Recall, NDCG, dan ARR) dan menghasilkan latensi terendah. Uji Friedman membuktikan bahwa perbedaan performa antar ukuran \textit{pool} bersifat signifikan secara statistik ($p < 0{,}003$) pada seluruh metrik. Konfigurasi \textit{pool}=5 ini kemudian digunakan sebagai parameter \textit{reranking} pada eksperimen \textit{score fusion} selanjutnya.
+Berdasarkan hasil evaluasi deskriptif dan uji Friedman, disimpulkan bahwa \textit{candidate pool} berukuran 5 merupakan konfigurasi paling optimal untuk \textit{reranking} pada domain dokumen ISO 27001. Konfigurasi ini unggul di seluruh empat metrik evaluasi (Hit Rate, Recall, NDCG, dan MAP@3) dan menghasilkan latensi terendah. Uji Friedman membuktikan bahwa perbedaan performa antar ukuran \textit{pool} bersifat signifikan secara statistik ($p < 0{,}003$) pada seluruh metrik. Konfigurasi \textit{pool}=5 ini kemudian digunakan sebagai parameter \textit{reranking} pada eksperimen \textit{score fusion} selanjutnya.
 
 
 \section{Analisis Komparatif Komposisi \textit{Score Fusion} antara \textit{Hybrid Retrieval} dan \textit{Cross-Encoder}}
@@ -301,28 +300,28 @@ Analisis pada subbab ini dilakukan untuk mengevaluasi pengaruh komposisi pembobo
 	\small
 	\begin{tabular}{lccccc}
 		\toprule
-		Konfigurasi (Hybrid:CE) & Hit@3 & Recall@3 & ARR & NDCG@3 & Latensi \\
+		Konfigurasi (Hybrid:CE) & Hit@3 & Recall@3 & MAP@3 & NDCG@3 & Latensi \\
 		\midrule
-		1{,}00 : 0{,}00 (\textit{hybrid} independen) & 0{,}935 & 0{,}537 & 0{,}364 & 0{,}575 & 60 ms \\
-		\textbf{0{,}75 : 0{,}25} (dominan \textit{hybrid}) & \textbf{0{,}935} & \textbf{0{,}541} & \textbf{0{,}367} & \textbf{0{,}579} & 6{,}02 s \\
-		0{,}50 : 0{,}50 (seimbang) & 0{,}896 & 0{,}528 & 0{,}346 & 0{,}553 & 5{,}23 s \\
-		0{,}25 : 0{,}75 (dominan CE) & 0{,}883 & 0{,}502 & 0{,}323 & 0{,}519 & 6{,}08 s \\
-		0{,}00 : 1{,}00 (\textit{CE} independen) & 0{,}855 & 0{,}469 & 0{,}302 & 0{,}485 & 5{,}88 s \\
+		1{,}00 : 0{,}00 (\textit{hybrid} independen) & 0{,}935 & 0{,}537 & 0{,}467 & 0{,}575 & 60 ms \\
+		\textbf{0{,}75 : 0{,}25} (dominan \textit{hybrid}) & \textbf{0{,}935} & \textbf{0{,}541} & \textbf{0{,}470} & \textbf{0{,}579} & 6{,}02 s \\
+		0{,}50 : 0{,}50 (seimbang) & 0{,}896 & 0{,}528 & 0{,}452 & 0{,}553 & 5{,}23 s \\
+		0{,}25 : 0{,}75 (dominan CE) & 0{,}883 & 0{,}502 & 0{,}418 & 0{,}519 & 6{,}08 s \\
+		0{,}00 : 1{,}00 (\textit{CE} independen) & 0{,}857 & 0{,}469 & 0{,}387 & 0{,}485 & 5{,}91 s \\
 		\bottomrule
 	\end{tabular}
 \end{table}
 
 Hasil evaluasi pada Gambar~\ref{fig:431_fusion_dti} dan Tabel~\ref{tbl:431_fusion_dti} menunjukkan pola yang konsisten: semakin besar bobot \textit{hybrid retrieval}, semakin tinggi performa sistem pada seluruh metrik. Analisis berdasarkan kelompok komposisi mengungkap tiga pola utama sebagai berikut.
 
-\textbf{Konfigurasi Independen (1{,}00:0{,}00 dan 0{,}00:1{,}00).} Konfigurasi \textit{hybrid} independen tanpa \textit{reranking} menghasilkan Hit@3=0{,}935, Recall@3=0{,}537, ARR=0{,}364, dan NDCG@3=0{,}575 dengan latensi hanya 60 ms. Sebaliknya, konfigurasi \textit{CE} independen yang sepenuhnya mengandalkan skor \textit{cross-encoder} tanpa kontribusi \textit{hybrid} menghasilkan performa terendah pada seluruh metrik (Hit@3=0{,}855, Recall@3=0{,}469, ARR=0{,}302, NDCG@3=0{,}485) dengan latensi 5{,}88 detik. Perbedaan ini mengindikasikan bahwa skor \textit{hybrid retrieval} mengandung sinyal relevansi yang lebih tepat untuk domain ISO 27001 dibandingkan skor \textit{cross-encoder} secara independen.
+\textbf{Konfigurasi Independen (1{,}00:0{,}00 dan 0{,}00:1{,}00).} Konfigurasi \textit{hybrid} independen tanpa \textit{reranking} menghasilkan Hit@3=0{,}935, Recall@3=0{,}537, MAP@3=0{,}467, dan NDCG@3=0{,}575 dengan latensi hanya 60 ms. Sebaliknya, konfigurasi \textit{CE} independen yang sepenuhnya mengandalkan skor \textit{cross-encoder} tanpa kontribusi \textit{hybrid} menghasilkan performa terendah pada seluruh metrik (Hit@3=0{,}857, Recall@3=0{,}469, MAP@3=0{,}387, NDCG@3=0{,}485) dengan latensi 5{,}91 detik. Perbedaan ini mengindikasikan bahwa skor \textit{hybrid retrieval} mengandung sinyal relevansi yang lebih tepat untuk domain ISO 27001 dibandingkan skor \textit{cross-encoder} secara independen.
 
-\textbf{Konfigurasi Dominan Satu Sisi (0{,}75:0{,}25 dan 0{,}25:0{,}75).} Konfigurasi dominan \textit{hybrid} (0{,}75:0{,}25) merupakan konfigurasi terbaik secara keseluruhan dengan Recall@3=0{,}541, ARR=0{,}367, dan NDCG@3=0{,}579, yang sedikit melampaui \textit{hybrid} independen. Hal ini menunjukkan bahwa pemberian bobot kecil pada \textit{cross-encoder} (25\%) mampu memberikan penyempurnaan peringkat secara marginal pada sejumlah \textit{query} tertentu tanpa mengganggu kualitas yang sudah dihasilkan \textit{hybrid retrieval}. Sebaliknya, konfigurasi dominan CE (0{,}25:0{,}75) menghasilkan penurunan signifikan dibanding dominan \textit{hybrid} pada seluruh metrik (NDCG turun dari 0{,}579 ke 0{,}519), yang menegaskan bahwa dominasi skor \textit{CE} justru melemahkan kualitas peringkat akhir.
+\textbf{Konfigurasi Dominan Satu Sisi (0{,}75:0{,}25 dan 0{,}25:0{,}75).} Konfigurasi dominan \textit{hybrid} (0{,}75:0{,}25) merupakan konfigurasi terbaik secara keseluruhan dengan Recall@3=0{,}541, MAP@3=0{,}470, dan NDCG@3=0{,}579, yang sedikit melampaui \textit{hybrid} independen. Hal ini menunjukkan bahwa pemberian bobot kecil pada \textit{cross-encoder} (25\%) mampu memberikan penyempurnaan peringkat secara marginal pada sejumlah \textit{query} tertentu tanpa mengganggu kualitas yang sudah dihasilkan \textit{hybrid retrieval}. Sebaliknya, konfigurasi dominan CE (0{,}25:0{,}75) menghasilkan penurunan signifikan dibanding dominan \textit{hybrid} pada seluruh metrik (NDCG turun dari 0{,}579 ke 0{,}519), yang menegaskan bahwa dominasi skor \textit{CE} justru melemahkan kualitas peringkat akhir.
 
-\textbf{Konfigurasi Seimbang (0{,}50:0{,}50).} Konfigurasi seimbang menghasilkan performa di antara kedua ekstrem, namun tidak mencapai performa terbaik pada metrik apapun. Konfigurasi ini memperoleh Hit@3=0{,}896, Recall@3=0{,}528, ARR=0{,}346, dan NDCG@3=0{,}553 dengan latensi 5{,}23 detik yang merupakan latensi terendah di antara konfigurasi yang melibatkan \textit{reranking}. Meskipun latensinya lebih rendah, performa akurasinya masih di bawah konfigurasi dominan \textit{hybrid}.
+\textbf{Konfigurasi Seimbang (0{,}50:0{,}50).} Konfigurasi seimbang menghasilkan performa di antara kedua ekstrem, namun tidak mencapai performa terbaik pada metrik apapun. Konfigurasi ini memperoleh Hit@3=0{,}896, Recall@3=0{,}528, MAP@3=0{,}452, dan NDCG@3=0{,}553 dengan latensi 5{,}23 detik yang merupakan latensi terendah di antara konfigurasi yang melibatkan \textit{reranking}. Meskipun latensinya lebih rendah, performa akurasinya masih di bawah konfigurasi dominan \textit{hybrid}.
 
 \subsection{Validitas Statistik Perbedaan Performa antar Konfigurasi}
 
-Untuk membuktikan bahwa perbedaan performa antar lima komposisi \textit{score fusion} bersifat signifikan secara statistik, dilakukan uji Friedman terhadap empat metrik evaluasi, yaitu Hit Rate, Recall, NDCG, dan ARR, dengan 77 \textit{query} sebagai \textit{blocking factor}. Hasil uji Friedman ditunjukkan pada Tabel~\ref{tbl:432_friedman_fusion}.
+Untuk membuktikan bahwa perbedaan performa antar lima komposisi \textit{score fusion} bersifat signifikan secara statistik, dilakukan uji Friedman terhadap empat metrik evaluasi, yaitu Hit Rate, Recall, NDCG, dan MAP@3, dengan 77 \textit{query} sebagai \textit{blocking factor}. Hasil uji Friedman ditunjukkan pada Tabel~\ref{tbl:432_friedman_fusion}.
 
 \begin{table}[H]
 	\centering
@@ -333,15 +332,15 @@ Untuk membuktikan bahwa perbedaan performa antar lima komposisi \textit{score fu
 		\toprule
 		Metrik & $\chi^2$ & $p$-\textit{value} \\
 		\midrule
-		Hit Rate    & 5{,}200 & $0{,}074$       \\
-		Recall      & 6{,}300 & $0{,}043$       \\
-		NDCG        & 12{,}786 & $0{,}002$      \\
-		ARR         & 13{,}421 & $0{,}001$      \\
+		Hit Rate    & 10{,}462 & $0{,}033$       \\
+		Recall      & 21{,}245 & $0{,}000283$    \\
+		NDCG        & 29{,}639 & $0{,}000006$    \\
+		MAP         & 28{,}952 & $0{,}000008$    \\
 		\bottomrule
 	\end{tabular}
 \end{table}
 
-Tiga dari empat metrik menghasilkan $p$-\textit{value} di bawah ambang batas signifikansi $\alpha = 0{,}05$, yang membuktikan bahwa komposisi pembobotan antara skor \textit{hybrid retrieval} dan skor \textit{cross-encoder} secara signifikan memengaruhi kinerja sistem. Satu-satunya metrik yang tidak signifikan adalah Hit Rate ($p = 0{,}074$), yang wajar mengingat seluruh konfigurasi sama-sama menghasilkan Hit@3 yang tinggi (0{,}855--0{,}935) sehingga ruang perbedaan sangat kecil. Sebaliknya, pada metrik \textit{rank-sensitive}, yaitu NDCG ($p = 0{,}002$) dan ARR ($p = 0{,}001$), perbedaan performa jauh lebih signifikan, yang mengonfirmasi bahwa komposisi pembobotan memberikan dampak nyata terhadap kualitas peringkat dokumen, bukan sekadar kemampuan menemukan dokumen relevan.
+Seluruh metrik evaluasi menghasilkan $p$-\textit{value} di bawah ambang batas signifikansi $\alpha = 0{,}05$, yang membuktikan bahwa komposisi pembobotan antara skor \textit{hybrid retrieval} dan skor \textit{cross-encoder} secara signifikan memengaruhi kinerja sistem pada seluruh aspek evaluasi. Pada metrik \textit{rank-sensitive}, yaitu NDCG ($p < 0{,}001$) dan MAP@3 ($p < 0{,}001$), perbedaan performa sangat signifikan, yang mengonfirmasi bahwa komposisi pembobotan memberikan dampak nyata terhadap kualitas peringkat dokumen, bukan sekadar kemampuan menemukan dokumen relevan.
 
 \subsection{Analisis Karakteristik \textit{Query} pada Perbedaan Performa \textit{Hybrid Retrieval} dan \textit{Cross-Encoder}}
 
