@@ -26,43 +26,55 @@ Berbeda dengan penelitian yang berfokus pada domain tertentu, (Elkiran-Rasheed.,
 
 \begin{table}[!htbp]
 \centering
+\scriptsize
 \caption{Perbandingan Penelitian Terkait}
 \label{tab:tinjauan_pustaka}
-\begin{tabular}{|p{2.3cm}|p{2.6cm}|p{3.0cm}|p{3.8cm}|}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{|p{1.5cm}|p{1.3cm}|p{2.2cm}|p{1.8cm}|p{4.0cm}|p{1.8cm}|}
 \hline
-\textbf{Paper} & \textbf{Domain} & \textbf{Jenis Retrieval} & \textbf{Reranking} \\
+\textbf{Paper} & \textbf{Domain} & \textbf{Retrieval} & \textbf{Reranking} & \textbf{Parameter} & \textbf{Metrik} \\
 \hline
 (Liu et al., 2025) &
-Audit dan pemetaan regulasi &
-\textit{Hybrid retrieval} (BM25 + \textit{dense}) &
-Digunakan (\textit{score fusion} / \textit{weighted} RRF) \\
+Audit &
+Hybrid (BM25 + dense BGE) &
+\textit{Weighted} RRF &
+Pembobotan RRF multi-jalur; Ablasi metode \textit{retrieval} &
+Recall, MRR, Hit@5 \\
 \hline
 (Gupta et al., 2025) &
-Kepatuhan regulasi (GDPR/CCPA) &
-\textit{Dense retrieval} (DPR, dua tahap) &
-Digunakan (\textit{cross-encoder}) \\
+Kepatuhan Privasi&
+DPR (dua tahap) &
+Cross-encoder &
+Variasi skema: DPR independen, reranker independen, dan hybrid &
+Recall, Precision@10, FP, Time \\
 \hline
 (Ravishankar-Varalakshmi, 2025) &
-Tanya jawab keuangan &
-\textit{Hybrid retrieval} bertahap &
-Digunakan (\textit{cross-encoder} + \textit{score fusion}) \\
+Keuangan &
+Hybrid (QE + DPR) &
+Cross-encoder + \textit{score fusion} &
+Variasi $\alpha \in \{0{,}3;\ 0{,}5;\ 0{,}7\}$ komposisi bobot DPR:reranker &
+MAP, NDCG, Recall, Precision@10 \\
 \hline
 (Rustamov et al., 2025) &
-Tanya jawab hukum pajak &
-\textit{Hybrid retrieval} (\textit{sparse} + \textit{dense}) &
-Digunakan (\textit{cross-encoder}) \\
+Hukum pajak &
+Hybrid (BM25/SPLADE + dense) &
+Cross-encoder (BGE, MiniLM, BERT) &
+Variasi $\alpha \in \{0{,}3;\ 0{,}5;\ 0{,}7\}$ bobot sparse:dense; Variasi $k \in \{10;\ 50;\ 100\}$ ukuran kandidat; Perbandingan sebelum dan sesudah reranking &
+Recall, NDCG, MRR \\
 \hline
 (Elkiran-Rasheed, 2026) &
-Evaluasi sistem RAG umum &
-Perbandingan berbagai metode \textit{retrieval} &
-Digunakan (opsional, evaluatif) \\
+RAG umum &
+DPR + variasi strategi retrieval &
+Cross-encoder (MiniLM, BGE) &
+Perbandingan kontribusi relatif reranker vs \textit{retriever} terhadap performa &
+MAP, NDCG, MRR, Cost \\
 \hline
 \end{tabular}
 \end{table}
 
-Berdasarkan berbagai penelitian tersebut, dapat disintesis beberapa pola utama. Pertama, pendekatan \textit{hybrid retrieval} yang menggabungkan metode \textit{sparse} dan \textit{dense} mampu memberikan keseimbangan antara \textit{coverage} dan \textit{semantic matching}. Kedua, \textit{reranking} berbasis \textit{cross-encoder} secara konsisten meningkatkan presisi dan kualitas peringkat pada hasil \textit{top-k}. Ketiga, pendekatan dari \textit{score fusion} melalui penyesuaian bobot dan strategi penggabungan skor menunjukkan peran penting dalam mengoptimalkan performa sistem. Namun demikian, peningkatan kualitas tersebut umumnya diikuti oleh bertambahnya kompleksitas sistem serta latensi komputasi.
+Berdasarkan berbagai penelitian tersebut, dapat disintesis beberapa pola utama. Pertama, pendekatan \textit{hybrid retrieval} yang menggabungkan metode \textit{sparse} dan \textit{dense} mampu memberikan keseimbangan antara \textit{coverage} dan \textit{semantic matching}, dengan variasi bobot $\alpha$ dense:sparse yang dievaluasi pada penelitian Rustamov et al. Kedua, \textit{reranking} berbasis \textit{cross-encoder} secara konsisten meningkatkan presisi dan kualitas peringkat pada hasil \textit{top-k}, dengan ukuran \textit{candidate pool} yang bervariasi ($k \in \{10; 50; 100\}$) sebagaimana diteliti oleh Rustamov et al. dan Ravishankar-Varalakshmi ($k=20$). Ketiga, pendekatan \textit{score fusion} melalui pengaturan bobot $\alpha$ hybrid:reranker menunjukkan peran penting dalam mengoptimalkan performa sistem, yang dievaluasi secara eksplisit oleh Ravishankar-Varalakshmi ($\alpha \in \{0{,}3; 0{,}5; 0{,}7\}$). Namun demikian, peningkatan kualitas tersebut umumnya diikuti oleh bertambahnya kompleksitas sistem serta latensi komputasi.
 
-Meskipun berbagai pendekatan tersebut telah banyak diusulkan, sebagian besar penelitian berfokus pada domain umum seperti hukum perpajakan, keuangan, atau regulasi privasi, serta cenderung mengembangkan arsitektur yang semakin kompleks tanpa mengevaluasi secara sistematis kontribusi masing-masing komponen. Oleh karena itu, penelitian ini mengusulkan analisis komparatif terhadap beberapa variasi \textit{pipeline} RAG, yaitu penggunaan \textit{hybrid retrieval} sebagai \textit{baseline}, penambahan \textit{reranking}, serta kombinasi keduanya. Evaluasi dilakukan untuk mengukur dampak setiap konfigurasi terhadap kualitas \textit{retrieval} (akurasi) dan efisiensi sistem (latensi), sehingga dapat diidentifikasi \textit{trade-off} antara peningkatan performa dan kompleksitas, serta ditentukan konfigurasi yang paling optimal untuk sistem RAG berbasis dokumen regulasi seperti ISO 27001.
+Meskipun berbagai pendekatan tersebut telah banyak diusulkan, sebagian besar penelitian berfokus pada domain umum seperti hukum perpajakan, keuangan, atau regulasi privasi, serta cenderung mengembangkan arsitektur yang semakin kompleks tanpa mengevaluasi secara sistematis kontribusi masing-masing komponen. Berdasarkan Tabel~\ref{tab:tinjauan_pustaka}, tiga parameter kunci yang masih memerlukan eksplorasi lebih lanjut adalah: (1)~bobot $\alpha$ dense:sparse pada tahap \textit{hybrid retrieval}, yang hanya dievaluasi oleh Rustamov et al. dengan variasi terbatas pada domain hukum pajak; (2)~ukuran \textit{candidate pool} ($k$) yang menentukan jumlah kandidat sebelum \textit{reranking}, yang hanya diteliti oleh Rustamov et al. dan Ravishankar-Varalakshmi; serta (3)~bobot $\alpha$ hybrid:reranker pada tahap fusi skor akhir, yang hanya dievaluasi oleh Ravishankar-Varalakshmi pada domain keuangan. Ketiga parameter tersebut belum pernah dievaluasi secara sekuensial maupun pada domain keamanan informasi. Oleh karena itu, penelitian ini mengusulkan analisis komparatif terhadap ketiga parameter tersebut secara sekuensial pada domain ISO/IEC 27001:2022, untuk mengidentifikasi \textit{trade-off} antara peningkatan performa dan kompleksitas, serta menentukan konfigurasi yang paling optimal.
 
 \section{Dasar Teori}
 
