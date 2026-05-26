@@ -344,27 +344,26 @@ Seluruh metrik evaluasi menghasilkan $p$-\textit{value} di bawah ambang batas si
 
 \subsection{Analisis Karakteristik \textit{Query} pada Perbedaan Performa \textit{Hybrid Retrieval} dan \textit{Cross-Encoder}}
 
-Temuan pada Subbab~4.4.1 memperlihatkan bahwa secara agregat, peningkatan bobot \textit{cross-encoder} justru memperburuk performa \textit{hybrid retrieval}. Meskipun demikian, konfigurasi dominan \textit{hybrid} (0{,}75:0{,}25) tetap sedikit mengungguli \textit{hybrid} independen, yang mengindikasikan bahwa \textit{cross-encoder} memberikan nilai tambah pada sejumlah \textit{query} tertentu. Untuk memahami kondisi spesifik yang menentukan kapan masing-masing komponen unggul, dilakukan analisis perbandingan langsung antara \textit{hybrid} independen (1{,}00:0{,}00) dan \textit{cross-encoder} independen (0{,}00:1{,}00) pada tingkat individual per \textit{query} menggunakan metrik NDCG@3. Tabel~\ref{tbl:433_winner_distribution} merangkum distribusi \textit{query} berdasarkan komponen pemenang.
+Temuan pada Subbab~4.4.1 memperlihatkan bahwa secara agregat, peningkatan bobot \textit{cross-encoder} justru memperburuk performa \textit{hybrid retrieval}. Meskipun demikian, konfigurasi dominan \textit{hybrid} (0{,}75:0{,}25) tetap sedikit mengungguli \textit{hybrid} independen, yang mengindikasikan bahwa \textit{cross-encoder} memberikan nilai tambah pada sejumlah \textit{query} tertentu. Untuk memahami kondisi spesifik yang menentukan kapan masing-masing komponen unggul, dilakukan analisis perbandingan langsung antara \textit{hybrid} independen (1{,}00:0{,}00) dan \textit{cross-encoder} independen (0{,}00:1{,}00) pada tingkat individual per \textit{query} menggunakan seluruh empat metrik evaluasi. Tabel~\ref{tbl:433_winner_distribution} merangkum distribusi \textit{query} berdasarkan komponen pemenang untuk setiap metrik.
 
 \begin{table}[H]
 	\centering
-	\caption{Distribusi \textit{query} berdasarkan komponen pemenang (\textit{hybrid} independen vs.\ \textit{CE} independen, NDCG@3)}
+	\caption{Distribusi \textit{query} berdasarkan komponen pemenang (\textit{hybrid} independen vs.\ \textit{CE} independen)}
 	\label{tbl:433_winner_distribution}
 	\small
-	\begin{tabular}{lcc}
+	\begin{tabular}{lccc}
 		\toprule
-		Kategori & Jumlah \textit{Query} & Proporsi \\
+		Metrik & \textit{Hybrid} Unggul & \textit{CE} Unggul & Seri \\
 		\midrule
-		\textit{Hybrid} independen lebih baik & 36 & 46{,}8\% \\
-		Performa sama & 26 & 33{,}8\% \\
-		\textit{CE} independen lebih baik & 15 & 19{,}5\% \\
-		\midrule
-		\textbf{Total} & \textbf{77} & \textbf{100\%} \\
+		Hit@3 & 8 (10{,}4\%) & 2 (2{,}6\%) & 67 (87{,}0\%) \\
+		Recall@3 & 24 (31{,}2\%) & 8 (10{,}4\%) & 45 (58{,}4\%) \\
+		NDCG@3 & 36 (46{,}8\%) & 15 (19{,}5\%) & 26 (33{,}8\%) \\
+		MAP@3 & 36 (46{,}8\%) & 15 (19{,}5\%) & 26 (33{,}8\%) \\
 		\bottomrule
 	\end{tabular}
 \end{table}
 
-Dari 77 \textit{query} yang diuji, \textit{hybrid retrieval} independen mengungguli \textit{CE} independen pada 36 \textit{query} (46{,}8\%), sementara \textit{CE} independen hanya unggul pada 15 \textit{query} (19{,}5\%). Sisanya, 26 \textit{query} (33{,}8\%), menunjukkan performa yang sama. Dominasi \textit{hybrid retrieval} ini konsisten dengan temuan agregat pada Subbab~4.4.1, namun keberadaan 15 \textit{query} di mana \textit{CE} unggul menjadi justifikasi penting bagi pemberian bobot kecil pada \textit{cross-encoder} dalam konfigurasi \textit{score fusion} optimal. Berikut dianalisis karakteristik \textit{query} pada masing-masing kelompok, dikelompokkan berdasarkan komponen yang unggul.
+Dari 77 \textit{query} yang diuji, Tabel~\ref{tbl:433_winner_distribution} memperlihatkan bahwa \textit{hybrid retrieval} independen secara konsisten mengungguli \textit{CE} independen pada seluruh metrik. Pada Hit@3, yang bersifat biner, terdapat 67 \textit{query} (87{,}0\%) dengan performa sama, menunjukkan bahwa mayoritas \textit{query} berhasil atau gagal menemukan minimal satu dokumen relevan oleh kedua komponen. Recall@3 lebih diskriminatif dengan 45 \textit{query} seri (58{,}4\%), karena metrik ini mengukur proporsi \textit{ground truth} yang ditemukan. NDCG@3 dan MAP@3 menunjukkan distribusi identik, \textit{hybrid} unggul pada 36 \textit{query} (46{,}8\%), \textit{CE} unggul pada 15 \textit{query} (19{,}5\%), dan 26 \textit{query} seri (33{,}8\%), karena kedua metrik sama-sama mengukur kualitas peringkat pada top-3, meskipun dengan formulasi yang berbeda. Dominasi \textit{hybrid retrieval} ini konsisten dengan temuan agregat pada Subbab~4.4.1, namun keberadaan 15 \textit{query} di mana \textit{CE} unggul pada NDCG@3 dan MAP@3 menjadi justifikasi penting bagi pemberian bobot kecil pada \textit{cross-encoder} dalam konfigurasi \textit{score fusion} optimal. Berikut dianalisis karakteristik \textit{query} pada masing-masing kelompok, dikelompokkan berdasarkan komponen yang unggul menurut NDCG@3.
 
 \subsubsection{Analisis Keunggulan \textit{Reranker Cross-Encoder}}
 
@@ -431,7 +430,7 @@ Merupakan pola terbesar dengan 22 \textit{query}, di mana \textit{query} menyebu
 	\item Q67: ``Standar Keamanan \textbf{Database Server}: akses dan Hak Istimewa: a) akun \textbf{DBA} hanya diberikan kepada personel resmi; b) dilarang adanya penggunaan akun \textbf{shared account}; dan c) aplikasi terhubung ke database menggunakan akun dengan \textbf{hak minimal}, bukan akun administrator.'' Terminologi teknis \textbf{Database Server}, akun \textbf{DBA}, \textbf{shared account}, dan \textbf{hak minimal} berkaitan semantik dengan hak akses istimewa (A.8.2), yang secara eksplisit membahas pengendalian akses administrator dan hak akses istimewa, serta hak akses pengguna (A.5.18) yang membahas pemberian dan peninjauan hak akses.
 \end{itemize}
 
-Secara keseluruhan, performa \textit{cross-encoder} independen lebih rendah dibandingkan \textit{hybrid retrieval} independen pada seluruh metrik. Sebagai pembanding langsung, dari 77 \textit{query} yang diuji, \textit{cross-encoder} independen hanya unggul pada 15 \textit{query}, sementara 36 \textit{query} justru mengalami penurunan. Meskipun demikian, pada 15 \textit{query} tersebut, \textit{cross-encoder} berhasil menempatkan dokumen relevan pada posisi yang lebih tinggi, terutama pada \textit{query} yang membutuhkan pemahaman kontekstual yang lebih dalam (Subbab~4.4.3.1 Pola~1, 2, dan 3). Hal ini menjadi justifikasi bahwa komponen \textit{cross-encoder} tetap relevan sebagai pelengkap, meskipun kontribusinya harus dibatasi melalui bobot yang kecil (0{,}25) agar tidak mengganggu kualitas \textit{hybrid retrieval} yang sudah baik.
+Secara keseluruhan, performa \textit{cross-encoder} independen lebih rendah dibandingkan \textit{hybrid retrieval} independen pada seluruh metrik. Sebagai pembanding langsung, dari 77 \textit{query} yang diuji, \textit{cross-encoder} independen hanya unggul pada 15 \textit{query} (NDCG@3 dan MAP@3), sementara 36 \textit{query} justru mengalami penurunan. Pada Hit@3, diskriminasi paling rendah dengan hanya 2 \textit{query} di mana \textit{CE} unggul dan 67 \textit{query} seri, sedangkan Recall@3 menunjukkan \textit{CE} unggul pada 8 \textit{query}. Meskipun demikian, pada 15 \textit{query} tersebut (NDCG@3/MAP@3), \textit{cross-encoder} berhasil menempatkan dokumen relevan pada posisi yang lebih tinggi, terutama pada \textit{query} yang membutuhkan pemahaman kontekstual yang lebih dalam (Subbab~4.4.3.1 Pola~1, 2, dan 3). Hal ini menjadi justifikasi bahwa komponen \textit{cross-encoder} tetap relevan sebagai pelengkap, meskipun kontribusinya harus dibatasi melalui bobot yang kecil (0{,}25) agar tidak mengganggu kualitas \textit{hybrid retrieval} yang sudah baik.
 
 \subsection{Kesimpulan Komposisi \textit{Score Fusion}}
 
