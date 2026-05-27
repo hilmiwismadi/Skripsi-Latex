@@ -222,6 +222,29 @@ class HybridRetriever:
         return {"hybrid_results": hybrid_results}
 \end{lstlisting}
 
+\subsubsection{Algoritma Hybrid Retrieval}
+
+Algoritma berikut merupakan pseudocode dari proses fusi skor \textit{dense} dan \textit{sparse} menggunakan normalisasi \textit{min-max} dan \textit{weighted sum}, yang diimplementasikan pada \texttt{hybrid/hybrid\_retriever.py}.
+
+\begin{algorithm}[H]
+\caption{Hybrid Retrieval Score Fusion}
+\label{alg:hybrid_retrieval}
+\begin{algorithmic}[1]
+\Require \textit{Query} $q$, matriks \textit{embedding} dokumen $\mathbf{E} \in \mathbb{R}^{N \times d}$, indeks BM25, bobot $w_{\textit{dense}}$, $w_{\textit{sparse}}$, jumlah hasil $k$
+\Ensure Daftar $k$ dokumen teratas beserta skor
+\State $\mathbf{q} \gets \mathit{encode}(q)$ \Comment{Encode query ke vektor 384-dim, L2-normalize}
+\State $\mathit{dense\_scores} \gets \mathbf{E} \cdot \mathbf{q}$ \Comment{Dot product = cosine similarity (vektor ternormalisasi)}
+\State $\mathit{sparse\_scores} \gets \mathit{BM25}(q)$ \Comment{Skor BM25 untuk seluruh dokumen}
+\State $\mathit{dense\_norm}_i \gets \frac{\mathit{dense\_scores}_i - \min(\mathit{dense\_scores})}{\max(\mathit{dense\_scores}) - \min(\mathit{dense\_scores})}$ \Comment{Min-max normalisasi}
+\State $\mathit{sparse\_norm}_i \gets \frac{\mathit{sparse\_scores}_i - \min(\mathit{sparse\_scores})}{\max(\mathit{sparse\_scores}) - \min(\mathit{sparse\_scores})}$
+\For{$i = 1$ \textbf{to} $N$}
+    \State $\mathit{hybrid\_scores}_i \gets w_{\textit{dense}} \cdot \mathit{dense\_norm}_i + w_{\textit{sparse}} \cdot \mathit{sparse\_norm}_i$
+\EndFor
+\State $\mathit{top\_k} \gets$ indeks $k$ dokumen dengan $\mathit{hybrid\_scores}$ tertinggi
+\State \Return $\mathit{top\_k}$ beserta $\mathit{dense\_scores}$, $\mathit{sparse\_scores}$, $\mathit{hybrid\_scores}$
+\end{algorithmic}
+\end{algorithm}
+
 \subsection{Cross-Encoder Reranker (\texttt{reranking/cross\_encoder\_reranker.py})}
 
 Fungsi-fungsi berikut menangani pembentukan pasangan \textit{query}--dokumen, penghitungan skor \textit{cross-encoder}, normalisasi, dan fusi skor dengan \textit{hybrid score}, sesuai tahap \textit{Cross-Encoder Reranking} pada Subbab~3.2.4.2.
@@ -307,6 +330,31 @@ def rerank_documents(
     return ranked
 \end{lstlisting}
 
+\subsubsection{Algoritma Cross-Encoder Reranking}
+
+Algoritma berikut merupakan pseudocode dari proses \textit{reranking} menggunakan \textit{cross-encoder} dan fusi skor dengan \textit{hybrid score}, yang diimplementasikan pada \texttt{reranking/cross\_encoder\_reranker.py}.
+
+\begin{algorithm}[H]
+\caption{Cross-Encoder Reranking with Score Fusion}
+\label{alg:cross_encoder_reranking}
+\begin{algorithmic}[1]
+\Require \textit{Query} $q$, daftar kandidat $C = \{c_1, c_2, \ldots, c_m\}$ beserta $\mathit{hybrid\_score}_i$, bobot $\alpha$, jumlah hasil $\mathit{top\_n}$
+\Ensure Daftar $\mathit{top\_n}$ dokumen terurut berdasarkan \textit{combined score}
+\For{$i = 1$ \textbf{to} $m$}
+    \State $\mathit{text}_i \gets \mathit{to\_rerank\_text}(c_i)$ \Comment{Konversi dokumen ke teks untuk CE}
+    \State $\mathit{pair}_i \gets (q, \mathit{text}_i)$
+\EndFor
+\State $\mathit{ce\_scores} \gets \mathit{CrossEncoder}.\mathit{predict}(\mathit{pair}_1, \ldots, \mathit{pair}_m)$
+\State $\mathit{ce\_norm}_i \gets \frac{\mathit{ce\_scores}_i - \min(\mathit{ce\_scores})}{\max(\mathit{ce\_scores}) - \min(\mathit{ce\_scores})}$ \Comment{Min-max normalisasi}
+\State $\mathit{hybrid\_norm}_i \gets \frac{\mathit{hybrid\_score}_i - \min(\mathit{hybrid\_score})}{\max(\mathit{hybrid\_score}) - \min(\mathit{hybrid\_score})}$
+\For{$i = 1$ \textbf{to} $m$}
+    \State $\mathit{combined}_i \gets \alpha \cdot \mathit{ce\_norm}_i + (1 - \alpha) \cdot \mathit{hybrid\_norm}_i$
+\EndFor
+\State Urutkan $C$ berdasarkan $\mathit{combined}$ secara menurun
+\State \Return $\mathit{top\_n}$ dokumen pertama beserta $\mathit{ce\_scores}$ dan $\mathit{combined}$
+\end{algorithmic}
+\end{algorithm}
+
 \subsection{Perhitungan Metrik Evaluasi (\texttt{app/app.py})}
 
 Fungsi berikut menghitung metrik evaluasi yang digunakan pada penelitian ini, yaitu Hit@$k$, Recall@$k$, MAP@$k$, dan NDCG@$k$. Fungsi ini menerima daftar \textit{control ID} hasil \textit{retrieval} dan daftar \textit{control ID} \textit{ground truth} sebagai masukan.
@@ -357,3 +405,49 @@ def compute_metrics(predicted_ids: list[str],
     return {"hit": hit, "recall": recall,
             "map": map_score, "ndcg": ndcg}
 \end{lstlisting}
+
+\subsubsection{Algoritma Perhitungan Metrik Evaluasi}
+
+Algoritma berikut merupakan pseudocode dari perhitungan metrik evaluasi Hit@$k$, Recall@$k$, MAP@$k$, dan NDCG@$k$ yang diimplementasikan pada \texttt{app/app.py}.
+
+\begin{algorithm}[H]
+\caption{Perhitungan Metrik Evaluasi (Hit, Recall, MAP, NDCG)}
+\label{alg:compute_metrics}
+\begin{algorithmic}[1]
+\Require Daftar prediksi $\mathit{pred} = [p_1, p_2, \ldots, p_k]$, daftar \textit{ground truth} $\mathit{gt} = [g_1, g_2, \ldots, g_{|\mathit{gt}|}]$, parameter $k$
+\Ensure $\mathit{Hit}@k$, $\mathit{Recall}@k$, $\mathit{MAP}@k$, $\mathit{NDCG}@k$
+\State $\mathit{hit\_count} \gets 0$ \Comment{Jumlah item relevan yang ditemukan}
+\State $\mathit{seen} \gets \emptyset$
+\For{$i = 1$ \textbf{to} $k$}
+    \If{$p_i \in \mathit{gt} \ \mathbf{and} \ p_i \notin \mathit{seen}$}
+        \State $\mathit{hit\_count} \gets \mathit{hit\_count} + 1$
+        \State $\mathit{seen} \gets \mathit{seen} \cup \{p_i\}$
+    \EndIf
+\EndFor
+\State $\mathit{Hit}@k \gets \begin{cases} 1 & \text{jika } \mathit{hit\_count} > 0 \\ 0 & \text{jika tidak} \end{cases}$
+\State $\mathit{Recall}@k \gets \dfrac{\mathit{hit\_count}}{|\mathit{gt}|}$
+\State \Comment{Perhitungan MAP@$k$}
+\State $\mathit{cum\_hits} \gets 0$; $\mathit{prec\_sum} \gets 0$
+\For{$i = 1$ \textbf{to} $k$}
+    \If{$p_i \in \mathit{gt}$}
+        \State $\mathit{cum\_hits} \gets \mathit{cum\_hits} + 1$
+        \State $\mathit{prec\_sum} \gets \mathit{prec\_sum} + \dfrac{\mathit{cum\_hits}}{i}$ \Comment{Precision pada posisi ke-$i$}
+    \EndIf
+\EndFor
+\State $\mathit{MAP}@k \gets \dfrac{\mathit{prec\_sum}}{|\mathit{gt}|}$
+\State \Comment{Perhitungan NDCG@$k$}
+\State $\mathit{DCG} \gets 0$
+\For{$i = 1$ \textbf{to} $k$}
+    \If{$p_i \in \mathit{gt}$}
+        \State $\mathit{DCG} \gets \mathit{DCG} + \dfrac{1}{\log_2(i + 1)}$ \Comment{Relensi biner: $\mathit{rel} = 1$}
+    \EndIf
+\EndFor
+\State $\mathit{ideal\_hits} \gets \min(|\mathit{gt}|, k)$
+\State $\mathit{IDCG} \gets 0$
+\For{$r = 1$ \textbf{to} $\mathit{ideal\_hits}$}
+    \State $\mathit{IDCG} \gets \mathit{IDCG} + \dfrac{1}{\log_2(r + 1)}$
+\EndFor
+\State $\mathit{NDCG}@k \gets \begin{cases} \dfrac{\mathit{DCG}}{\mathit{IDCG}} & \text{jika } \mathit{IDCG} > 0 \\ 0 & \text{jika tidak} \end{cases}$
+\State \Return $\mathit{Hit}@k$, $\mathit{Recall}@k$, $\mathit{MAP}@k$, $\mathit{NDCG}@k$
+\end{algorithmic}
+\end{algorithm}
