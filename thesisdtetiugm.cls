@@ -413,12 +413,11 @@
 				\iftoggle{lang}{Pada tanggal $\ldots\ldots$}{on $\ldots\ldots$}\\
 				\vfill
 				\begin{center}
-					\begin{tabular}{ccc}
-						\iftoggle{lang}{Dosen Pembimbing I}{Supervisor I} &\hspace{2cm} & \iftoggle{lang}{Dosen Pembimbing II}{Supervisor II} \\
-						\vspace{0.3cm} & \vspace{0.3cm} & \vspace{0.3cm}\\
-						\textbf{\underline{\scalebox{.7}[1.0]{\getsupervisor{1}{1}}}}& &
-					              \textbf{\underline{\scalebox{.7}[1.0]{\getsupervisor{2}{1}}}} \\
-						\textbf{\getsupervisor{1}{2}} & & \textbf{\getsupervisor{2}{2}}\\
+					\begin{tabular}{c}
+						\iftoggle{lang}{Dosen Pembimbing}{Supervisor} \\
+						\vspace{0.3cm} \\
+						\textbf{\underline{\scalebox{.7}[1.0]{\getsupervisor{1}{1}}}} \\
+						\textbf{\getsupervisor{1}{2}}\\
 					\end{tabular}
 				\end{center}
 			\end{singlespacing}

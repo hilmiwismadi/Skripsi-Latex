@@ -1,0 +1,43 @@
+\chapter*{LAMPIRAN}
+
+\section{Uji Variasi Kombinatorik Parameter \textit{Candidate Pool} dengan Variasi Parameter \textit{Hybrid}}
+
+Tabel berikut menyajikan hasil evaluasi \textit{cross-encoder reranking} pada setiap kombinasi parameter \textit{candidate pool} ($|$CP$|$) dan rasio pembobotan \textit{dense}--\textit{sparse} ($\alpha_\text{dense} : \alpha_\text{sparse}$). Metrik yang dilaporkan adalah Hit@3, Recall@3, MAP@3, dan NDCG@3 pada tahap \textit{reranking}, serta rata-rata waktu latensi total per \textit{query}. Nilai terbaik pada setiap kolom metrik evaluasi dicetak tebal, sedangkan waktu latensi terendah dicetak tebal.
+
+\begin{table}[H]
+	\centering
+	\caption{Hasil evaluasi \textit{reranking} pada variasi kombinatorik parameter \textit{candidate pool} dan \textit{hybrid}}
+	\label{tbl:appendix_combinatorial}
+	\small
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{llcccccc}
+		\toprule
+		$\alpha_\text{dense} : \alpha_\text{sparse}$ & CP & Hit@3 & Recall@3 & MAP@3 & NDCG@3 & Waktu (s) \\
+		\midrule
+		1{,}00 : 0{,}00 & 5  & 0{,}636 & 0{,}333 & 0{,}299 & 0{,}367 & 6{,}10 \\
+		1{,}00 : 0{,}00 & 10 & 0{,}675 & 0{,}368 & 0{,}328 & \textbf{0{,}400} & 8{,}44 \\
+		1{,}00 : 0{,}00 & 15 & \textbf{0{,}688} & \textbf{0{,}364} & 0{,}315 & 0{,}391 & 17{,}45 \\
+		1{,}00 : 0{,}00 & 20 & 0{,}662 & 0{,}355 & 0{,}312 & 0{,}386 & 17{,}07 \\
+		\midrule
+		0{,}75 : 0{,}25 & 5  & \textbf{0{,}792} & \textbf{0{,}442} & \textbf{0{,}382} & \textbf{0{,}465} & \textbf{4{,}07} \\
+		0{,}75 : 0{,}25 & 10 & 0{,}727 & 0{,}385 & 0{,}341 & 0{,}418 & 7{,}90 \\
+		0{,}75 : 0{,}25 & 15 & 0{,}688 & 0{,}381 & 0{,}333 & 0{,}409 & 12{,}27 \\
+		0{,}75 : 0{,}25 & 20 & 0{,}701 & 0{,}385 & 0{,}335 & 0{,}413 & 15{,}85 \\
+		\midrule
+		0{,}50 : 0{,}50 & 5  & \textbf{0{,}857} & \textbf{0{,}468} & \textbf{0{,}387} & \textbf{0{,}485} & 9{,}01 \\
+		0{,}50 : 0{,}50 & 10 & 0{,}753 & 0{,}424 & 0{,}372 & 0{,}451 & 43{,}28 \\
+		0{,}50 : 0{,}50 & 15 & 0{,}701 & 0{,}394 & 0{,}343 & 0{,}418 & 18{,}95 \\
+		0{,}50 : 0{,}50 & 20 & 0{,}688 & 0{,}377 & 0{,}328 & 0{,}405 & 25{,}61 \\
+		\midrule
+		0{,}25 : 0{,}75 & 5  & \textbf{0{,}831} & \textbf{0{,}463} & \textbf{0{,}394} & \textbf{0{,}485} & \textbf{3{,}22} \\
+		0{,}25 : 0{,}75 & 10 & 0{,}792 & 0{,}411 & 0{,}348 & 0{,}437 & 8{,}45 \\
+		0{,}25 : 0{,}75 & 15 & 0{,}779 & 0{,}411 & 0{,}348 & 0{,}435 & 12{,}99 \\
+		0{,}25 : 0{,}75 & 20 & 0{,}714 & 0{,}394 & 0{,}345 & 0{,}422 & 18{,}16 \\
+		\midrule
+		0{,}00 : 1{,}00 & 5  & \textbf{0{,}857} & \textbf{0{,}429} & \textbf{0{,}366} & \textbf{0{,}465} & \textbf{3{,}56} \\
+		0{,}00 : 1{,}00 & 10 & 0{,}818 & 0{,}411 & 0{,}338 & 0{,}434 & 7{,}97 \\
+		0{,}00 : 1{,}00 & 15 & 0{,}766 & 0{,}390 & 0{,}331 & 0{,}416 & 13{,}77 \\
+		0{,}00 : 1{,}00 & 20 & 0{,}740 & 0{,}390 & 0{,}335 & 0{,}417 & 26{,}75 \\
+		\bottomrule
+	\end{tabular}
+\end{table}

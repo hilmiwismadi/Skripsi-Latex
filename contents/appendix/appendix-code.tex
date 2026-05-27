@@ -122,6 +122,35 @@ class BM25Retriever:
         return scores
 \end{lstlisting}
 
+\subsubsection{Algoritma Okapi BM25}
+
+Algoritma berikut merupakan pseudocode dari metode Okapi BM25 yang diimplementasikan pada \texttt{sparse/bm25.py}. Rumus IDF yang digunakan mengadopsi varian $\log(1 + x)$ untuk menghindari nilai IDF negatif.
+
+\begin{algorithm}[H]
+\caption{Okapi BM25 Scoring}
+\label{alg:bm25}
+\begin{algorithmic}[1]
+\Require Korpus $D = \{d_1, d_2, \ldots, d_N\}$, \textit{query} $q$, parameter $k_1 = 1{,}5$, $b = 0{,}75$
+\Ensure Daftar skor BM25 $\mathit{score}(d_i)$ untuk setiap dokumen $d_i$
+\State $\mathit{avgdl} \gets \frac{1}{N} \sum_{i=1}^{N} |d_i|$ \Comment{Rata-rata panjang dokumen}
+\For{setiap \textit{term} $t$ dalam korpus}
+    \State $\mathit{df}(t) \gets |\{d_i \in D : t \in d_i\}|$ \Comment{Document frequency}
+    \State $\mathit{IDF}(t) \gets \log\left(1 + \frac{N - \mathit{df}(t) + 0{,}5}{\mathit{df}(t) + 0{,}5}\right)$
+\EndFor
+\For{setiap dokumen $d_i$ dalam korpus}
+    \State $\mathit{score}(d_i) \gets 0$
+    \For{setiap \textit{term} $t$ dalam $q$}
+        \If{$t \in d_i$}
+            \State $\mathit{tf}(t, d_i) \gets$ frekuensi kemunculan $t$ pada $d_i$
+            \State $\mathit{norm}_i \gets k_1 \cdot \left(1 - b + b \cdot \frac{|d_i|}{\mathit{avgdl}}\right)$
+            \State $\mathit{score}(d_i) \gets \mathit{score}(d_i) + \mathit{IDF}(t) \cdot \frac{\mathit{tf}(t, d_i) \cdot (k_1 + 1)}{\mathit{tf}(t, d_i) + \mathit{norm}_i}$
+        \EndIf
+    \EndFor
+\EndFor
+\State \Return $\mathit{score}(d_1), \mathit{score}(d_2), \ldots, \mathit{score}(d_N)$
+\end{algorithmic}
+\end{algorithm}
+
 \subsection{Hybrid Retriever (\texttt{hybrid/hybrid\_retriever.py})}
 
 Kelas berikut mengorkestrasi penggabungan skor \textit{dense} dan \textit{sparse} menjadi \textit{hybrid score}, sesuai tahap Pemrosesan \textit{Scoring} pada Subbab~3.2.4.1.

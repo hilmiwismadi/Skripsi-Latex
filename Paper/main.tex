@@ -15,20 +15,20 @@
 
 \begin{document}
 
-\title{Hybrid Retrieval and Cross-Encoder Reranking for ISO/IEC 27001:2022 SoA Control Mapping}
+\title{Design and Evaluation of Information Retrieval Methods for Statement of Applicability Mapping of ISO/IEC 27001:2022 Annex A.5--A.8}
 
 \author{
   \IEEEauthorblockN{Muhammad Hilmi Dzaki Wismadi}
   \IEEEauthorblockA{\textit{Department of Electrical and Information Engineering}\\
-    Universitas Gadjah Mada\\
+    \textit{Universitas Gadjah Mada}\\
     Yogyakarta, Indonesia\\
     muhammadhilmidzakiwismadi@mail.ugm.ac.id}
   \and
-  \IEEEauthorblockN{Ir.\ Sujoko Sumaryono, M.T.}
+  \IEEEauthorblockN{Dani Adhipta, S.Si., M.T.}
   \IEEEauthorblockA{\textit{Department of Electrical and Information Engineering}\\
-    Universitas Gadjah Mada\\
+    \textit{Universitas Gadjah Mada}\\
     Yogyakarta, Indonesia\\
-    sujoko@ugm.ac.id}
+    dani@ugm.ac.id}
 }
 
 \maketitle
@@ -276,13 +276,13 @@ applied to assess statistical significance across configurations, using
 \small
 \begin{tabular}{lcccc}
 \toprule
-Configuration & Hit@3 & Recall@3 & MAP@3 & NDCG@3 \\
+Dense:Sparse & Hit@3 & Recall@3 & MAP@3 & NDCG@3 \\
 \midrule
-Dense 0.00 : Sparse 1.00 & 0.961 & 0.485 & 0.407 & 0.525 \\
-Dense 0.25 : Sparse 0.75 & 0.948 & 0.506 & 0.437 & 0.549 \\
-\textbf{Dense 0.50 : Sparse 0.50} & \textbf{0.935} & \textbf{0.537} & \textbf{0.467} & \textbf{0.575} \\
-Dense 0.75 : Sparse 0.25 & 0.831 & 0.468 & 0.417 & 0.511 \\
-Dense 1.00 : Sparse 0.00 & 0.649 & 0.307 & 0.256 & 0.336 \\
+0.00:1.00 & \textbf{0.961} & 0.485 & 0.407 & 0.525 \\
+0.25:0.75 & 0.948 & 0.506 & 0.437 & 0.549 \\
+\textbf{0.50:0.50} & 0.935 & \textbf{0.537} & \textbf{0.467} & \textbf{0.575} \\
+0.75:0.25 & 0.831 & 0.468 & 0.417 & 0.511 \\
+1.00:0.00 & 0.649 & 0.307 & 0.256 & 0.336 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -372,13 +372,13 @@ MAP      & 25.776 & 0.000011 \\
 \small
 \begin{tabular}{lcccc}
 \toprule
-Config (Hybrid:CE) & Hit@3 & Recall@3 & MAP@3 & NDCG@3 \\
+Hybrid:CE & Hit@3 & Recall@3 & MAP@3 & NDCG@3 \\
 \midrule
-1.00 : 0.00 & 0.935 & 0.537 & 0.467 & 0.575 \\
-\textbf{0.75 : 0.25} & \textbf{0.935} & \textbf{0.541} & \textbf{0.470} & \textbf{0.579} \\
-0.50 : 0.50 & 0.896 & 0.528 & 0.452 & 0.553 \\
-0.25 : 0.75 & 0.883 & 0.502 & 0.418 & 0.519 \\
-0.00 : 1.00 & 0.857 & 0.469 & 0.387 & 0.485 \\
+\textbf{1.00:0.00} & \textbf{0.935} & 0.537 & 0.467 & 0.575 \\
+\textbf{0.75:0.25} & \textbf{0.935} & \textbf{0.541} & \textbf{0.470} & \textbf{0.579} \\
+0.50:0.50 & 0.896 & 0.528 & 0.452 & 0.553 \\
+0.25:0.75 & 0.883 & 0.502 & 0.418 & 0.519 \\
+0.00:1.00 & 0.857 & 0.469 & 0.387 & 0.485 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -400,10 +400,10 @@ weight increases, confirms that hybrid retrieval should dominate.
 \toprule
 Metric & $\chi^2$ & $p$-value \\
 \midrule
-Hit Rate & 10.462 & \textbf{0.033} \\
-Recall   & 21.245 & \textbf{$< 0.001$} \\
-NDCG     & 29.639 & \textbf{$< 0.001$} \\
-MAP      & 28.952 & \textbf{$< 0.001$} \\
+		Hit@3    & 10.462 & $0.033$       \\
+		Recall@3      & 21.245 & $0.000283$    \\
+		NDCG@3        & 29.639 & $0.000006$    \\
+		MAP@3         & 28.952 & $0.000008$    \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -417,18 +417,17 @@ metrics (NDCG, MAP@3) show the strongest effect ($p < 0.001$).
 
 \begin{table}[!h]
 \centering
-\caption{Query distribution by winning component (NDCG@3)}
+\caption{Query distribution by winning component across metrics}
 \label{tab:winner}
 \small
-\begin{tabular}{lcc}
+\begin{tabular}{lccc}
 \toprule
-Category & Queries & Proportion \\
+Metric & Hybrid Superior & CE Superior & Tied \\
 \midrule
-Hybrid retrieval superior & 36 & 46.8\% \\
-Tied performance & 26 & 33.8\% \\
-Cross-encoder superior & 15 & 19.5\% \\
-\midrule
-\textbf{Total} & \textbf{77} & \textbf{100\%} \\
+Hit@3    & 8 (10.4\%)  & 2 (2.6\%)  & 67 (87.0\%) \\
+Recall@3 & 24 (31.2\%) & 8 (10.4\%) & 45 (58.4\%) \\
+NDCG@3   & 36 (46.8\%) & 15 (19.5\%) & 26 (33.8\%) \\
+MAP@3    & 36 (46.8\%) & 15 (19.5\%) & 26 (33.8\%) \\
 \bottomrule
 \end{tabular}
 \end{table}
