@@ -35,7 +35,7 @@ Berbeda dengan penelitian yang berfokus pada domain tertentu, (Elkiran-Rasheed.,
 \textbf{Paper} & \textbf{Domain} & \textbf{Retrieval} & \textbf{Reranking} & \textbf{Parameter} & \textbf{Metrik} \\
 \hline
 (Liu et al., 2025) &
-Audit &
+Audit Hukum&
 Hybrid (BM25 + dense BGE) &
 \textit{Weighted} RRF &
 Pembobotan RRF multi-jalur; Ablasi metode \textit{retrieval} &
@@ -757,7 +757,7 @@ Model leksikal yang kuat untuk pencocokan istilah eksplisit dan menjadi dasar um
 Tidak menangkap hubungan semantik secara langsung karena berbasis pencocokan istilah; sensitif terhadap variasi kata, sinonim, dan parafrasa \\
 \hline
 SPLADE &
-Menghasilkan representasi \textit{sparse} berbasis Transformer dan ekspansi kosakata sehingga dapat menangkap sinyal leksikal yang lebih kaya dibanding pencocokan kata kunci murni \cite{formal2021splade} &
+Menghasilkan representasi \textit{sparse} berbasis Transformer dan ekspansi kosakata sehingga dapat menangkap kecocokan leksikal yang lebih kaya dibanding pencocokan kata kunci murni \cite{formal2021splade} &
 Lebih kompleks secara komputasi dibanding BM25 karena membutuhkan model neural untuk menghasilkan representasi \textit{sparse}; pada studi hukum pajak, SPLADE tidak mengungguli BM25 \cite{rustamov2025tax} \\
 \hline
 \end{tabular}
@@ -783,7 +783,7 @@ Lebih jarang digunakan sebagai konfigurasi standar dibanding BM25 dan membutuhka
 \end{tabular}
 \end{table}
 
-Berdasarkan perbandingan pada Tabel~\ref{tab:perbandingan_sparse} dan Tabel~\ref{tab:perbandingan_sparse_lanjutan}, BM25 merupakan pilihan yang paling sesuai sebagai komponen \textit{sparse retrieval}. Pada studi sistem tanya jawab hukum perpajakan, Rustamov et al.~\cite{rustamov2025tax} secara eksplisit menunjukkan bahwa BM25 mengungguli SPLADE sehingga dipilih sebagai komponen \textit{sparse} dalam strategi \textit{hybrid retrieval}. Hiremath et al.~\cite{hiremath2025ragclin} mengonfirmasi superioritas BM25 dalam sistem RAG klinis. Meskipun demikian, SPLADE tetap menjadi alternatif yang menarik karena kemampuannya menangkap sinyal leksikal yang lebih kaya melalui ekspansi kosakata berbasis \textit{Transformer}~\cite{formal2021splade}, namun kompleksitas komputasinya lebih tinggi dan tidak terbukti mengungguli BM25 pada domain regulasi~\cite{rustamov2025tax}. TF-IDF tidak dipilih karena tidak memiliki normalisasi panjang dokumen dan formulasi probabilistik seperti BM25, sehingga umumnya hanya digunakan sebagai \textit{baseline} yang lebih sederhana~\cite{salton1988term,robertson2009probabilistic}. Varian BM25L dan BM25+ memang menawarkan normalisasi frekuensi istilah yang lebih baik untuk dokumen dengan variasi panjang~\cite{lv2011lowerbound}, namun keduanya lebih jarang digunakan sebagai konfigurasi standar dibanding BM25 dan membutuhkan penyesuaian tambahan terhadap parameter normalisasi. Keunggulan BM25 pada domain regulasi dapat dijelaskan oleh karakteristik terminologi yang eksplisit dan konsisten pada kontrol ISO/IEC 27001:2022, misalnya \textit{access control}, \textit{incident management}, dan \textit{logging}. Karakteristik tersebut memungkinkan pencocokan leksikal bekerja secara efektif, sehingga ketersediaan implementasi BM25 yang luas dan stabilitasnya pada berbagai \textit{benchmark} menjadikannya pilihan yang paling tepat.
+Berdasarkan perbandingan pada Tabel~\ref{tab:perbandingan_sparse} dan Tabel~\ref{tab:perbandingan_sparse_lanjutan}, BM25 merupakan pilihan yang paling sesuai sebagai komponen \textit{sparse retrieval}. Pada studi sistem tanya jawab hukum perpajakan, Rustamov et al.~\cite{rustamov2025tax} secara eksplisit menunjukkan bahwa BM25 mengungguli SPLADE sehingga dipilih sebagai komponen \textit{sparse} dalam strategi \textit{hybrid retrieval}. Hiremath et al.~\cite{hiremath2025ragclin} mengonfirmasi superioritas BM25 dalam sistem RAG klinis. Meskipun demikian, SPLADE tetap menjadi alternatif yang menarik karena kemampuannya menangkap kecocokan leksikal yang lebih kaya melalui ekspansi kosakata berbasis \textit{Transformer}~\cite{formal2021splade}, namun kompleksitas komputasinya lebih tinggi dan tidak terbukti mengungguli BM25 pada domain regulasi~\cite{rustamov2025tax}. TF-IDF tidak dipilih karena tidak memiliki normalisasi panjang dokumen dan formulasi probabilistik seperti BM25, sehingga umumnya hanya digunakan sebagai \textit{baseline} yang lebih sederhana~\cite{salton1988term,robertson2009probabilistic}. Varian BM25L dan BM25+ memang menawarkan normalisasi frekuensi istilah yang lebih baik untuk dokumen dengan variasi panjang~\cite{lv2011lowerbound}, namun keduanya lebih jarang digunakan sebagai konfigurasi standar dibanding BM25 dan membutuhkan penyesuaian tambahan terhadap parameter normalisasi. Keunggulan BM25 pada domain regulasi dapat dijelaskan oleh karakteristik terminologi yang eksplisit dan konsisten pada kontrol ISO/IEC 27001:2022, misalnya \textit{access control}, \textit{incident management}, dan \textit{logging}. Karakteristik tersebut memungkinkan pencocokan leksikal bekerja secara efektif, sehingga ketersediaan implementasi BM25 yang luas dan stabilitasnya pada berbagai \textit{benchmark} menjadikannya pilihan yang paling tepat.
 
 \subsection{Perbandingan Model \textit{Dense Embedding}}
 

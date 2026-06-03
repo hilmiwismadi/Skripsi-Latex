@@ -12,19 +12,25 @@
 \usetikzlibrary{positioning,calc,arrows.meta}
 \usepackage{multirow}
 \usepackage{array}
+\usepackage{microtype}
+\usepackage{float}
+\emergencystretch=2em
+\setlength{\intextsep}{4pt plus 2pt minus 2pt}
+\setlength{\textfloatsep}{4pt plus 2pt minus 2pt}
+\renewcommand{\floatpagefraction}{0.99}
 
 \begin{document}
 
 \title{Design and Evaluation of Information Retrieval Methods for Statement of Applicability Mapping of ISO/IEC 27001:2022 Annex A.5--A.8}
 
 \author{
-  \IEEEauthorblockN{Muhammad Hilmi Dzaki Wismadi}
+  \IEEEauthorblockN{\textsuperscript{1st}Muhammad Hilmi Dzaki Wismadi}
   \IEEEauthorblockA{\textit{Department of Electrical and Information Engineering}\\
     \textit{Universitas Gadjah Mada}\\
     Yogyakarta, Indonesia\\
     muhammadhilmidzakiwismadi@mail.ugm.ac.id}
   \and
-  \IEEEauthorblockN{Dani Adhipta, S.Si., M.T.}
+  \IEEEauthorblockN{\textsuperscript{2nd}Dani Adhipta, S.Si., M.T.}
   \IEEEauthorblockA{\textit{Department of Electrical and Information Engineering}\\
     \textit{Universitas Gadjah Mada}\\
     Yogyakarta, Indonesia\\
@@ -99,47 +105,6 @@ strategies for tax law QA. Elkiran and Rasheed~\cite{elkiran2026empirical}
 provided empirical evidence that retriever selection, similarity function,
 and reranker choice significantly affect RAG performance.
 
-Despite these advances, no prior work has systematically compared hybrid
-retrieval weight compositions, candidate pool sizes for reranking, and
-score fusion strategies specifically for ISO/IEC~27001:2022 SoA control
-mapping. This paper addresses this gap with the following contributions:
-\begin{enumerate}
-\item A multi-axis evaluation of dense/sparse weight compositions in hybrid
-      retrieval for ISO~27001 control mapping.
-\item A candidate pool size ablation for cross-encoder reranking, analyzing
-      both accuracy and latency trade-offs.
-\item A score fusion analysis between hybrid retrieval and cross-encoder
-      scores, validated by non-parametric statistical testing (Friedman test).
-\item A per-query characteristic analysis revealing the complementary nature
-      of hybrid retrieval and cross-encoder reranking.
-\end{enumerate}
-
-% ============================================================
-\section{Related Work}
-% ============================================================
-
-\subsection{RAG for Audit and Compliance}
-
-Liu et~al.~\cite{lajbr2025} modeled audit-finding-to-regulation mapping
-using multi-path retrieval combining BM25 and BGE-based dense retrieval,
-fused via weighted Reciprocal Rank Fusion, achieving Recall@5 of 0.5210
-and MRR@5 of 0.3869. Gupta et~al.~\cite{gupta2025compliance} developed a
-RAG system for GDPR/CCPA compliance checking using DPR followed by
-cross-encoder reranking, reaching Recall@10 and Precision@10 of 98.2\%
-at the cost of 3.4~s additional latency per query. Ravishankar and
-Varalakshmi~\cite{ravishankar2025hybrid} explored query expansion, dense
-retrieval, and cross-encoder reranking with score fusion for financial
-document QA, achieving MAP of 0.861 and Recall@10 of 0.923, significantly
-outperforming DPR-only baselines. Rustamov et~al.~\cite{rustamov2025tax}
-demonstrated that hybrid retrieval (BM25/SPLADE + dense) improved
-Recall@100 from 0.49 to 0.60 and cross-encoder reranking improved NDCG
-from 0.39 to 0.44 on tax law QA. Elkiran and Rasheed~\cite{elkiran2026empirical}
-provided comprehensive empirical evaluation of RAG pipeline components,
-showing that retriever and similarity function selection have the most
-significant impact ($p < 10^{-9}$) on system performance.
-
-\subsection{Hybrid Retrieval and Reranking}
-
 Hybrid retrieval combines sparse methods (e.g., BM25) that capture exact
 lexical matches with dense methods (e.g., neural embeddings) that capture
 semantic similarity. This combination is particularly beneficial in
@@ -150,8 +115,23 @@ higher precision at the cost of increased latency. The interplay between
 hybrid retrieval weights, candidate pool sizes, and score fusion proportions
 remains under-characterized in the ISO~27001 compliance domain.
 
+This study investigates how the composition of hybrid retrieval and
+cross-encoder reranking affects retrieval accuracy for ISO/IEC~27001:2022
+SoA control mapping. To this end, a knowledge base of 93~ISO/IEC~27001:2022
+Annex~A controls is constructed, and 77~queries with ground truth are
+derived through manual audit reading of four organizational policy documents
+from the Directorate of Information Technology, Universitas Gadjah Mada.
+Three sequential experimental steps are conducted: (1)~evaluation of
+dense/sparse weight compositions in hybrid retrieval to identify the optimal
+balance between semantic and lexical matching; (2)~ablation of candidate
+pool sizes for cross-encoder reranking to determine the optimal pool
+configuration; and (3)~analysis of score fusion weights between hybrid
+retrieval and cross-encoder scores to find the optimal combination strategy,
+where each step uses the optimal configuration identified in the preceding
+step.
+
 % ============================================================
-\section{Methodology}
+\section{Methods}
 % ============================================================
 
 \subsection{Knowledge Base Construction}
@@ -159,15 +139,31 @@ remains under-characterized in the ISO~27001 compliance domain.
 The knowledge base is constructed from the ISO/IEC~27001:2022 standard,
 covering Annex~A controls A.5 (Organizational Controls), A.6 (People
 Controls), A.7 (Physical Controls), and A.8 (Technological Controls),
-totaling 93~controls. Each control is stored as a structured JSON entity
-containing attributes: \texttt{control\_id}, \texttt{title},
-\texttt{objective}, \texttt{description},
-\texttt{implementation\_guidance}, bilingual keywords
-(\texttt{keywords\_en/id}), bilingual audit indicators
-(\texttt{audit\_indicators\_en/id}), bilingual related assets
-(\texttt{related\_assets\_en/id}), and bilingual security principles
-(\texttt{security\_principles\_en/id}). This enriched representation
-supports both lexical and semantic retrieval pathways.
+totaling 93~controls. Each control is stored as a structured JSON
+entity containing the attributes listed in Table~\ref{tab:kb-schema},
+supporting both lexical and semantic retrieval pathways.
+
+\begin{table}[H]
+\centering
+\caption{Knowledge base entity schema}
+\label{tab:kb-schema}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Attribute & Description \\
+\midrule
+\texttt{control\_id} & Control identifier \\
+\texttt{title} & Control title \\
+\texttt{objective} & Security objective \\
+\texttt{description} & Detailed description \\
+\texttt{implementation\_guidance} & Implementation guidance \\
+\texttt{keywords\_en/id} & Bilingual keywords \\
+\texttt{audit\_indicators\_en/id} & Bilingual audit indicators \\
+\texttt{related\_assets\_en/id} & Bilingual related assets \\
+\texttt{security\_principles\_en/id} & Bilingual security principles \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Query and Ground Truth Construction}
 
@@ -207,9 +203,9 @@ where $\alpha_d \in \{0.00, 0.25, 0.50, 0.75, 1.00\}$ controls the
 dense-to-sparse ratio. The top-$k$ documents form the candidate pool
 for reranking.
 
-\begin{figure}[!h]
+\begin{figure}[H]
 \centering
-\includegraphics[width=\columnwidth,keepaspectratio]{figs/hybrid_retrieval_big.png}
+\includegraphics[width=\columnwidth,keepaspectratio]{../Gambar/3.6HybridComponentFinal.png}
 \caption{Hybrid retrieval architecture combining BM25 sparse retrieval
 with dense embedding retrieval via weighted score fusion.}
 \label{fig:hybrid}
@@ -230,7 +226,7 @@ retrieval; $\alpha_r = 0.0$ uses only cross-encoder scores. Both
 $\alpha_d$ and $\alpha_r$ follow the same discrete range and the
 complementary weights always sum to 1.
 
-\begin{figure}[!h]
+\begin{figure}[H]
 \centering
 \includegraphics[width=\columnwidth,keepaspectratio]{figs/reranker_component_big.png}
 \caption{Cross-encoder reranking pipeline: hybrid retrieval produces a
@@ -264,12 +260,12 @@ applied to assess statistical significance across configurations, using
 77~queries as the blocking factor for repeated-measures comparison.
 
 % ============================================================
-\section{Results and Discussion}
+\section{Results}
 % ============================================================
 
 \subsection{Scenario 1: Dense/Sparse Weight Composition}
 
-\begin{table}[!h]
+\begin{table}[H]
 \centering
 \caption{Retrieval performance across dense/sparse weight compositions}
 \label{tab:hybrid}
@@ -287,17 +283,7 @@ Dense:Sparse & Hit@3 & Recall@3 & MAP@3 & NDCG@3 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:hybrid} shows that the balanced configuration
-($w_{\text{dense}}=0.50$) achieves the best performance on three of four
-metrics: Recall@3\,=\,0.537, MAP@3\,=\,0.467, and NDCG@3\,=\,0.575.
-Pure sparse retrieval ($w_{\text{dense}}=0.00$) yields the highest
-Hit@3\,=\,0.961 but lower rank-sensitive metrics. Pure dense retrieval
-performs substantially worse across all metrics. These results confirm that
-ISO~27001 control mapping requires both semantic matching (dense) to
-capture contextual meaning and lexical matching (sparse) to recognize
-domain-specific terminology.
-
-\begin{table}[!h]
+\begin{table}[H]
 \centering
 \caption{Friedman test results for dense/sparse weight compositions}
 \label{tab:hybrid_friedman}
@@ -306,22 +292,32 @@ domain-specific terminology.
 \toprule
 Metric & $\chi^2$ & $p$-value \\
 \midrule
-Hit Rate & 52.205 & $< 0.000001$ \\
-Recall   & 53.542 & $< 0.000001$ \\
-NDCG     & 46.395 & $< 0.000001$ \\
-MAP@3    & 46.395 & $< 0.000001$ \\\bottomrule
+Hit@3    & 52.205 & $< 0.000001$ \\
+Recall@3 & 53.542 & $< 0.000001$ \\
+NDCG@3   & 46.395 & $< 0.000001$ \\
+MAP@3    & 46.395 & $< 0.000001$ \\
+\bottomrule
 \end{tabular}
 \end{table}
 
-The Friedman test (Table~\ref{tab:hybrid_friedman}) confirms that
-differences across configurations are highly significant ($p < 0.001$)
-for all metrics, rejecting the null hypothesis.
+Table~\ref{tab:hybrid} reports the hybrid retrieval performance across
+five dense/sparse weight compositions on 77~queries. The balanced
+configuration ($w_{\text{dense}}=0.50$) achieves the highest Recall@3
+(0.537), MAP@3 (0.467), and NDCG@3 (0.575). Pure sparse retrieval
+($w_{\text{dense}}=0.00$) yields the highest Hit@3 (0.961) but lower
+rank-sensitive metrics (MAP@3\,=\,0.407, NDCG@3\,=\,0.525). Pure dense
+retrieval ($w_{\text{dense}}=1.00$) performs worst across all four
+metrics, with Hit@3\,=\,0.649, Recall@3\,=\,0.307, MAP@3\,=\,0.256,
+and NDCG@3\,=\,0.336. The Friedman test
+(Table~\ref{tab:hybrid_friedman}) confirms that the differences across
+configurations are statistically significant for all four metrics
+($\chi^2 \geq 46.395$, $p < 0.000001$).
 
 \subsection{Scenario 2: Candidate Pool Size}
 
-\begin{table}[!h]
+\begin{table}[H]
 \centering
-\caption{Retrieval performance and latency across candidate pool sizes}
+\caption{Reranking performance across candidate pool sizes ($w_{\text{dense}}=0.50$)}
 \label{tab:pool}
 \small
 \begin{tabular}{lcccc}
@@ -336,17 +332,7 @@ Pool & Hit@3 & Recall@3 & MAP@3 & NDCG@3 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:pool} reveals a consistent monotonic decline: pool size~5
-achieves the highest scores across all metrics with the lowest total latency
-(9.01~s). Increasing the pool to~20 degrades Hit@3 by 0.169, Recall@3 by
-0.091, and nearly triples latency to 25.61~s. This counter-intuitive result
-indicates that including less relevant candidates introduces noise that
-degrades cross-encoder ranking quality in the ISO~27001 domain.
-
-The Friedman test (Table~\ref{tab:pool_friedman}) confirms significance
-($p < 0.003$) across all metrics.
-
-\begin{table}[!h]
+\begin{table}[H]
 \centering
 \caption{Friedman test results for candidate pool sizes}
 \label{tab:pool_friedman}
@@ -355,19 +341,31 @@ The Friedman test (Table~\ref{tab:pool_friedman}) confirms significance
 \toprule
 Metric & $\chi^2$ & $p$-value \\
 \midrule
-Hit Rate & 16.760 & 0.000792 \\
-Recall   & 14.095 & 0.002779 \\
-NDCG     & 25.776 & 0.000011 \\
-MAP      & 25.776 & 0.000011 \\
+Hit@3    & 16.760 & 0.000792 \\
+Recall@3 & 14.095 & 0.002779 \\
+NDCG@3   & 25.776 & 0.000011 \\
+MAP@3    & 25.776 & 0.000011 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+Using the optimal dense/sparse composition from Scenario~1
+($w_{\text{dense}}=0.50$), Table~\ref{tab:pool} reports the reranking
+performance across four candidate pool sizes. A clear monotonic decline
+is observed across all metrics as pool size increases: pool size~5
+achieves the highest scores (Hit@3\,=\,0.857, Recall@3\,=\,0.468,
+MAP@3\,=\,0.387, NDCG@3\,=\,0.485), whereas pool size~20 yields the
+lowest (Hit@3\,=\,0.688, Recall@3\,=\,0.377, MAP@3\,=\,0.328,
+NDCG@3\,=\,0.405). Increasing the pool from~5 to~20 degrades Hit@3
+by 0.169 and Recall@3 by~0.091. The Friedman test
+(Table~\ref{tab:pool_friedman}) confirms significance for all metrics
+($\chi^2 \geq 14.095$, $p \leq 0.003$).
+
 \subsection{Scenario 3: Score Fusion Weight}
 
-\begin{table}[!h]
+\begin{table}[H]
 \centering
-\caption{Retrieval performance across score fusion compositions (Hybrid:CE)}
+\caption{Retrieval performance across score fusion compositions (Hybrid:CE, $w_{\text{dense}}=0.50$, $k=5$)}
 \label{tab:fusion}
 \small
 \begin{tabular}{lcccc}
@@ -383,15 +381,7 @@ Hybrid:CE & Hit@3 & Recall@3 & MAP@3 & NDCG@3 \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:fusion} shows that the hybrid-dominant configuration
-($\alpha=0.75$) achieves the best overall performance (Recall@3\,=\,0.541,
-NDCG@3\,=\,0.579), marginally surpassing pure hybrid retrieval. Pure
-cross-encoder ($\alpha=0.00$) yields the lowest performance, indicating
-that hybrid retrieval scores carry more relevant signals for ISO~27001
-control mapping. This consistent pattern, where performance decreases as CE
-weight increases, confirms that hybrid retrieval should dominate.
-
-\begin{table}[!h]
+\begin{table}[H]
 \centering
 \caption{Friedman test results for score fusion compositions}
 \label{tab:fusion_friedman}
@@ -400,22 +390,33 @@ weight increases, confirms that hybrid retrieval should dominate.
 \toprule
 Metric & $\chi^2$ & $p$-value \\
 \midrule
-		Hit@3    & 10.462 & $0.033$       \\
-		Recall@3      & 21.245 & $0.000283$    \\
-		NDCG@3        & 29.639 & $0.000006$    \\
-		MAP@3         & 28.952 & $0.000008$    \\
+Hit@3    & 10.462 & $0.033$       \\
+Recall@3 & 21.245 & $0.000283$    \\
+NDCG@3   & 29.639 & $0.000006$    \\
+MAP@3    & 28.952 & $0.000008$    \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-All four metrics show significant differences
-(Table~\ref{tab:fusion_friedman}), confirming that score fusion composition
-meaningfully affects both coverage and ranking quality. Rank-sensitive
-metrics (NDCG, MAP@3) show the strongest effect ($p < 0.001$).
+Using the optimal configurations from Scenarios~1 and~2
+($w_{\text{dense}}=0.50$, $k=5$), Table~\ref{tab:fusion} presents the
+retrieval performance across five score fusion compositions. The
+hybrid-dominant configuration (Hybrid:CE\,=\,0.75:0.25) achieves the
+highest Recall@3 (0.541), MAP@3 (0.470), and NDCG@3 (0.579), marginally
+surpassing pure hybrid retrieval (1.00:0.00) which yields
+Recall@3\,=\,0.537, MAP@3\,=\,0.467, and NDCG@3\,=\,0.575.
+Performance decreases consistently as cross-encoder weight increases:
+pure cross-encoder (0.00:1.00) yields the lowest scores
+(Hit@3\,=\,0.857, Recall@3\,=\,0.469, MAP@3\,=\,0.387,
+NDCG@3\,=\,0.485). The Friedman test
+(Table~\ref{tab:fusion_friedman}) confirms significance for all metrics
+($\chi^2 \geq 10.462$, $p \leq 0.033$), with rank-sensitive metrics
+showing the strongest effect (NDCG@3: $p = 0.000006$;
+MAP@3: $p = 0.000008$).
 
-\subsection{Per-Query Analysis: Hybrid vs.\ Cross-Encoder}
+\subsection{Per-Query Comparison: Hybrid vs.\ Cross-Encoder}
 
-\begin{table}[!h]
+\begin{table}[H]
 \centering
 \caption{Query distribution by winning component across metrics}
 \label{tab:winner}
@@ -432,31 +433,56 @@ MAP@3    & 36 (46.8\%) & 15 (19.5\%) & 26 (33.8\%) \\
 \end{tabular}
 \end{table}
 
-A direct per-query comparison between pure hybrid and pure cross-encoder
-using NDCG@3 (Table~\ref{tab:winner}) reveals complementary strengths:
+Table~\ref{tab:winner} reports the per-query comparison between pure
+hybrid retrieval ($\alpha_r=1.0$) and pure cross-encoder reranking
+($\alpha_r=0.0$) across 77~queries. For rank-sensitive metrics, hybrid
+retrieval outperforms the cross-encoder on 36~queries (46.8\%) for both
+NDCG@3 and MAP@3, while the cross-encoder outperforms hybrid retrieval on
+15~queries (19.5\%). The remaining 26~queries (33.8\%) are tied. For
+coverage metrics, Hit@3 shows the least differentiation with 67~queries
+(87.0\%) tied, and Recall@3 shows 24~queries (31.2\%) favoring hybrid
+retrieval versus 8~queries (10.4\%) favoring the cross-encoder.
 
-\textbf{Cross-encoder superiority (15 queries)} occurs in three patterns:
-(i)~key phrases lack direct lexical matches with ISO control terminology
-(e.g., ``non-legal software'' vs.\ ``licensed software'' in A.5.32);
-(ii)~cross-encoder discovers additional ground truth controls that
-hybrid retrieval misses due to cross-lingual terminology gaps
-(e.g., ``Authentication'' vs.\ ``autentikasi''); and
-(iii)~cross-encoder improves ranking on contextual/procedural queries
-describing organizational frameworks without explicit ISO terminology
-(e.g., IT governance frameworks mapping to A.5.1, A.5.4).
+% ============================================================
+\section{Discussion}
+% ============================================================
 
-\textbf{Hybrid retrieval superiority (36 queries)} occurs when:
-(i)~cross-encoder fails completely while hybrid retrieval succeeds via
-combined lexical and semantic signals (8 queries); (ii)~short queries with
-specific keywords enable precise BM25 matching (6 queries); and
-(iii)~queries mentioning technical assets or infrastructure (22 queries)
-benefit from BM25's partial term matching and dense embeddings' semantic
-generalization.
+The results demonstrate that hybrid retrieval and cross-encoder reranking
+exhibit complementary strengths, yet hybrid retrieval remains the dominant
+contributor to retrieval accuracy in the ISO~27001 domain.
 
-These findings justify assigning a small weight (25\%) to the cross-encoder
-in the optimal score fusion: it provides marginal yet consistent
-improvements on contextually demanding queries without degrading the strong
-baseline established by hybrid retrieval.
+The balanced dense/sparse composition ($w_{\text{dense}}=0.50$) achieves
+the best rank-sensitive performance (Table~\ref{tab:hybrid}), indicating
+that ISO~27001 control mapping requires both semantic matching to capture
+contextual meaning and lexical matching to recognize domain-specific
+terminology. The monotonic decline in reranking accuracy as candidate pool
+size increases (Table~\ref{tab:pool}) is counter-intuitive: including
+less relevant candidates introduces noise that degrades cross-encoder
+ranking quality rather than providing additional recall opportunities.
+The hybrid-dominant score fusion (0.75:0.25) marginally surpasses pure
+hybrid retrieval (Table~\ref{tab:fusion}), confirming that cross-encoder
+scores provide supplementary but not dominant signals for this domain.
+
+Despite the overall dominance of hybrid retrieval, the per-query analysis
+(Table~\ref{tab:winner}) reveals that cross-encoder reranking outperforms
+hybrid retrieval on 15~queries (19.5\%) for NDCG@3 and MAP@3. This
+superiority occurs primarily when key phrases in the query lack direct
+lexical matches with ISO control terminology, such as when
+organizational policy documents use informal language or
+cross-lingual terminology that diverges from the standardized ISO~27001
+vocabulary (e.g., ``non-legal software'' vs.\ ``licensed software'' in
+A.5.32, or ``Authentication'' vs.\ ``autentikasi''). In such cases, the
+cross-encoder's joint encoding of query--document pairs captures contextual
+relevance that term-based BM25 matching and independent dense embedding
+similarity fail to recognize. This weakness of hybrid retrieval is
+particularly evident on contextual and procedural queries that describe
+organizational frameworks without explicitly referencing ISO terminology,
+where the cross-encoder discovers additional ground truth controls through
+deeper semantic understanding. These complementary patterns justify
+assigning a small weight (25\%) to the cross-encoder in the optimal
+score fusion, as it provides marginal yet consistent improvements on
+contextually demanding queries without degrading the strong baseline
+established by hybrid retrieval.
 
 % ============================================================
 \section{Conclusion}
@@ -467,11 +493,11 @@ ISO/IEC~27001:2022 SoA control mapping across three design axes. The key
 findings are:
 
 \begin{enumerate}
-\item \textbf{Balanced hybrid retrieval is optimal.} The dense\,=\,0.50,
-sparse\,=\,0.50 composition achieves the best Recall@3 (0.537) and
-NDCG@3 (0.575), confirming that ISO~27001 control mapping requires both
-semantic and lexical matching. All differences are statistically
-significant ($p < 0.001$, Friedman test).
+\item \textbf{Balanced hybrid retrieval is optimal.}
+A dense\,=\,0.50, sparse\,=\,0.50 composition achieves the best
+Recall@3 (0.537) and NDCG@3 (0.575), confirming that ISO~27001
+control mapping requires both semantic and lexical matching. All
+differences are statistically significant ($p < 0.001$, Friedman test).
 
 \item \textbf{Smaller candidate pools outperform larger ones.} A pool
 size of~5 yields the highest accuracy and lowest latency (9.01~s), with
@@ -480,8 +506,8 @@ that degrades cross-encoder ranking ($p < 0.003$).
 
 \item \textbf{Hybrid-dominant score fusion is preferred.}
 Hybrid:CE\,=\,0.75:0.25 achieves the best overall performance
-(Recall@3\,=\,0.541, NDCG@3\,=\,0.579). Cross-encoder contribution is
-complementary rather than dominant: hybrid retrieval excels on
+(Recall@3\,=\,0.541, NDCG@3\,=\,0.579). The cross-encoder contribution
+is complementary rather than dominant: hybrid retrieval excels on
 terminology-driven queries (46.8\%), while cross-encoders benefit
 contextual queries (19.5\%).
 \end{enumerate}

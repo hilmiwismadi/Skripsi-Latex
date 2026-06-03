@@ -19,7 +19,7 @@ Tabel~\ref{tbl:dti_distribusi} merangkum jumlah referensi kontrol ISO/IEC 27001:
 	\caption{Distribusi Referensi Kontrol ISO/IEC 27001:2022 per Dokumen DTI UGM}
 	\label{tbl:dti_distribusi}
 	\small
-	\begin{tabular}{|p{7.8cm}|c|c|c|c|c|}
+	\begin{tabular}{|>{\raggedright\arraybackslash}p{7.8cm}|c|c|c|c|c|}
 		\hline
 		\textbf{Nama Dokumen} & \textbf{A.5} & \textbf{A.6} & \textbf{A.7} & \textbf{A.8} & \textbf{Total} \\
 		\hline
@@ -49,7 +49,7 @@ Dokumen ini berfokus pada tata kelola identitas digital dan pengelolaan nama dom
 	\caption{Kontrol ISO/IEC 27001:2022 Paling Sering Dirujuk pada Keputusan Rektor tentang Pedoman Pengelolaan Domain UGM}
 	\label{tbl:top_ctrl_domain}
 	\small
-	\begin{tabular}{|c|p{8.5cm}|c|}
+	\begin{tabular}{|c|>{\raggedright\arraybackslash}p{8.5cm}|c|}
 		\hline
 		\textbf{No} & \textbf{Kontrol} & \textbf{Jumlah} \\
 		\hline
@@ -77,7 +77,7 @@ Dokumen ini berfokus pada kerangka tata kelola teknologi informasi secara menyel
 	\caption{Kontrol ISO/IEC 27001:2022 Paling Sering Dirujuk pada Peraturan Rektor tentang Tata Kelola TI UGM}
 	\label{tbl:top_ctrl_tatakelola}
 	\small
-	\begin{tabular}{|c|p{8.5cm}|c|}
+	\begin{tabular}{|c|>{\raggedright\arraybackslash}p{8.5cm}|c|}
 		\hline
 		\textbf{No} & \textbf{Kontrol} & \textbf{Jumlah} \\
 		\hline
@@ -105,7 +105,7 @@ Dokumen ini berfokus pada keamanan teknis sistem keuangan SIMASTER, mencakup sta
 	\caption{Kontrol ISO/IEC 27001:2022 Paling Sering Dirujuk pada Keputusan Rektor tentang Standar Parameter \textit{Password} dan Keamanan Finance SIMASTER}
 	\label{tbl:top_ctrl_password}
 	\small
-	\begin{tabular}{|c|p{8.5cm}|c|}
+	\begin{tabular}{|c|>{\raggedright\arraybackslash}p{8.5cm}|c|}
 		\hline
 		\textbf{No} & \textbf{Kontrol} & \textbf{Jumlah} \\
 		\hline
@@ -133,7 +133,7 @@ Dokumen ini berfokus pada kewajiban penggunaan perangkat lunak legal (\textit{li
 	\caption{Kontrol ISO/IEC 27001:2022 Paling Sering Dirujuk pada Surat Edaran Rektor tentang Penggunaan Perangkat Lunak di Lingkungan UGM}
 	\label{tbl:top_ctrl_software}
 	\small
-	\begin{tabular}{|c|p{8.5cm}|c|}
+	\begin{tabular}{|c|>{\raggedright\arraybackslash}p{8.5cm}|c|}
 		\hline
 		\textbf{No} & \textbf{Kontrol} & \textbf{Jumlah} \\
 		\hline
@@ -313,11 +313,11 @@ Analisis pada subbab ini dilakukan untuk mengevaluasi pengaruh komposisi pembobo
 
 Hasil evaluasi pada Gambar~\ref{fig:431_fusion_dti} dan Tabel~\ref{tbl:431_fusion_dti} menunjukkan pola yang konsisten: semakin besar bobot \textit{hybrid retrieval}, semakin tinggi performa sistem pada seluruh metrik. Analisis berdasarkan kelompok komposisi mengungkap tiga pola utama sebagai berikut.
 
-\textbf{Konfigurasi Independen (1{,}00:0{,}00 dan 0{,}00:1{,}00).} Konfigurasi \textit{hybrid} independen tanpa \textit{reranking} menghasilkan Hit@3=0{,}935, Recall@3=0{,}537, MAP@3=0{,}467, dan NDCG@3=0{,}575 dengan latensi hanya 60 ms. Sebaliknya, konfigurasi \textit{CE} independen yang sepenuhnya mengandalkan skor \textit{cross-encoder} tanpa kontribusi \textit{hybrid} menghasilkan performa terendah pada seluruh metrik (Hit@3=0{,}857, Recall@3=0{,}469, MAP@3=0{,}387, NDCG@3=0{,}485) dengan latensi 5{,}91 detik. Perbedaan ini mengindikasikan bahwa skor \textit{hybrid retrieval} mengandung sinyal relevansi yang lebih tepat untuk domain ISO 27001 dibandingkan skor \textit{cross-encoder} secara independen.
+\textbf{Konfigurasi Independen (1{,}00:0{,}00 dan 0{,}00:1{,}00).} Konfigurasi \textit{hybrid} independen (tanpa \textit{reranking}) mencapai Hit@3=0{,}935, Recall@3=0{,}537, MAP@3=0{,}467, dan NDCG@3=0{,}575 dengan latensi hanya 60 ms. Sebaliknya, konfigurasi \textit{cross-encoder} independen menghasilkan performa terendah pada seluruh metrik (Hit@3=0{,}857, Recall@3=0{,}469, MAP@3=0{,}387, NDCG@3=0{,}485) dengan latensi 5{,}91 detik. Hal ini menunjukkan bahwa skor \textit{hybrid retrieval} lebih mampu menangkap relevansi pada domain ISO 27001 dibandingkan skor \textit{cross-encoder} yang berdiri sendiri.
 
-\textbf{Konfigurasi Dominan Satu Sisi (0{,}75:0{,}25 dan 0{,}25:0{,}75).} Konfigurasi dominan \textit{hybrid} (0{,}75:0{,}25) merupakan konfigurasi terbaik secara keseluruhan dengan Recall@3=0{,}541, MAP@3=0{,}470, dan NDCG@3=0{,}579, yang sedikit melampaui \textit{hybrid} independen. Hal ini menunjukkan bahwa pemberian bobot kecil pada \textit{cross-encoder} (25\%) mampu memberikan penyempurnaan peringkat secara marginal pada sejumlah \textit{query} tertentu tanpa mengganggu kualitas yang sudah dihasilkan \textit{hybrid retrieval}. Sebaliknya, konfigurasi dominan CE (0{,}25:0{,}75) menghasilkan penurunan signifikan dibanding dominan \textit{hybrid} pada seluruh metrik (NDCG turun dari 0{,}579 ke 0{,}519), yang menegaskan bahwa dominasi skor \textit{CE} justru melemahkan kualitas peringkat akhir.
+\textbf{Konfigurasi Dominan Satu Sisi (0{,}75:0{,}25 dan 0{,}25:0{,}75).} Konfigurasi dominan \textit{hybrid} (0{,}75:0{,}25) menjadi konfigurasi terbaik secara keseluruhan dengan Recall@3=0{,}541, MAP@3=0{,}470, dan NDCG@3=0{,}579. Pemberian bobot kecil (25\%) pada \textit{cross-encoder} terbukti mampu menyempurnakan peringkat pada sejumlah \textit{query} tanpa menurunkan kualitas \textit{hybrid retrieval}. Sebaliknya, konfigurasi dominan \textit{CE} (0{,}25:0{,}75) justru menurunkan performa secara signifikan (NDCG turun dari 0{,}579 ke 0{,}519), yang menegaskan bahwa bobot besar pada \textit{cross-encoder} melemahkan kualitas peringkat akhir.
 
-\textbf{Konfigurasi Seimbang (0{,}50:0{,}50).} Konfigurasi seimbang menghasilkan performa di antara kedua ekstrem, namun tidak mencapai performa terbaik pada metrik apapun. Konfigurasi ini memperoleh Hit@3=0{,}896, Recall@3=0{,}528, MAP@3=0{,}452, dan NDCG@3=0{,}553 dengan latensi 5{,}23 detik yang merupakan latensi terendah di antara konfigurasi yang melibatkan \textit{reranking}. Meskipun latensinya lebih rendah, performa akurasinya masih di bawah konfigurasi dominan \textit{hybrid}.
+\textbf{Konfigurasi Seimbang (0{,}50:0{,}50).} Konfigurasi ini menghasilkan performa yang berada di antara konfigurasi independen dan dominan, dengan Hit@3=0{,}896, Recall@3=0{,}528, MAP@3=0{,}452, dan NDCG@3=0{,}553. Latensinya tercatat 5{,}23 detik, yang merupakan terendah di antara konfigurasi yang melibatkan \textit{reranking}. Meskipun demikian, akurasinya masih di bawah konfigurasi dominan \textit{hybrid}.
 
 \subsection{Validitas Statistik Perbedaan Performa antar Konfigurasi}
 
@@ -390,7 +390,7 @@ Terdapat 6 \textit{query} di mana \textit{hybrid retrieval} berhasil menemukan s
 
 \textbf{3. \textit{Cross-encoder} memperbaiki peringkat pada \textit{query} kontekstual/prosedural.}
 
-Terdapat 7 \textit{query} di mana \textit{recall} tidak berubah namun \textit{cross-encoder} memperbaiki urutan peringkat sehingga dokumen relevan menempati posisi lebih tinggi. Pola ini muncul pada \textit{query} yang mendeskripsikan proses, prosedur, atau kerangka kerja kelembagaan tanpa menyebut terminologi kontrol ISO secara eksplisit. Pada kondisi ini, \textit{hybrid retrieval} berhasil menemukan dokumen relevan namun menempatkannya pada posisi peringkat yang lebih rendah karena sinyal leksikal dan semantik parsial tidak cukup kuat untuk mengungguli dokumen non-relevan yang memiliki kecocokan permukaan lebih tinggi. Berikut contoh \textit{query} pada pola ini.
+Terdapat 7 \textit{query} di mana \textit{recall} tidak berubah namun \textit{cross-encoder} memperbaiki urutan peringkat sehingga dokumen relevan menempati posisi lebih tinggi. Pola ini muncul pada \textit{query} yang mendeskripsikan proses, prosedur, atau kerangka kerja kelembagaan tanpa menyebut terminologi kontrol ISO secara eksplisit. Pada kondisi ini, \textit{hybrid retrieval} berhasil menemukan dokumen relevan namun menempatkannya pada posisi peringkat yang lebih rendah karena kecocokan leksikal dan semantik parsial tidak cukup kuat untuk mengungguli dokumen non-relevan yang memiliki kecocokan permukaan lebih tinggi. Berikut contoh \textit{query} pada pola ini.
 
 \begin{itemize}
 	\item Q58: ``\textbf{IT Management} merupakan mekanisme dan manajemen TI dan keamanan yang terarah dan fokus mewujudkan Intelligent University dengan kerangka kerja sistematis, terdiri atas \textbf{IT Decision Making}, \textbf{IT Risk Management}, IT Resource Management, IT Relationship Management, IT Performance Management, dan \textbf{IT Value Delivery}.'' Istilah \textbf{IT Management}, \textbf{IT Decision Making}, \textbf{IT Risk Management}, dan \textbf{IT Value Delivery} merupakan terminologi kerangka kerja kelembagaan yang tidak memiliki padanan langsung dalam penamaan kontrol ISO. \textit{Cross-encoder} mampu memperbaiki peringkat dengan mengenali bahwa kerangka kerja tata kelola TI tersebut berkaitan erat dengan penetapan kebijakan keamanan informasi (A.5.1), tanggung jawab manajemen dalam menerapkan keamanan (A.5.4), dan pengumpulan informasi ancaman sebagai bagian dari manajemen risiko (A.5.7), menghasilkan NDCG@3=0{,}765 dibanding 0{,}531 pada \textit{hybrid retrieval}.
@@ -403,7 +403,7 @@ Dari 36 \textit{query} di mana \textit{hybrid retrieval} independen unggul, teri
 
 \textbf{1. \textit{Cross-encoder} gagal total, \textit{hybrid retrieval} berhasil menemukan dokumen relevan.}
 
-Terdapat 8 \textit{query} di mana \textit{cross-encoder} sama sekali tidak menemukan dokumen relevan (NDCG@3=0), sementara \textit{hybrid retrieval} berhasil. Pola ini terjadi karena \textit{cross-encoder} memberi skor tinggi pada dokumen yang secara permukaan mirip dengan \textit{query} namun tidak relevan secara domain ISO 27001, sehingga dokumen yang benar tergeser keluar dari posisi teratas. \textit{Hybrid retrieval} berhasil melalui kombinasi pencocokan leksikal parsial oleh BM25 dan pemahaman semantik oleh \textit{dense embedding} yang sama-sama memberikan sinyal positif pada kontrol yang benar. Berikut contoh \textit{query} pada pola ini.
+Terdapat 8 \textit{query} di mana \textit{cross-encoder} sama sekali tidak menemukan dokumen relevan (NDCG@3=0), sementara \textit{hybrid retrieval} berhasil. Pola ini terjadi karena \textit{cross-encoder} memberi skor tinggi pada dokumen yang secara permukaan mirip dengan \textit{query} namun tidak relevan secara domain ISO 27001, sehingga dokumen yang benar tergeser keluar dari posisi teratas. \textit{Hybrid retrieval} berhasil melalui kombinasi pencocokan leksikal parsial oleh BM25 dan pemahaman semantik oleh \textit{dense embedding} yang sama-sama memberikan indikasi kecocokan pada kontrol yang benar. Berikut contoh \textit{query} pada pola ini.
 
 \begin{itemize}
 	\item Q50: ``\textbf{Pemondokan web} adalah layanan berupa fasilitas yang terdiri dari \textbf{ruang penyimpanan} pada suatu \textbf{server} di \textbf{pusat Data} dan sambungan Internet, sehingga Data dan Informasi di dalam ruang penyimpanan dapat diakses melalui Internet.'' \textit{Hybrid retrieval} berhasil menemukan kontrol A.8.21 (\textit{Security of Network Services}) dan A.8.20 (\textit{Networks Security}) dengan NDCG@3=0{,}531, sementara \textit{cross-encoder} gagal menemukan satupun kontrol relevan (NDCG@3=0). Meskipun terminologi spesifik ``pemondokan web'', ``server'', dan ``pusat Data'' tidak muncul secara harfiah dalam deskripsi kontrol ISO, kontrol A.8.21 dan A.8.20 membahas keamanan layanan jaringan dan internet yang secara semantik berkaitan dengan layanan \textit{web hosting}, sementara A.5.9 membahas inventarisasi aset termasuk fasilitas pemrosesan informasi. \textit{Hybrid retrieval} berhasil melalui kombinasi pencocokan leksikal parsial pada istilah umum (``internet'', ``layanan'', ``jaringan'') dan pencocokan semantik oleh \textit{dense embedding} yang menghubungkan konsep \textit{web hosting} dengan keamanan layanan jaringan.

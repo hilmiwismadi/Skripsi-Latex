@@ -1,0 +1,72 @@
+\documentclass[bachelor,bahasa]{thesisdtetiugm}
+
+\author{Muhammad Hilmi Dzaki Wismadi}{22/497591/TK/54539}
+\title{Perancangan dan Evaluasi Metode Information Retrieval untuk Pemetaan Statement of Applicability ISO/IEC 27001:2022 Annex A.5--A.8}
+\program{Teknologi Informasi}{<<Program Coordinator>>}{<<NIP>>}
+\departmenthead{<<Head of the Department>>}{<<NIP>>}
+\major{Teknologi Informasi}
+\yearsubmit{2026}
+\examdate{<<Exam Date>>}
+\addsupervisor{Dani Adhipta, S.Si., M.T.}{196907262000121001}
+
+\tolerance=1
+\emergencystretch=\maxdimen
+\hyphenpenalty=10000
+\hbadness=10000
+
+\usepackage{array}
+\usepackage{needspace}
+\usepackage{booktabs}
+\newcolumntype{P}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+\makeatletter
+\def\LT@start{%
+  \let\LT@start\endgraf
+  \endgraf\penalty\z@\vskip\LTpre\endgraf
+  \ifdim \pagetotal<\pagegoal\else
+    \dimen@\pageshrink
+    \advance\dimen@ 1sp\relax
+    \kern\dimen@\penalty 9999\endgraf \kern-\dimen@
+  \fi
+  \vfuzz\maxdimen
+  \vbadness\@M
+  \setbox\tw@\copy\z@
+  \setbox\tw@\vsplit\tw@ to \ht\@arstrutbox
+  \setbox\tw@\vbox{\unvbox\tw@}%
+  \vfuzz0pt\relax
+}
+\makeatother
+
+\begin{document}
+
+\printcover{sample/logougm.png}{Bachelor}
+
+\cleardoublepage \phantomsection
+\thetoc
+\onehalfspacing
+\tableofcontents
+\singlespacing
+\cleardoublepage \phantomsection
+\thelot
+\listoftables
+\cleardoublepage \phantomsection
+\thelof
+\listoffigures
+
+\startmain
+\cleardoublepage \phantomsection
+\include{contents/chapter-1/chapter-1}
+\cleardoublepage \phantomsection
+\include{contents/chapter-2/chapter-2}
+\cleardoublepage \phantomsection
+\include{contents/chapter-3/chapter-3}
+\cleardoublepage \phantomsection
+\include{contents/chapter-4/chapter-4}
+\cleardoublepage \phantomsection
+\include{contents/chapter-5/chapter-5}
+
+\cleardoublepage \phantomsection
+\bibliographystyle{IEEEtran}
+\thereferences
+\bibliography{references}
+
+\end{document}
